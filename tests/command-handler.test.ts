@@ -7,6 +7,7 @@ import {
   type CommandDefinition,
   type BotCommand,
 } from "../src/index";
+import { MockTelegramBot } from "../src/core/mock-telegram";
 
 // ── toBotFatherFormat ──
 
@@ -106,5 +107,45 @@ describe("syncCommandsWithTelegram", () => {
     await expect(syncCommandsWithTelegram(bot, commands, { autoConfirm: true })).rejects.toThrow(
       "Could not sync commands with Telegram because Telegram API is unavailable: network timeout",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// syncCommandsWithTelegram con MockTelegramBot
+// ---------------------------------------------------------------------------
+
+describe("syncCommandsWithTelegram — mock bot", () => {
+  const localCmds: CommandDefinition[] = [
+    { command: "a", description: "Alpha", buildText: () => "" },
+    { command: "b", description: "Beta",  buildText: () => "" },
+  ];
+
+  test("updates commands when mock is empty", async () => {
+    const bot = new MockTelegramBot();
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
+    expect(updated).toBe(true);
+    const stored = await bot.api.getMyCommands();
+    expect(stored.map((c: BotCommand) => c.command)).toEqual(["a", "b"]);
+  });
+
+  test("no-op when already in sync", async () => {
+    const bot = new MockTelegramBot({
+      initialCommands: [
+        { command: "a", description: "Alpha" },
+        { command: "b", description: "Beta" },
+      ],
+    });
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
+    expect(updated).toBe(false);
+  });
+
+  test("respects autoConfirm: false (does not update)", async () => {
+    const bot = new MockTelegramBot();
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, {
+      autoConfirm: false,
+      confirmFn: async () => false,
+    });
+    expect(updated).toBe(false);
+    expect(await bot.api.getMyCommands()).toEqual([]);
   });
 });

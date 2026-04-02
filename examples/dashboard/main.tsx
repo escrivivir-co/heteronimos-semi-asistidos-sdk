@@ -10,6 +10,8 @@ import {
   syncCommands,
   Logger,
 } from "../../src/index.js";
+import { MockTelegramBot } from "../../src/core/mock-telegram.js";
+import { confirm } from "../../src/core/logger.js";
 import { TOKEN, SOLANA_ADDRESS } from "../console-app/config.js";
 import { RabbitBot } from "../console-app/rabbit-bot.js";
 import { createStore } from "./store.js";
@@ -48,6 +50,16 @@ function shutdown() {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
+async function startMockMode() {
+  log.warn("[MOCK] Sin conexión a Telegram — arrancando en modo mock.");
+  const mockBot = new MockTelegramBot();
+  registerPlugins(mockBot as any, plugins, tracker, emitter);
+  await syncCommands(mockBot as any, plugins, tracker, { autoConfirm: true }, emitter);
+  emitter.emit({ type: "status-change", status: "running", timestamp: new Date().toISOString() });
+  log.info("[MOCK] Bot mock activo. La UI refleja estado simulado.");
+  await mockBot.start();
+}
+
 // --- Arrancar el bot en background ---
 async function main() {
   try {
@@ -59,8 +71,16 @@ async function main() {
     const msg = err instanceof Error ? err.message : String(err);
     log.error(`Bot error: ${msg}`);
     emitter.emit({ type: "status-change", status: "error", timestamp: new Date().toISOString() });
-    shutdown();
-    process.exitCode = 1;
+
+    // En dashboard el prompt es problemático con la TUI activa — usar variable de entorno
+    const useMock = process.env.MOCK_MODE === "1" ||
+      await confirm("¿Arrancar en modo mock (sin Telegram)? (y/n)").catch(() => false);
+    if (useMock) {
+      await startMockMode();
+    } else {
+      shutdown();
+      process.exitCode = 1;
+    }
   }
 }
 

@@ -17,6 +17,7 @@ A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define b
 - **Use the SDK from another project** → start at **Quick Start (npm Consumer)**
 - **Run the minimal console example** → start at **Quick Start (Repo)**
 - **Run the full TUI dashboard** → see [examples/dashboard/README.md](examples/dashboard/README.md)
+- **Run without a BOT_TOKEN (mock mode)** → start either example and answer `y` when prompted, or set `MOCK_MODE=1`
 - **Contribute to the refactor** → read this README first, then [CONTRIBUTING.md](CONTRIBUTING.md), [BACKLOG.md](BACKLOG.md), and the design docs in [specs/](specs/)
 
 ---
@@ -265,12 +266,12 @@ Try it: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot) �
 ## Testing
 
 ```bash
-bun run test             # 101 tests across 11 suites
+bun run test             # 143 tests across 12 suites
 bun run test:coverage    # with coverage report
 bun run test:report      # JUnit XML → test-results.xml
 ```
 
-Test suites cover: command-handler, bot-handler, logger, rabbit-bot, chat-tracker, logger options, barrel, phase-b, package, runtime-emitter, dashboard.
+Test suites cover: command-handler, bot-handler, logger, rabbit-bot, chat-tracker, logger options, barrel, phase-b, package, runtime-emitter, dashboard, mock-telegram.
 
 ## Release
 

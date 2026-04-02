@@ -202,14 +202,17 @@
 ### Fase O · Mock en proceso + tests + fallback
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 110 | Crear `src/core/mock-telegram.ts` — `MockTelegramBot` con api mock, registro de handlers y contexto simulado | 🔲 | SDS-07 §3 |
-| 111 | Crear `tests/mock-telegram.test.ts` — tests unitarios de MockTelegramBot (registro, simulación, api, reset) | 🔲 | SDS-07 §4.2 |
-| 112 | Ampliar `tests/bot-handler.test.ts` — `registerPlugins` sobre mock bot verifica que handlers se registran | 🔲 | SDS-07 §4.2 |
-| 113 | Ampliar `tests/command-handler.test.ts` — `syncCommandsWithTelegram` contra api mock (diff + set) | 🔲 | SDS-07 §4.2 |
-| 114 | Ampliar `tests/chat-tracker.test.ts` — `ChatTracker.register` + `broadcast` sobre mock bot | 🔲 | SDS-07 §4.2 |
-| 115 | Fallback interactivo en `examples/console-app/main.ts` — detectar fallo, prompt CLI, arrancar mock | 🔲 | SDS-07 §5 |
-| 116 | Documentar modo mock en README de `examples/console-app/` | 🔲 | SDS-07 §5.2 |
-| 117 | Full test suite verde con mock bot | 🔲 | SDS-07 §7 |
+| 110 | Crear `src/core/mock-telegram.ts` — `MockTelegramBot` con api mock, registro de handlers, middleware chain y contexto simulado | ✅ | SDS-07 §3, O-1 |
+| 111 | Crear `tests/mock-telegram.test.ts` — tests unitarios de MockTelegramBot (registro, simulación, api, reset) | ✅ | SDS-07 §4.2, O-2 |
+| 112 | Ampliar `tests/bot-handler.test.ts` — `registerPlugins` sobre mock bot verifica que handlers se registran | ✅ | SDS-07 §4.2, O-3 |
+| 113 | Ampliar `tests/command-handler.test.ts` — `syncCommandsWithTelegram` contra api mock (diff + set) | ✅ | SDS-07 §4.2, O-3 |
+| 114 | Ampliar `tests/chat-tracker.test.ts` — `ChatTracker.register` + `broadcast` sobre mock bot | ✅ | SDS-07 §4.2, O-3 |
+| 115 | Fallback interactivo en `examples/console-app/main.ts` — detectar fallo, prompt CLI, arrancar mock | ✅ | SDS-07 §5, O-4 |
+| 116 | Fallback interactivo en `examples/dashboard/main.tsx` — mismo patrón que console-app | ✅ | SDS-07 §5, O-5 |
+| 117 | README de `examples/console-app/` — documentar mock mode + flujo de arranque | ✅ | SDS-07 §7, O-6 |
+| 118 | Actualizar README raíz — mencionar mock mode en Quick Start | ✅ | O-7 |
+| 119 | Actualizar `docs/index.html` — stats + mock feature | ✅ | O-8 |
+| 120 | Full test suite verde + lint limpio — **143 tests / 12 suites / 0 fail** | ✅ | SDS-07 §7 |
 
 ---
 
@@ -250,4 +253,4 @@
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) Fases G–N ✅ · Sprint 4b (mock-telegram) next · Sprint 2 (CI) pending*
+*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 2 (CI) 🔲 next*
