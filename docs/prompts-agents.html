@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompts & Agentes · heteronimos-semi-asistidos-sdk</title>
+<link rel="stylesheet" href="poster-template/fanzine.css">
+<style>
+  body { max-width: 900px; margin: 0 auto; padding: 24px; }
+  .nav-back {
+    font-size: 0.72rem;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+  .nav-back a { color: #111; font-weight: bold; text-decoration: none; }
+  .nav-back a:hover { text-decoration: underline; }
+  .prompt-card {
+    border: 2.5px solid #111;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    position: relative;
+    background: #fff;
+  }
+  .prompt-card::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1.5px dashed #000;
+    pointer-events: none;
+  }
+  .prompt-card h2 { margin: 0 0 6px; font-size: 1.1rem; }
+  .prompt-card .meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; }
+  .badge {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: #111;
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+  }
+  .phase-list {
+    font-size: 0.72rem;
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+    counter-reset: phase;
+  }
+  .phase-list li {
+    counter-increment: phase;
+    padding: 5px 0;
+    border-bottom: 1px dotted #999;
+  }
+  .phase-list li::before {
+    content: "FASE " counter(phase) " → ";
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .howto-box {
+    border: 2px solid #111;
+    padding: 14px 16px;
+    margin: 16px 0;
+    background: #f6f1e8;
+    font-size: 0.72rem;
+  }
+  .howto-box h3 { font-size: 0.85rem; margin-bottom: 8px; }
+  .placeholder-card {
+    border: 2px dashed #999;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    text-align: center;
+    color: #999;
+    font-size: 0.75rem;
+  }
+  .divider { border: none; border-top: 2px solid #111; margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<div class="nav-back">
+  <a href="index.html">◀ VOLVER AL INDEX</a> · PROMPTS & AGENTES EXPERTOS
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header" style="margin-bottom:18px;">
+  <div class="stamp">PROMPTS</div>
+  <h1 style="font-size:1.8rem;">Prompts &<br>Agentes Expertos</h1>
+  <div class="sub">Sesiones guiadas con IA para explorar y contribuir a la codebase</div>
+  <div class="sub2">Cada prompt genera un agente especializado que se adapta al contexto del proyecto</div>
+  <div class="issue">heteronimos-semi-asistidos-sdk · v0.0.0</div>
+</header>
+
+<div class="washi"></div>
+
+<!-- ═══ CÓMO FUNCIONA ═══ -->
+<div class="howto-box">
+  <div class="tape tape-tr" style="position:relative;display:inline-block;top:0;right:0;margin-bottom:8px;"></div>
+  <h3>☞ ¿Cómo funciona?</h3>
+  <p style="margin-bottom:8px;">
+    Los prompts de este proyecto son <b>plantillas de personalidad</b> para agentes de IA.
+    Cuando invocas un prompt, el agente <b>se caracteriza</b> según la información que le proporcionas:
+    adopta un rol, analiza la codebase desde esa perspectiva y guía una sesión interactiva contigo.
+  </p>
+  <p style="margin-bottom:8px;">
+    <b>El truco:</b> puedes <b>agregar lore y datos extra</b> al final del prompt para que el agente
+    se especialice aún más. Sin datos extra, actúa como codebase owner general.
+    Con datos extra (ej. contexto de un componente, un artículo, un rol concreto), el agente
+    <b>se adapta y acota sus respuestas</b> a esa información.
+  </p>
+
+  <div style="border:1px solid #111;padding:8px 10px;margin-top:8px;background:#fff;">
+    <b>Uso en VS Code / GitHub Copilot:</b><br>
+    <span class="hl-box">.github/prompts/*.prompt.md</span> →
+    invócalos desde el chat con <span class="hl-box">@workspace /hacker-devops</span>
+    o referencia el archivo y pega contexto adicional al final.<br><br>
+    <b>Uso con cualquier agente (Claude, ChatGPT, etc.):</b><br>
+    Copia el contenido del <span class="hl-box">.prompt.md</span>, pégalo como system prompt o primer mensaje,
+    y añade debajo tu lore/datos extra.
+  </div>
+</div>
+
+<!-- ═══ STATS BAR ═══ -->
+<div class="stats-bar">
+  <div class="stat"><span class="val">1</span><span class="lbl">Prompts</span></div>
+  <div class="stat"><span class="val">5</span><span class="lbl">Fases</span></div>
+  <div class="stat"><span class="val">∞</span><span class="lbl">Roles</span></div>
+  <div class="stat"><span class="val">+lore</span><span class="lbl">Personalizable</span></div>
+</div>
+
+<div class="washi"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ═══ PROMPT: HACKER DEVOPS ═══ -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="prompt-card">
+  <div class="badge" style="background:#111;">★ FLAGSHIP</div>
+  <div class="tape tape-tl"></div>
+  <div class="tape tape-br"></div>
+
+  <h2>🔧 hacker-devops</h2>
+  <div class="meta">.github/prompts/hacker-devops.prompt.md</div>
+
+  <div style="font-size:0.78rem;margin-bottom:10px;">
+    Inicia una sesión interactiva asumiendo el rol de un <b>hacker DevOps experimentado</b>
+    con actitud asertiva, crítica pero constructiva, que acaba de descubrir esta codebase.
+    Analiza las puertas de entrada del proyecto (README + GH Pages), cruza documentación
+    con realidad (<code>git log</code>, barrel, backlog) y guía la mejora paso a paso.
+  </div>
+
+  <div style="font-size:0.72rem;border:1px solid #111;padding:8px 10px;margin-bottom:10px;background:#f6f1e8;">
+    <b>⚡ Clave:</b> el prompt acepta <b>información extra al final</b>. Sin ella, el agente
+    procede como codebase owner general. Con lore adicional (artículos, contexto de un
+    componente, rol específico, datos técnicos), <b>el agente se especializa y acota</b>
+    sus análisis a esa información.
+  </div>
+
+  <h3 style="font-size:0.8rem;margin-bottom:4px;">Fases de la sesión</h3>
+  <ol class="phase-list">
+    <li><b>La Revisión Inquisitiva</b> — Analiza la puerta de entrada (README, GH Pages) y cruza con barrel + backlog</li>
+    <li><b>Adaptación y Refactorización (DRY)</b> — El usuario asigna un rol; rescaneo desde esa perspectiva</li>
+    <li><b>Definición del Plan de Ataque</b> — Localiza tareas en BACKLOG.md y propone iniciativa concreta</li>
+    <li><b>El Offboarding / Salida Limpia</b> — Valida que la codebase explica cómo probar, compilar y salir</li>
+    <li><b>El Cierre Definitivo</b> — Aplica mejoras acordadas, actualiza backlog, cierra sesión</li>
+  </ol>
+
+  <h3 style="font-size:0.8rem;margin:10px 0 4px;">Fuentes de verdad que consulta</h3>
+  <div style="font-size:0.7rem;">
+    <span class="kw">BACKLOG.md</span>
+    <span class="kw">specs/</span>
+    <span class="kw">git log</span>
+    <span class="kw">src/index.ts</span>
+    <span class="kw">examples/</span>
+  </div>
+
+  <details style="margin-top:10px;">
+    <summary style="font-size:0.75rem;font-weight:bold;cursor:pointer;">☞ Ver ejemplo de uso con lore extra</summary>
+    <div class="detail-body" style="font-size:0.7rem;margin-top:8px;">
+      <div class="cmd"><span class="comment"># 1. Invoca el prompt en el chat de tu IDE</span>
+<span class="prompt">@workspace /hacker-devops</span>
+
+<span class="comment"># 2. O copia el prompt y añade lore al final:</span>
+[contenido de hacker-devops.prompt.md]
+
+## Información adicional para esta sesión
+
+Quiero que te centres en el subsistema de menus
+del SDK. Aquí está el contexto relevante:
+- El menu-handler soporta paginación inline
+- Hay un spec en specs/05-console-ui.md
+- El backlog tiene tareas pendientes relacionadas
+
+Tu rol: QA especialista en UX de bots</div>
+      <div style="margin-top:6px;padding:6px 8px;border:1px solid #111;background:#f6f1e8;">
+        <b>Resultado:</b> el agente arranca como un QA de UX especializado en el subsistema de menús,
+        cruza la implementación real con los specs y el backlog, y guía la sesión
+        acotado a ese contexto.
+      </div>
+    </div>
+  </details>
+
+  <div style="margin-top:10px;">
+    <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/.github/prompts/hacker-devops.prompt.md"
+       style="display:inline-block;font-weight:bold;font-size:0.78rem;background:#111;color:#fff;padding:4px 10px;text-decoration:none;">
+      ☞ VER PROMPT COMPLETO EN GITHUB
+    </a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ═══ SECCIÓN: AGENTES EXPERTOS (FUTUROS) ═══ -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="cutout">
+  <h3 style="text-align:center;">☞ Agentes Expertos en la Codebase</h3>
+  <div style="font-size:0.72rem;text-align:center;margin-bottom:12px;">
+    Configuraciones pre-armadas del prompt hacker-devops con lore específico para cada área.
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="placeholder-card">
+        <b>🏗 Arquitecto SDK</b><br>
+        Especializado en specs/ SDS-00 a SDS-03<br>
+        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
+      </div>
+      <div class="placeholder-card">
+        <b>🧪 QA Tester</b><br>
+        Foco en tests/, criterios de aceptación<br>
+        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
+      </div>
+    </div>
+    <div class="col">
+      <div class="placeholder-card">
+        <b>📦 Plugin Developer</b><br>
+        Guía para crear BotPlugins<br>
+        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
+      </div>
+      <div class="placeholder-card">
+        <b>📊 Dashboard Builder</b><br>
+        Foco en examples/dashboard/ y TUI<br>
+        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══ CÓMO CREAR TU PROPIO PROMPT ═══ -->
+<div class="cutout tilt-r">
+  <div class="tape tape-tl"></div>
+  <h3>☞ Cómo Crear tu Propio Prompt</h3>
+
+  <div class="step-title">1. CREA EL ARCHIVO</div>
+  <div class="cmd"><span class="prompt">touch .github/prompts/mi-agente.prompt.md</span></div>
+
+  <div class="step-title">2. AÑADE EL FRONTMATTER</div>
+  <div class="cmd"><span class="comment"># .github/prompts/mi-agente.prompt.md</span>
+---
+name: mi-agente
+description: "Descripción corta del rol."
+---
+
+Tu prompt aquí. Define la personalidad,
+las fuentes de verdad que debe consultar,
+y las fases de la sesión.</div>
+
+  <div class="step-title">3. USA EL PROMPT</div>
+  <div class="cmd"><span class="comment"># En VS Code con Copilot Chat</span>
+<span class="prompt">@workspace /mi-agente</span>
+
+<span class="comment"># O cópialo y pégalo en cualquier agente</span>
+<span class="comment"># añadiendo lore al final para especializar</span></div>
+
+  <div style="font-size:0.68rem;margin-top:8px;">
+    <b>Tip:</b> Reutiliza la estructura de fases de <span class="hl-box">hacker-devops</span> como base
+    y personaliza las fuentes de verdad según tu área de interés.
+  </div>
+</div>
+
+<!-- ═══ KEYWORDS ═══ -->
+<div class="cutout" style="text-align:center;">
+  <h3>Keywords</h3>
+  <span class="kw">prompts</span>
+  <span class="kw-inv">agentes</span>
+  <span class="kw">hacker-devops</span>
+  <span class="kw-inv">lore</span>
+  <span class="kw">roles</span>
+  <span class="kw-inv">sesiones guiadas</span>
+  <span class="kw">codebase review</span>
+  <span class="kw-inv">DRY</span>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  heteronimos-semi-asistidos-sdk · Prompts & Agentes · v0.0.0 · Escrivivir.co · AIPL
+</footer>
+
+</body>
+</html>

@@ -1,10 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
-import { RabbitBot } from "../src/bots/rabbit-bot";
-import { BotPlugin, collectPluginFatherSettings } from "../src/core/bot-handler";
-import { toBotFatherFormat } from "../src/core/command-handler";
-import { MenuDefinition, MenuPage } from "../src/core/menu-handler";
-import { Logger } from "../src/core/logger";
+import { RabbitBot } from "../examples/console-app/rabbit-bot";
+import type { BotPlugin } from "../src/index";
+import { collectPluginFatherSettings, toBotFatherFormat, Logger } from "../src/index";
+import type { MenuDefinition, MenuPage } from "../src/index";
 
 const log = new Logger("build-docs");
 

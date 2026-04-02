@@ -1,6 +1,4 @@
-import { BotPlugin } from "../core/bot-handler";
-import { CommandDefinition } from "../core/command-handler";
-import { MenuDefinition } from "../core/menu-handler";
+import type { BotPlugin, CommandDefinition, MenuDefinition } from "heteronimos-semi-asistidos-sdk";
 
 export interface GEvent {
 	timestamp: Date,

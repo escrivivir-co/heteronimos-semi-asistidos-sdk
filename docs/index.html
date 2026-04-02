@@ -74,8 +74,8 @@
 <!-- ═══ STATUS BAR ═══ -->
 <div class="stats-bar">
   <div class="stat"><span class="val">0.0.0</span><span class="lbl">Version</span></div>
-  <div class="stat"><span class="val">27</span><span class="lbl">Tests</span></div>
-  <div class="stat"><span class="val">4</span><span class="lbl">Suites</span></div>
+  <div class="stat"><span class="val">165</span><span class="lbl">Tests</span></div>
+  <div class="stat"><span class="val">14</span><span class="lbl">Suites</span></div>
   <div class="stat"><span class="val">0</span><span class="lbl">Failures</span></div>
   <div class="stat"><span class="val">⚠</span><span class="lbl">Pre-kick-off</span></div>
 </div>
@@ -88,23 +88,39 @@
   <div class="tape tape-tr"></div>
 
   <h2>Quick Start</h2>
-  <div class="meta">Clone → install → set env → run</div>
+  <div class="meta">Clone → install → set env → validate → run</div>
 
   <a class="main-link" href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk">☞ GITHUB REPO</a>
+  <a class="main-link" href="dashboard-guide.html" style="background:#444;margin-left:6px;">☞ TUI DASHBOARD GUIDE</a>
+  <a class="main-link" href="prompts-agents.html" style="background:#222;margin-left:6px;">☞ PROMPTS & AGENTES</a>
 
-  <div class="cmd"><span class="prompt">curl -fsSL https://bun.sh/install | bash</span>
+  <div class="cmd"><span class="comment"># install Bun first if needed → bun.sh</span>
 <span class="prompt">git clone https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk.git</span>
-<span class="prompt">cd heteronimos-semi-asistidos-sdk/Nodejs &amp;&amp; bun install</span></div>
+<span class="prompt">cd heteronimos-semi-asistidos-sdk &amp;&amp; bun install</span>
+<span class="prompt">bun run lint &amp;&amp; bun run test</span></div>
 
   <div style="font-size:0.68rem;margin-top:8px;">
-    Copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
+    <b>Required before any run command:</b> copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
     <a href="https://t.me/BotFather" style="color:#111;">@BotFather</a> ·
     <a href="https://core.telegram.org/bots/tutorial" style="color:#111;">tutorial</a>
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;">
+    New bot: open <span class="hl-box">@BotFather</span> → send <span class="hl-box">/newbot</span> → copy the token it returns.
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;">
+    Existing bot: open <span class="hl-box">/mybots</span> → choose your bot → open the API token section → view or regenerate the token → paste it into <span class="hl-box">BOT_TOKEN</span>.
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+    Alert on startup: if <span class="hl-box">.env</span> is missing or incomplete, the app exits immediately and points you to <span class="hl-box">README.md → Bot Token</span>.
   </div>
   <div class="cmd"><span class="comment"># .env (keep out of git)</span>
 BOT_TOKEN=your-bot-token
 SOLANA_ADDRESS=your-address</div>
-  <div class="cmd"><span class="prompt">bun run dev</span></div>
+  <div class="cmd"><span class="comment"># only after .env exists</span>
+<span class="prompt">bun run dev</span></div>
+  <div style="font-size:0.68rem;margin-top:8px;">
+    Two app archetypes: <b>headless</b> (<span class="hl-box">examples/console-app/</span> — bot as a service, no UI) and <b>interactive</b> (<span class="hl-box">examples/dashboard/</span> — bot + <a href="dashboard-guide.html" style="color:#111;font-weight:bold;">TUI admin panel</a>). You can also use the SDK as a package from your own project, or contribute via <span class="hl-box">BACKLOG.md</span> + <span class="hl-box">specs/</span>.
+  </div>
 </div>
 
 <!-- ═══ ARCHITECTURE ═══ -->
@@ -113,7 +129,7 @@ SOLANA_ADDRESS=your-address</div>
   <div class="tape tape-tl"></div>
 
   <h2>Architecture — Bot-of-Bots</h2>
-  <div class="meta">Each bot is a BotPlugin. The core wires, prefixes, syncs, and broadcasts.</div>
+  <div class="meta">Each bot is a BotPlugin. The public entrypoint is <span class="hl-box">src/index.ts</span>; the core wires, prefixes, syncs, and broadcasts.</div>
 
 <pre class="diagram">
  ┌──────────────────────────────────────────────┐
@@ -171,7 +187,7 @@ SOLANA_ADDRESS=your-address</div>
   <details>
     <summary>Example — minimal plugin</summary>
     <div class="detail-body">
-<div class="cmd">import { BotPlugin } from "./src/core/bot-handler";
+<div class="cmd">import type { BotPlugin } from "heteronimos-semi-asistidos-sdk";
 
 export class MyBot implements BotPlugin {
   name = "my-bot";
@@ -186,7 +202,9 @@ export class MyBot implements BotPlugin {
     }];
   }
 }</div>
-<div class="cmd"><span class="comment"># src/main.ts</span>
+<div class="cmd"><span class="comment"># examples/console-app/main.ts</span>
+import { registerPlugins } from "heteronimos-semi-asistidos-sdk";
+
 const plugins = [new MyBot()];
 registerPlugins(bot, plugins, tracker);</div>
     </div>
@@ -242,11 +260,14 @@ registerPlugins(bot, plugins, tracker);</div>
         <tr><td>bun run build</td><td>bundle → dist/</td></tr>
         <tr><td>bun run lint</td><td>tsc --noEmit</td></tr>
         <tr><td>bun run bot-father-settings</td><td>generate docs</td></tr>
-        <tr><td>bun run test</td><td>27 unit tests</td></tr>
+        <tr><td>bun run test</td><td>165 tests across 14 suites</td></tr>
         <tr><td>bun run test:report</td><td>JUnit XML</td></tr>
         <tr><td>bun run test:coverage</td><td>coverage report</td></tr>
         <tr><td>bun run release &lt;bump&gt;</td><td>version tag</td></tr>
       </table>
+      <div style="font-size:0.66rem;margin-top:8px;">
+        Runtime scripts require <span class="hl-box">.env</span> with <span class="hl-box">BOT_TOKEN</span>.
+      </div>
     </div>
 
     <div class="cutout tilt-l2" style="margin-top:12px;">
@@ -288,20 +309,53 @@ registerPlugins(bot, plugins, tracker);</div>
   </div>
 </div>
 
+<!-- ═══ PROMPTS & AGENTES ═══ -->
+<div class="poster-card">
+  <div class="badge">AI</div>
+  <div class="tape tape-tr"></div>
+
+  <h2>Prompts & Agentes Expertos</h2>
+  <div class="meta">Sesiones guiadas con IA · El agente se caracteriza según el lore que le proporcionas</div>
+
+  <a class="main-link" href="prompts-agents.html">☞ VER TODOS LOS PROMPTS</a>
+
+  <div style="font-size:0.68rem;margin-top:8px;">
+    <b>hacker-devops</b> — Un hacker DevOps experimentado analiza la codebase en 5 fases: revisión inquisitiva → adaptación por rol → plan de ataque → offboarding → cierre. Invócalo con <span class="hl-box">@workspace /hacker-devops</span> y <b>añade lore al final</b> para especializar al agente.
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+    <b>Tip:</b> los prompts viven en <span class="hl-box">.github/prompts/</span> — puedes copiarlos y pegarlos en cualquier agente de IA, no solo Copilot.
+  </div>
+</div>
+
 <!-- ═══ CONTRIBUTING ═══ -->
 <div class="cutout" style="font-size:0.72rem;">
   <h3>Contributing</h3>
+
+  <div style="margin-bottom:8px;">
+    <b>1.</b> Check <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:#111;font-weight:bold;">BACKLOG.md</a> for open tasks (🔲)<br>
+    <b>2.</b> Fork → branch from <span class="hl-box">main</span> → <code>feat/</code> <code>fix/</code> <code>docs/</code><br>
+    <b>3.</b> Implement → <code>bun run lint</code> → <code>bun run test</code><br>
+    <b>4.</b> Update docs + backlog when a contributor-facing phase closes<br>
+    <b>5.</b> Open a PR against <span class="hl-box">main</span> — reference the backlog item #
+  </div>
+
+  <div style="margin-bottom:8px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+    <b>Session handoff:</b> finish with <code>bun run lint</code> and <code>bun run test</code>, update <code>BACKLOG.md</code> if a phase is done, and keep GH Pages aligned with <code>README.md</code> and related specs/docs.
+  </div>
+
   <table class="tbl">
     <tr><th>Resource</th><td>Link</td></tr>
     <tr><td>Source</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="color:#111;">github.com/escrivivir-co/heteronimos-semi-asistidos-sdk</a></td></tr>
     <tr><td>Docs</td><td><a href="https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk" style="color:#111;">escrivivir-co.github.io/heteronimos-semi-asistidos-sdk</a></td></tr>
+    <tr><td>Backlog</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:#111;">BACKLOG.md</a></td></tr>
+    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
+    <tr><td>Specs</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/specs" style="color:#111;">specs/</a></td></tr>
     <tr><td>License</td><td>AIPL — Animus Iocandi Public License</td></tr>
-    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
   </table>
 </div>
 
 <div class="footer">
-  heteronimos-semi-asistidos-sdk · v0.0.0 · 27 tests passing · Escrivivir.co · AIPL
+  heteronimos-semi-asistidos-sdk · v0.0.0 · 165 tests passing · Escrivivir.co · AIPL
 </div>
 
 </body>

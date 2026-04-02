@@ -1,10 +1,43 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
 import { Bot } from "grammy";
-import { Logger } from "./logger";
+import { Logger } from "./logger.js";
+import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 const log = new Logger("chat-tracker");
-const CHATS_FILE = path.join(__dirname, "..", ".chats.json");
+
+/** Contrato mínimo de almacenamiento de chat IDs */
+export interface ChatStore {
+  load(): number[] | Promise<number[]>;
+  save(chatIds: number[]): void | Promise<void>;
+}
+
+/** Implementación por defecto: fichero JSON */
+export class FileChatStore implements ChatStore {
+  constructor(private filePath: string) {}
+
+  load(): number[] {
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const data = JSON.parse(fs.readFileSync(this.filePath, "utf-8"));
+        if (Array.isArray(data)) return data;
+      }
+    } catch {
+      log.warn("Could not load chats file, starting fresh.");
+    }
+    return [];
+  }
+
+  save(chatIds: number[]): void {
+    fs.writeFileSync(this.filePath, JSON.stringify(chatIds), "utf-8");
+  }
+}
+
+/** Implementación en memoria para tests y entornos headless */
+export class MemoryChatStore implements ChatStore {
+  private data: number[] = [];
+  load(): number[] { return [...this.data]; }
+  save(chatIds: number[]): void { this.data = chatIds; }
+}
 
 /**
  * Persiste los chat IDs de usuarios que han interactuado con el bot.
@@ -12,25 +45,18 @@ const CHATS_FILE = path.join(__dirname, "..", ".chats.json");
  */
 export class ChatTracker {
   private chatIds: Set<number>;
+  private store: ChatStore;
+  private emitter?: RuntimeEmitter;
 
-  constructor() {
-    this.chatIds = this.load();
-  }
-
-  private load(): Set<number> {
-    try {
-      if (fs.existsSync(CHATS_FILE)) {
-        const data = JSON.parse(fs.readFileSync(CHATS_FILE, "utf-8"));
-        if (Array.isArray(data)) return new Set(data);
-      }
-    } catch {
-      log.warn("Could not load chats file, starting fresh.");
-    }
-    return new Set();
+  constructor(store?: ChatStore, emitter?: RuntimeEmitter) {
+    this.store = store ?? new MemoryChatStore();
+    this.emitter = emitter;
+    const loaded = this.store.load();
+    this.chatIds = new Set(Array.isArray(loaded) ? loaded : []);
   }
 
   private save() {
-    fs.writeFileSync(CHATS_FILE, JSON.stringify([...this.chatIds]), "utf-8");
+    this.store.save([...this.chatIds]);
   }
 
   track(chatId: number) {
@@ -38,6 +64,12 @@ export class ChatTracker {
       this.chatIds.add(chatId);
       this.save();
       log.debug(`Tracked new chat: ${chatId}`);
+      this.emitter?.emit({
+        type: "chat-tracked",
+        chatId,
+        total: this.chatIds.size,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 
@@ -83,5 +115,11 @@ export class ChatTracker {
     }
 
     log.info(`Broadcast complete: ${sent} sent, ${failed} failed.`);
+    this.emitter?.emit({
+      type: "broadcast",
+      chatCount: chats.length,
+      message,
+      timestamp: new Date().toISOString(),
+    });
   }
 }

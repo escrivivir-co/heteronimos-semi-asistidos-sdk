@@ -1,0 +1,3 @@
+[submodule "reference-console-app"]
+	path = reference-console-app
+	url = https://github.com/escrivivir-co/claude-code-source-code.git

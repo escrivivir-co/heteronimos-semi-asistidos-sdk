@@ -1,4 +1,6 @@
-import * as readline from "readline";
+import * as process from "node:process";
+import * as readline from "node:readline";
+import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -33,42 +35,85 @@ function format(level: LogLevel, scope: string, msg: string, ...args: unknown[])
   return `${color}[${timestamp()}] [${level.toUpperCase()}] [${scope}]${RESET} ${msg}${extra}`;
 }
 
+export interface LoggerOptions {
+  level?: LogLevel;
+  transport?: (formatted: string) => void;
+  colors?: boolean;
+  emitter?: RuntimeEmitter;
+}
+
 export class Logger {
-  constructor(private scope: string) {}
+  private options: LoggerOptions;
+
+  constructor(private scope: string, options?: LoggerOptions) {
+    this.options = options ?? {};
+  }
+
+  private getLevel(): LogLevel {
+    return this.options.level ?? getGlobalLevel();
+  }
 
   private shouldLog(level: LogLevel): boolean {
-    return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[getGlobalLevel()];
+    return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[this.getLevel()];
+  }
+
+  private output(level: LogLevel, consoleMethod: (...a: unknown[]) => void, msg: string, ...args: unknown[]) {
+    if (!this.shouldLog(level)) return;
+    const ts = timestamp();
+    const useColors = this.options.colors ?? true;
+    const formatted = useColors
+      ? format(level, this.scope, msg, ...args)
+      : `[${ts}] [${level.toUpperCase()}] [${this.scope}] ${msg}${args.length ? " " + args.map(a => JSON.stringify(a)).join(" ") : ""}`;
+    if (this.options.transport) {
+      this.options.transport(formatted);
+    } else {
+      consoleMethod(formatted);
+    }
+    this.options.emitter?.emit({
+      type: "log",
+      level,
+      scope: this.scope,
+      message: args.length ? `${msg} ${args.map(a => JSON.stringify(a)).join(" ")}` : msg,
+      timestamp: ts,
+    });
   }
 
   info(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("info")) console.log(format("info", this.scope, msg, ...args));
+    this.output("info", console.log, msg, ...args);
   }
 
   warn(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("warn")) console.warn(format("warn", this.scope, msg, ...args));
+    this.output("warn", console.warn, msg, ...args);
   }
 
   error(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("error")) console.error(format("error", this.scope, msg, ...args));
+    this.output("error", console.error, msg, ...args);
   }
 
   debug(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("debug")) console.debug(format("debug", this.scope, msg, ...args));
+    this.output("debug", console.debug, msg, ...args);
   }
 
   child(subscope: string): Logger {
-    return new Logger(`${this.scope}:${subscope}`);
+    return new Logger(`${this.scope}:${subscope}`, this.options);
   }
 }
 
 /**
  * Prompt interactivo y/n en terminal.
+ *
+ * readline.close() pausa process.stdin y lo desreferencia del event loop.
+ * Restauramos ambos aquí para que consumidores TUI (Ink) puedan tomar
+ * stdin en raw mode después de que bootBot() termine.
  */
 export function confirm(question: string): Promise<boolean> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
-    rl.question(`${question} (y/n): `, (answer) => {
+    rl.question(`${question} (y/n): `, (answer: string) => {
       rl.close();
+      // Restaurar stdin — rl.close() lo pausa y puede desreferienciarlo
+      if (process.stdin.isPaused()) process.stdin.resume();
+      if (typeof (process.stdin as any).ref === "function") (process.stdin as any).ref();
       resolve(answer.trim().toLowerCase() === "y");
     });
   });

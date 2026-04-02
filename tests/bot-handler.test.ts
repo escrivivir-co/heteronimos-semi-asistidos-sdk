@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { collectPluginFatherSettings, type BotPlugin } from "../src/core/bot-handler";
-import type { CommandDefinition } from "../src/core/command-handler";
+import { collectPluginFatherSettings, registerPlugins, type BotPlugin, type CommandDefinition } from "../src/index";
+import { MockTelegramBot } from "../src/core/mock-telegram";
 
 function makePlugin(code: string, cmds: string[]): BotPlugin {
   return {
@@ -48,5 +48,43 @@ describe("collectPluginFatherSettings", () => {
     const { commands, menus } = collectPluginFatherSettings([]);
     expect(commands).toEqual([]);
     expect(menus).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// registerPlugins con MockTelegramBot
+// ---------------------------------------------------------------------------
+
+describe("registerPlugins — mock bot", () => {
+  test("prefixed commands are registered on the bot", () => {
+    const bot = new MockTelegramBot();
+    const plugin = makePlugin("xx", ["cmd1", "cmd2"]);
+    registerPlugins(bot as any, [plugin]);
+    expect(bot.getRegisteredCommands()).toContain("xx_cmd1");
+    expect(bot.getRegisteredCommands()).toContain("xx_cmd2");
+  });
+
+  test("multiple plugins each register their commands", () => {
+    const bot = new MockTelegramBot();
+    registerPlugins(bot as any, [
+      makePlugin("a", ["go"]),
+      makePlugin("b", ["run"]),
+    ]);
+    expect(bot.getRegisteredCommands()).toContain("a_go");
+    expect(bot.getRegisteredCommands()).toContain("b_run");
+  });
+
+  test("dispatches reply from buildText when command is simulated", async () => {
+    const bot = new MockTelegramBot();
+    const plugin: BotPlugin = {
+      name: "echo-bot",
+      pluginCode: "ec",
+      commands: (): CommandDefinition[] => [
+        { command: "hello", description: "Say hi", buildText: () => "Hi!" },
+      ],
+    };
+    registerPlugins(bot as any, [plugin]);
+    await bot.simulateCommand("ec_hello");
+    expect(bot.getSentMessages()[0]?.text).toBe("Hi!");
   });
 });
