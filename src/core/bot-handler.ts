@@ -61,12 +61,16 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     }
   }
 
-  // Handler genérico de mensajes: delega al primer plugin que tenga onMessage
+  // Handler genérico de mensajes: delega al primer plugin que tenga onMessage.
+  // Se ignoran mensajes de comando (entities bot_command) para evitar
+  // doble respuesta cuando grammY ya disparó el handler específico del comando.
   const messagePlugins = plugins.filter(p => p.onMessage);
   if (messagePlugins.length > 0) {
     bot.on("message", async (ctx) => {
       if (!ctx?.from) return;
       const text = "text" in ctx.message ? (ctx.message.text ?? "") : "";
+      const isCommand = ctx.message.entities?.some(e => e.type === "bot_command") ?? false;
+      if (isCommand) return;
       log.info(`${ctx.from.first_name} wrote ${text}`);
       emitter?.emit({
         type: "message",
@@ -78,7 +82,7 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
       });
       for (const plugin of messagePlugins) {
         const reply = await plugin.onMessage!(ctx);
-        await ctx.reply(reply, { entities: ctx.message?.entities });
+        await ctx.reply(reply);
       }
     });
   }
