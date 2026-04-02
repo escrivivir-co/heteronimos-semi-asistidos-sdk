@@ -297,7 +297,7 @@ emitter.complete(); <span class="comment">// completa todos los streams</span></
   </div>
 
   <div class="step-title">3a. <span class="file-tag">state.ts</span> — Modelo de datos de la UI</div>
-  <div class="cmd">import type { PluginInfo } from "../../src/index.js";
+  <div class="cmd">import type { PluginInfo } from "heteronimos-semi-asistidos-sdk";
 
 <span class="comment">// Tipos para los buffers</span>
 export interface LogEntry {
@@ -387,7 +387,7 @@ export function createStore&lt;T&gt;(initial: T): Store&lt;T&gt; {
   </div>
 
   <div class="step-title"><span class="file-tag">emitter-bridge.ts</span></div>
-  <div class="cmd">import type { RuntimeEmitter, RuntimeEvent } from "../../src/index.js";
+  <div class="cmd">import type { RuntimeEmitter, RuntimeEvent } from "heteronimos-semi-asistidos-sdk";
 import type { Store } from "./store.js";
 import type { DashboardState } from "./state.js";
 import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE } from "./state.js";
@@ -659,6 +659,8 @@ export function App({ store }: AppProps) {
   <div class="step-title"><span class="file-tag">main.tsx</span></div>
   <div class="cmd">import React from "react";
 import { render } from "ink";
+import { existsSync } from "fs";
+import path from "path";
 import {
   RuntimeEmitter, Logger, bootBot,
 } from "heteronimos-semi-asistidos-sdk";
@@ -668,34 +670,43 @@ import { createStore } from "./store.js";
 import { getDefaultDashboardState } from "./state.js";
 import { connectEmitterToStore } from "./emitter-bridge.js";
 import { App } from "./App.js";
-import { createStore } from "./store.js";
-import { getDefaultDashboardState } from "./state.js";
-import { connectEmitterToStore } from "./emitter-bridge.js";
-import { App } from "./App.js";
 
-<span class="comment">// 1. Crear el emitter (bus central)</span>
+const appDir = import.meta.dir;
+
+<span class="comment">// 1. Crear el emitter (bus central) y el store</span>
 const emitter = new RuntimeEmitter();
-
-<span class="comment">// 2. Logger con emitter → los logs fluyen al stream</span>
-const log = new Logger("dashboard", { emitter });
-
-<span class="comment">// 3. Store + bridge</span>
 const store = createStore(getDefaultDashboardState());
 connectEmitterToStore(emitter, store);
 
-<span class="comment">// 4. Bot de Telegram + plugins</span>
-const bot = new Bot(TOKEN);
-const tracker = new ChatTracker(new FileChatStore(".chats.json"), emitter);
-const plugins = [new RabbitBot()];
-registerPlugins(bot, plugins, tracker, emitter);
+<span class="comment">// 2. Arrancar el bot — nonInteractive: true SIEMPRE en el dashboard</span>
+<span class="comment">//    Ink controla stdin en raw mode; readline.close() lo destruiría.</span>
+<span class="comment">//    Si no hay BOT_TOKEN, bootBot va a mock automáticamente.</span>
+const result = await bootBot({
+  plugins: [new RabbitBot(SOLANA_ADDRESS)],
+  emitter,
+  envDir: appDir,
+  chatStorePath: path.join(appDir, ".chats.json"),
+  nonInteractive: true,
+});
 
-<span class="comment">// 5. Montar React/Ink</span>
+<span class="comment">// 3. Propagar el estado de arranque al store</span>
+store.setState((s) =&gt; ({
+  ...s,
+  mockMode: result.mock,
+  tokenConfigured: !!process.env.BOT_TOKEN?.trim(),
+  envFileExists: existsSync(path.join(appDir, ".env")),
+  envExampleExists: existsSync(path.join(appDir, ".env.example")),
+  appDir,
+  botStatus: result.started ? s.botStatus : "error",
+}));
+
+<span class="comment">// 4. Montar React/Ink — stdin está limpio aquí</span>
 const { unmount } = render(&lt;App store={store} /&gt;);
 
-<span class="comment">// 6. Cleanup</span>
+<span class="comment">// 5. Cleanup</span>
 function shutdown() {
-  emitter.complete();  <span class="comment">// cierra todos los streams</span>
-  unmount();           <span class="comment">// desmonta Ink</span>
+  emitter.complete();
+  unmount();
 }
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
@@ -800,7 +811,7 @@ SOLANA_ADDRESS=direccion-opcional</div>
     <div class="detail-body">
 <div class="cmd"><span class="comment">// Ejemplo: hook custom que consume logs$ directamente</span>
 import { useEffect, useState } from "react";
-import type { RuntimeEmitter } from "../../src/index.js";
+import type { RuntimeEmitter } from "heteronimos-semi-asistidos-sdk";
 
 export function useLogCount(emitter: RuntimeEmitter) {
   const [count, setCount] = useState(0);
@@ -822,7 +833,7 @@ export function useLogCount(emitter: RuntimeEmitter) {
     <div class="detail-body">
 <div class="cmd"><span class="comment">// Si solo necesitas los datos del BotRuntime:</span>
 import { useEffect, useState } from "react";
-import type { RuntimeEmitter, BotRuntime, DEFAULT_BOT_RUNTIME } from "../../src/index.js";
+import type { RuntimeEmitter, BotRuntime, DEFAULT_BOT_RUNTIME } from "heteronimos-semi-asistidos-sdk";
 
 export function useBotRuntime(emitter: RuntimeEmitter) {
   const [runtime, setRuntime] = useState&lt;BotRuntime&gt;(DEFAULT_BOT_RUNTIME);

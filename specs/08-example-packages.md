@@ -29,14 +29,16 @@ heteronimos-semi-asistidos-sdk/        ← raíz del SDK
     ├── console-app/
     │   ├── package.json               ← NUEVO
     │   ├── tsconfig.json              ← NUEVO
+    │   ├── .env.example               ← NUEVO (copia desde raíz)
     │   ├── config.ts
     │   ├── rabbit-bot.ts
     │   └── main.ts
     └── dashboard/
         ├── package.json               ← NUEVO
         ├── tsconfig.json              ← NUEVO
+        ├── .env.example               ← NUEVO (copia desde raíz)
         ├── config.ts                  ← NUEVO (copia local)
-        ├── rabbit-bot.ts             ← NUEVO (copia local)
+        ├── rabbit-bot.ts              ← NUEVO (copia local)
         ├── main.tsx
         ├── App.tsx
         ├── emitter-bridge.ts
@@ -44,6 +46,10 @@ heteronimos-semi-asistidos-sdk/        ← raíz del SDK
         ├── store.ts
         ├── theme.ts
         └── components/
+            ├── StatusPanel.tsx
+            ├── LogViewer.tsx
+            ├── ChatList.tsx
+            └── ConfigPanel.tsx        ← NUEVO
 ```
 
 ---
@@ -154,7 +160,7 @@ No se necesitan nuevos exports en el barrel.
     "heteronimos-semi-asistidos-sdk": "file:../../",
     "grammy": "^1.11.2",
     "rxjs": "^7.8.2",
-    "ink": "5",
+    "ink": "^6",
     "react": "19"
   },
   "devDependencies": {
@@ -214,6 +220,39 @@ Idéntico al de console-app. El dashboard necesita `jsx` por Ink/React.
 +import { SOLANA_ADDRESS } from "./config.js";
 +import { RabbitBot } from "./rabbit-bot.js";
 ```
+
+**Además**, el dashboard usa `nonInteractive: true` siempre y delega la configuración de modo al panel Config de la TUI:
+
+```typescript
+// main.tsx — nonInteractive: true siempre en dashboard
+import { existsSync } from "fs";
+import path from "path";
+
+const appDir = import.meta.dir;
+
+const result = await bootBot({
+  ...,
+  envDir: appDir,
+  chatStorePath: path.join(appDir, ".chats.json"),
+  nonInteractive: true,
+});
+
+// Informar al store del modo de arranque + estado del sistema de archivos
+store.setState((s) => ({
+  ...s,
+  mockMode: result.mock,
+  tokenConfigured: !!process.env.BOT_TOKEN?.trim(),
+  envFileExists: existsSync(path.join(appDir, ".env")),
+  envExampleExists: existsSync(path.join(appDir, ".env.example")),
+  appDir,
+  botStatus: result.started ? s.botStatus : "error",
+}));
+
+// Ink siempre se monta — stdin nunca fue tocado por readline
+const { unmount } = render(<App store={store} />);
+```
+
+**Razón**: Ink controla `process.stdin` en raw mode. `readline.close()` destruye stdin. El dashboard nunca usa readline — si no hay token va a mock automáticamente. El panel **[4] Config** (`ConfigPanel.tsx`) muestra modo actual, estado del `.env`, e instrucciones para conectar a Telegram. Si `.env.example` existe, ofrece la acción `[c]` para copiar la plantilla sin salir de la TUI. Cada ejemplo apunta `envDir` a su propio directorio (`import.meta.dir` / `__dirname`) para que el `.env` y `.chats.json` sean locales a ese ejemplo.
 
 ### 5.4 `examples/dashboard/emitter-bridge.ts`
 

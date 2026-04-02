@@ -17,7 +17,7 @@ A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define b
 - **Use the SDK from another project** → start at **Quick Start (npm Consumer)**
 - **Run the minimal console example** → start at **Quick Start (Repo)**
 - **Run the full TUI dashboard** → see [examples/dashboard/README.md](examples/dashboard/README.md)
-- **Run without a BOT_TOKEN (mock mode)** → start either example and answer `y` when prompted, or set `MOCK_MODE=1`
+- **Run without a BOT_TOKEN (mock mode)** → console-app: answer `y` when prompted, or set `MOCK_MODE=1`; dashboard: goes to mock automatically (no prompt — use `[4] Config` panel to set up)
 - **Contribute to the refactor** → read this README first, then [CONTRIBUTING.md](CONTRIBUTING.md), [BACKLOG.md](BACKLOG.md), and the design docs in [specs/](specs/)
 
 ---
@@ -134,18 +134,20 @@ src/
 examples/
 ├── console-app/              ← standalone npm package (file: SDK)
 │   ├── package.json          ← installs SDK via `file:../../`
+│   ├── .env.example          ← template — copy to .env before running
 │   ├── main.ts               ← minimal entrypoint
 │   ├── config.ts             ← optional env vars (SOLANA_ADDRESS)
 │   └── rabbit-bot.ts         ← demo plugin (pluginCode = "rb")
 └── dashboard/                ← standalone npm package (TUI, Ink/React + RxJS)
     ├── package.json          ← installs SDK + ink + react via `file:../../`
+    ├── .env.example          ← template — copy to .env before running
     ├── main.tsx              ← entrypoint: bot + TUI in parallel
     ├── App.tsx               ← root component (header, panel, footer)
     ├── emitter-bridge.ts     ← RuntimeEmitter → store reducer
     ├── store.ts              ← mini reactive store
     ├── state.ts              ← DashboardState + buffer types
     ├── theme.ts              ← color palette
-    └── components/           ← StatusPanel, LogViewer, ChatList
+    └── components/           ← StatusPanel, LogViewer, ChatList, ConfigPanel
 scripts/
 ├── build-bot-father-settings.ts
 └── release.ts
