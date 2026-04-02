@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Start · heteronimos-semi-asistidos-sdk</title>
+<script>(function(){var t=localStorage.getItem('fanzine-theme');if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+<link rel="stylesheet" href="poster-template/fanzine.css">
+<style>
+  body { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .nav-back {
+    font-size: 0.72rem;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+  .nav-back a { color: var(--link); font-weight: bold; text-decoration: none; }
+  .nav-back a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="nav-back">
+  <a href="index.html">◀ VOLVER AL INDEX</a> · GUIDE · QUICK START
+</div>
+
+<!-- ════════════ HEADER ════════════ -->
+<header class="header">
+  <div class="stamp">START</div>
+  <h1 style="font-size:2rem;">Quick Start</h1>
+  <div class="sub">Clone → install → run · mock o Telegram</div>
+  <div class="sub2">heteronimos-semi-asistidos-sdk · grammY</div>
+  <div class="issue">v0.0.0 · pre-kick-off</div>
+</header>
+
+<div class="washi"></div>
+
+<!-- ════════════ INSTALL ════════════ -->
+<div class="cutout tilt-r2">
+  <div class="tape tape-tl"></div>
+  <div class="tape tape-br"></div>
+  <h3>☞ 1. Clone &amp; Install</h3>
+
+  <div class="cmd"><span class="comment"># instala Bun primero si no lo tienes → bun.sh</span>
+<span class="prompt">git clone https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk.git</span>
+<span class="prompt">cd heteronimos-semi-asistidos-sdk &amp;&amp; bun install</span></div>
+
+  <div class="cmd"><span class="comment"># valida que todo compila y los tests pasan</span>
+<span class="prompt">bun run lint &amp;&amp; bun run test</span></div>
+</div>
+
+<!-- ════════════ TWO ARCHETYPES ════════════ -->
+<div class="callout tilt-l">
+  Dos arquetipos de app: <b>headless</b> (consola, bot as a service) e <b>interactive</b> (dashboard TUI con panel admin)
+</div>
+
+<!-- ════════════ RUN ════════════ -->
+<div class="cutout tilt-l">
+  <div class="tape tape-tr"></div>
+  <h3>☞ 2. Run</h3>
+
+  <div style="font-size:0.72rem;margin-bottom:8px;">
+    No necesitas configurar nada antes de arrancar. Si no hay <span class="hl-box">.env</span>, la app te guía.
+  </div>
+
+  <div class="cmd"><span class="comment"># arranca en modo dev (watch)</span>
+<span class="prompt">bun run dev</span></div>
+</div>
+
+<div class="washi"></div>
+
+<!-- ════════════ TOKEN: CONSOLE APP ════════════ -->
+<div class="cols">
+  <div class="col">
+    <div class="cutout tilt-l">
+      <div class="tape tape-tr"></div>
+      <h3>Console App</h3>
+      <div style="font-size:0.68rem;">
+        Directorio: <span class="hl-box">examples/console-app/</span>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sin .env</div>
+        <div class="card-body" style="font-size:0.68rem;">
+          La consola detecta que falta <span class="hl-box">.env</span>.<br>
+          Si existe <span class="hl-box">.env.example</span>, te pregunta:<br><br>
+          <span class="hl-box">¿Crear .env a partir de .env.example? (y/n)</span><br><br>
+          Si dices <b>sí</b>, copia la plantilla y te pregunta si quieres editarlo o continuar en modo mock.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sin BOT_TOKEN</div>
+        <div class="card-body" style="font-size:0.68rem;">
+          Si <span class="hl-box">BOT_TOKEN</span> no está configurado, te ofrece:<br><br>
+          <span class="hl-box">¿Arrancar en modo mock (sin Telegram)? (y/n)</span><br><br>
+          <b>Sí</b> → arranca en modo mock (sin conexión real).<br>
+          <b>No</b> → sale con código 1.
+        </div>
+      </div>
+
+      <div style="font-size:0.66rem;margin-top:8px;border:1px solid var(--border-soft);padding:6px 8px;background:var(--bg-warm);">
+        La consola es interactiva: siempre te pregunta antes de decidir.
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="cutout tilt-r">
+      <div class="tape tape-tl"></div>
+      <h3>Dashboard TUI</h3>
+      <div style="font-size:0.68rem;">
+        Directorio: <span class="hl-box">examples/dashboard/</span>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sin .env</div>
+        <div class="card-body" style="font-size:0.68rem;">
+          El dashboard arranca en modo <b>non-interactive</b>.<br>
+          Si falta <span class="hl-box">.env</span> o <span class="hl-box">BOT_TOKEN</span>, entra <b>automáticamente en modo mock</b> — sin preguntar.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Config Panel</div>
+        <div class="card-body" style="font-size:0.68rem;">
+          El panel de configuración muestra el estado:<br><br>
+          <span class="hl-box">● MOCK</span> o <span class="hl-box">● TELEGRAM</span><br>
+          <span class="hl-box">BOT_TOKEN: configured / not set</span><br>
+          <span class="hl-box">.env: exists / missing</span><br><br>
+          Si falta <span class="hl-box">.env</span> y existe <span class="hl-box">.env.example</span>, pulsa <b>[c]</b> para crearlo desde la plantilla.
+        </div>
+      </div>
+
+      <div style="font-size:0.66rem;margin-top:8px;border:1px solid var(--border-soft);padding:6px 8px;background:var(--bg-warm);">
+        El dashboard nunca bloquea: siempre arranca, luego configuras desde la UI.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="washi"></div>
+
+<!-- ════════════ OBTENER TOKEN ════════════ -->
+<div class="cutout tilt-r2">
+  <div class="tape tape-tl"></div>
+  <h3>☞ Obtener un Bot Token de Telegram</h3>
+
+  <div style="font-size:0.72rem;">
+    <b>Bot nuevo:</b> abre <span class="hl-box">@BotFather</span> en Telegram → envía <span class="hl-box">/newbot</span> → copia el token que devuelve.
+  </div>
+  <div style="font-size:0.72rem;margin-top:6px;">
+    <b>Bot existente:</b> abre <span class="hl-box">/mybots</span> → elige tu bot → sección API token → ver o regenerar → pega en <span class="hl-box">BOT_TOKEN</span>.
+  </div>
+
+  <div class="cmd"><span class="comment"># .env (no subir a git)</span>
+BOT_TOKEN=your-bot-token
+SOLANA_ADDRESS=your-address</div>
+
+  <div style="font-size:0.68rem;margin-top:8px;">
+    Más info: <a href="https://core.telegram.org/bots/tutorial" style="color:#111;font-weight:bold;">tutorial oficial de Telegram</a>
+  </div>
+</div>
+
+<!-- ════════════ COMPARATIVA ════════════ -->
+<div class="cutout tilt-l">
+  <h3>Comparativa</h3>
+  <table class="tbl">
+    <tr><th></th><th>Console App</th><th>Dashboard TUI</th></tr>
+    <tr><td>Prompts interactivos</td><td class="check">✔</td><td class="check">✘</td></tr>
+    <tr><td>Mock automático sin .env</td><td class="check">✘ (pregunta)</td><td class="check">✔</td></tr>
+    <tr><td>Config desde UI</td><td class="check">✘</td><td class="check">✔ (Config Panel)</td></tr>
+    <tr><td>Crear .env desde plantilla</td><td>Prompt terminal</td><td>Pulsa [c] en UI</td></tr>
+    <tr><td>Sale si rechazas todo</td><td class="check">✔</td><td class="check">✘ (siempre mock)</td></tr>
+  </table>
+</div>
+
+<!-- ════════════ KEYWORDS ════════════ -->
+<div class="cutout" style="text-align:center;">
+  <span class="kw">Bun</span>
+  <span class="kw">TypeScript</span>
+  <span class="kw">grammY</span>
+  <span class="kw-inv">mock-mode</span>
+  <span class="kw">.env</span>
+  <span class="kw-inv">BotFather</span>
+  <span class="kw">console-app</span>
+  <span class="kw">dashboard</span>
+</div>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer class="footer">
+  heteronimos-semi-asistidos-sdk · Quick Start · v0.0.0 · Escrivivir.co · AIPL
+</footer>
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>
+<script>(function(){
+  var btn=document.getElementById('theme-toggle');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=t==='dark'?'☀':'☾';
+    localStorage.setItem('fanzine-theme',t);
+  }
+  apply(document.documentElement.getAttribute('data-theme')||'light');
+  btn.addEventListener('click',function(){
+    apply(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Build a TUI Dashboard App — heteronimos-semi-asistidos-sdk</title>
+<script>(function(){var t=localStorage.getItem('fanzine-theme');if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);})();</script>
 <link rel="stylesheet" href="poster-template/fanzine.css">
 <style>
   body { max-width: 860px; margin: 0 auto; padding: 16px; }
   .file-tag {
     display: inline-block;
-    background: #000;
-    color: #fff;
+    background: var(--inv-bg);
+    color: var(--inv-fg);
     font-size: 0.62rem;
     padding: 2px 8px;
     letter-spacing: 0.5px;
@@ -21,8 +22,8 @@
     padding: 8px 12px 8px 30px;
     margin: 8px 0;
     position: relative;
-    border-left: 4px solid #000;
-    background: #f6f1e8;
+    border-left: 4px solid var(--border);
+    background: var(--bg-warm);
   }
   .concept-box::before { content: '◆'; position: absolute; left: 10px; top: 8px; font-size: 0.72rem; }
   .flow-arrow { text-align: center; font-size: 1.2rem; margin: 4px 0; opacity: 0.4; }
@@ -73,14 +74,16 @@
  │  │  [rb] RabbitBot (4 cmds)                                 │  │
  │  │                                                          │  │
  │  ├──────────────────────────────────────────────────────────┤  │
- │  │  [1] Overview  [2] Logs  [3] Chats  [Tab] Cycle  [q]     │  │
+ │  │  [1] Overview  [2] Logs  [3] Chats  [4] Config  [5] Commands  [Tab]  [q] │  │
  │  └──────────────────────────────────────────────────────────┘  │
  │                                                                │
  └────────────────────────────────────────────────────────────────┘
 </pre>
   <div style="font-size:0.68rem;">
-    <b>3 paneles:</b> Overview (estado del bot + stats), Logs (tail en vivo con filtros), Chats (chats activos + mensajes recientes).
-    Navegas entre ellos con <span class="hl-box">1</span> <span class="hl-box">2</span> <span class="hl-box">3</span> o <span class="hl-box">Tab</span>.
+    <b>5 paneles:</b> Overview (estado del bot + stats), Logs (tail en vivo con filtros), Chats (chats activos + mensajes recientes),
+    Config (modo mock / setup token) y Commands (ejecutar comandos desde la UI — solo modo mock).
+    Navegas entre ellos con <span class="hl-box">1</span> <span class="hl-box">2</span> <span class="hl-box">3</span>
+    <span class="hl-box">4</span> <span class="hl-box">5</span> o <span class="hl-box">Tab</span>.
   </div>
 </div>
 
@@ -91,7 +94,7 @@
 
   <div class="concept-box">
     <b>React en la terminal.</b>
-    <a href="https://github.com/vadimdemedes/ink" style="color:#000;">Ink</a> usa React como motor de layout pero renderiza en la terminal en vez del navegador.
+    <a href="https://github.com/vadimdemedes/ink" style="color:var(--link);">Ink</a> usa React como motor de layout pero renderiza en la terminal en vez del navegador.
     Componentes con JSX, hooks (<code>useState</code>, <code>useEffect</code>), props — mismo modelo mental.
     Ink aporta Box (flexbox), Text (estilos ANSI) y useInput (keybindings).
   </div>
@@ -182,7 +185,9 @@
 └── components/
     ├── StatusPanel.tsx <span class="comment"># panel de estado del bot</span>
     ├── LogViewer.tsx   <span class="comment"># logs en vivo con filtros</span>
-    └── ChatList.tsx    <span class="comment"># chats activos + mensajes</span></div>
+    ├── ChatList.tsx    <span class="comment"># chats activos + mensajes</span>
+    ├── ConfigPanel.tsx <span class="comment"># modo mock / setup token</span>
+    └── CommandPanel.tsx <span class="comment"># ejecutar comandos (solo mock)</span></div>
   <div style="font-size:0.66rem;margin-top:6px;">
     <code>Store&lt;T&gt;</code>, <code>createStore</code>, <code>connectEmitterToStore</code>, <code>LogEntry</code> y <code>MessageEntry</code> vienen del SDK — no hay que crearlos.
   </div>
@@ -234,7 +239,7 @@ bun run dev:dashboard   <span class="comment"># delega a examples/dashboard</spa
   <table class="tbl">
     <tr><th>Export</th><th>Tipo</th><th>Para qué</th></tr>
     <tr><td><code>RuntimeEmitter</code></td><td>class</td><td>Bus central de eventos — creas una instancia y la pasas al Logger, ChatTracker, bot-handler</td></tr>
-    <tr><td><code>RuntimeEvent</code></td><td>type union</td><td>7 tipos de evento: log, message, status-change, chat-tracked, broadcast, commands-synced, plugins-registered</td></tr>
+    <tr><td><code>RuntimeEvent</code></td><td>type union</td><td>9 tipos de evento: log, message, status-change, chat-tracked, broadcast, commands-synced, plugins-registered, command-executed, command-response</td></tr>
     <tr><td><code>BotRuntime</code></td><td>interface</td><td>Snapshot acumulado (status, startedAt, plugins, commandCount, chatCount)</td></tr>
     <tr><td><code>reduceRuntime</code></td><td>function</td><td>Reducer puro: <code>(BotRuntime, RuntimeEvent) → BotRuntime</code>. Usado por snapshot$ internamente</td></tr>
     <tr><td><code>DEFAULT_BOT_RUNTIME</code></td><td>const</td><td>Estado inicial del snapshot</td></tr>
@@ -284,7 +289,10 @@ emitter.complete(); <span class="comment">// completa todos los streams</span></
 { type: "chat-tracked",      chatId, total, timestamp }
 { type: "broadcast",         chatCount, message, timestamp }
 { type: "commands-synced",   commandCount, timestamp }
-{ type: "plugins-registered", plugins: PluginInfo[], timestamp }</div>
+{ type: "plugins-registered", plugins: PluginInfo[], timestamp }
+<span class="comment">// Nuevos en SDS-12 (mock command execution):</span>
+{ type: "command-executed",  command, chatId, userId, username, timestamp }
+{ type: "command-response",  command, text, chatId, timestamp }</div>
     </div>
   </details>
 </div>
@@ -506,7 +514,7 @@ export function StatusPanel({ state }: Props) {
       <b>LogViewer</b> muestra <code>state.logs</code> con colores por nivel + filtros por tecla (a/d/i/w/e) + scroll manual (↑↓).<br>
       <b>ChatList</b> muestra <code>state.chatIds</code> + <code>state.messages</code> (últimos N).<br><br>
       Ambos reciben <code>{ state: DashboardState }</code> y renderizan. El código completo está en
-      <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/examples/dashboard/components" style="color:#000;font-weight:bold;">examples/dashboard/components/</a>.
+      <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/examples/dashboard/components" style="color:var(--link);font-weight:bold;">examples/dashboard/components/</a>.
     </div>
   </details>
 </div>
@@ -526,10 +534,13 @@ import { theme } from "./theme.js";
 import type { DashboardState } from "./state.js";
 import type { Store } from "heteronimos-semi-asistidos-sdk";
 import { StatusPanel } from "./components/StatusPanel.js";
+import { StatusPanel } from "./components/StatusPanel.js";
 import { LogViewer } from "./components/LogViewer.js";
 import { ChatList } from "./components/ChatList.js";
+import { ConfigPanel } from "./components/ConfigPanel.js";
+import { CommandPanel } from "./components/CommandPanel.js";
 
-const PANELS = ["Overview", "Logs", "Chats"] as const;
+const PANELS = ["Overview", "Logs", "Chats", "Config", "Commands"] as const;
 type Panel = (typeof PANELS)[number];
 
 interface AppProps {
@@ -551,6 +562,8 @@ export function App({ store }: AppProps) {
     if (input === "1") setActivePanel("Overview");
     if (input === "2") setActivePanel("Logs");
     if (input === "3") setActivePanel("Chats");
+    if (input === "4") setActivePanel("Config");
+    if (input === "5") setActivePanel("Commands");
     if (key.tab) {
       const idx = PANELS.indexOf(activePanel);
       setActivePanel(PANELS[(idx + 1) % PANELS.length]);
@@ -576,11 +589,13 @@ export function App({ store }: AppProps) {
         {activePanel === "Overview" &amp;&amp; &lt;StatusPanel state={state} /&gt;}
         {activePanel === "Logs"     &amp;&amp; &lt;LogViewer state={state} /&gt;}
         {activePanel === "Chats"    &amp;&amp; &lt;ChatList state={state} /&gt;}
+        {activePanel === "Config"   &amp;&amp; &lt;ConfigPanel state={state} store={store} /&gt;}
+        {activePanel === "Commands" &amp;&amp; &lt;CommandPanel state={state} /&gt;}
       &lt;/Box&gt;
 
       &lt;Box borderStyle="single" borderColor={theme.border} paddingX={1}&gt;
         &lt;Text color={theme.muted}&gt;
-          [1] Overview  [2] Logs  [3] Chats  [Tab] Cycle  [q] Quit
+          [1] Overview  [2] Logs  [3] Chats  [4] Config  [5] Commands  [Tab] Cycle  [q] Quit
         &lt;/Text&gt;
       &lt;/Box&gt;
     &lt;/Box&gt;
@@ -832,6 +847,21 @@ export function useBotRuntime(emitter: RuntimeEmitter) {
 <footer class="footer">
   heteronimos-semi-asistidos-sdk · Build a TUI Dashboard App · Guide · v0.0.0 · Escrivivir.co · AIPL
 </footer>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>
+<script>(function(){
+  var btn=document.getElementById('theme-toggle');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=t==='dark'?'☀':'☾';
+    localStorage.setItem('fanzine-theme',t);
+  }
+  apply(document.documentElement.getAttribute('data-theme')||'light');
+  btn.addEventListener('click',function(){
+    apply(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+})();
+</script>
 
 </body>
 </html>

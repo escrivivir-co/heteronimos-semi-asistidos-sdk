@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>heteronimos-semi-asistidos-sdk</title>
+<script>(function(){var t=localStorage.getItem('fanzine-theme');if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);})();</script>
 <link rel="stylesheet" href="poster-template/fanzine.css">
 <style>
   body { max-width: 800px; margin: 0 auto; padding: 12px; }
   .poster-card {
-    border: 2px solid #111;
+    border: 2px solid var(--border-soft);
     padding: 14px 16px;
     margin-bottom: 18px;
     position: relative;
@@ -19,13 +20,13 @@
     display: inline-block;
     font-weight: bold;
     font-size: 0.85rem;
-    background: #111;
-    color: #fff;
+    background: var(--inv-bg);
+    color: var(--inv-fg);
     padding: 4px 10px;
     text-decoration: none;
     margin-bottom: 10px;
   }
-  .poster-card a.main-link:hover { background: #444; }
+  .poster-card a.main-link:hover { background: var(--inv-bg-dim); color: var(--inv-fg); }
   .spec-list {
     display: flex;
     flex-wrap: wrap;
@@ -34,25 +35,25 @@
   }
   .spec-list a {
     font-size: 0.68rem;
-    border: 1px solid #111;
+    border: 1px solid var(--border-soft);
     padding: 3px 7px;
     text-decoration: none;
-    color: #111;
+    color: var(--fg-soft);
     white-space: nowrap;
   }
-  .spec-list a:hover { background: #111; color: #fff; }
+  .spec-list a:hover { background: var(--inv-bg); color: var(--inv-fg); }
   .badge {
     position: absolute;
     top: -10px;
     right: 10px;
-    background: #111;
-    color: #fff;
+    background: var(--inv-bg);
+    color: var(--inv-fg);
     font-size: 0.6rem;
     padding: 2px 8px;
     font-weight: bold;
     letter-spacing: 0.08em;
   }
-  .divider { border: none; border-top: 2px solid #111; margin: 24px 0; }
+  .divider { border: none; border-top: 2px solid var(--border-soft); margin: 24px 0; }
   .index-footer {
     font-size: 0.65rem;
     text-align: center;
@@ -84,42 +85,29 @@
 
 <!-- ═══ QUICK START ═══ -->
 <div class="poster-card" style="border-width:3px;">
-  <div class="badge" style="background:#111;font-size:0.65rem;">★ START HERE</div>
+  <div class="badge" style="background:var(--inv-bg);font-size:0.65rem;">★ START HERE</div>
   <div class="tape tape-tr"></div>
 
   <h2>Quick Start</h2>
-  <div class="meta">Clone → install → set env → validate → run</div>
+  <div class="meta">Clone → install → run · si falta .env la app te guía (mock o Telegram)</div>
 
-  <a class="main-link" href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk">☞ GITHUB REPO</a>
-  <a class="main-link" href="dashboard-guide.html" style="background:#444;margin-left:6px;">☞ TUI DASHBOARD GUIDE</a>
-  <a class="main-link" href="prompts-agents.html" style="background:#222;margin-left:6px;">☞ PROMPTS & AGENTES</a>
+  <a class="main-link" href="quick-start.html">☞ GUÍA COMPLETA</a>
+  <a class="main-link" href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="background:var(--inv-bg-dim);margin-left:6px;">☞ GITHUB REPO</a>
+  <a class="main-link" href="dashboard-guide.html" style="background:var(--inv-bg-dim);margin-left:6px;">☞ TUI DASHBOARD GUIDE</a>
+  <a class="main-link" href="prompts-agents.html" style="background:var(--inv-bg);margin-left:6px;">☞ PROMPTS & AGENTES</a>
 
   <div class="cmd"><span class="comment"># install Bun first if needed → bun.sh</span>
 <span class="prompt">git clone https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk.git</span>
 <span class="prompt">cd heteronimos-semi-asistidos-sdk &amp;&amp; bun install</span>
-<span class="prompt">bun run lint &amp;&amp; bun run test</span></div>
+<span class="prompt">bun run lint &amp;&amp; bun run test</span>
+<span class="prompt">bun run dev</span></div>
 
   <div style="font-size:0.68rem;margin-top:8px;">
-    <b>Required before any run command:</b> copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
-    <a href="https://t.me/BotFather" style="color:#111;">@BotFather</a> ·
-    <a href="https://core.telegram.org/bots/tutorial" style="color:#111;">tutorial</a>
+    No necesitas configurar <span class="hl-box">.env</span> antes de arrancar: la <b>consola</b> te pregunta si quieres crearlo y te ofrece modo mock; el <b>dashboard</b> entra en mock automáticamente y te deja configurar desde el Config Panel.
+    En modo mock, el panel <b>[5] Commands</b> permite ejecutar comandos directamente desde la UI y ver las respuestas del bot en tiempo real.
   </div>
   <div style="font-size:0.68rem;margin-top:6px;">
-    New bot: open <span class="hl-box">@BotFather</span> → send <span class="hl-box">/newbot</span> → copy the token it returns.
-  </div>
-  <div style="font-size:0.68rem;margin-top:6px;">
-    Existing bot: open <span class="hl-box">/mybots</span> → choose your bot → open the API token section → view or regenerate the token → paste it into <span class="hl-box">BOT_TOKEN</span>.
-  </div>
-  <div style="font-size:0.68rem;margin-top:6px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
-    Alert on startup: if <span class="hl-box">.env</span> is missing or incomplete, the app exits immediately and points you to <span class="hl-box">README.md → Bot Token</span>.
-  </div>
-  <div class="cmd"><span class="comment"># .env (keep out of git)</span>
-BOT_TOKEN=your-bot-token
-SOLANA_ADDRESS=your-address</div>
-  <div class="cmd"><span class="comment"># only after .env exists</span>
-<span class="prompt">bun run dev</span></div>
-  <div style="font-size:0.68rem;margin-top:8px;">
-    Two app archetypes: <b>headless</b> (<span class="hl-box">examples/console-app/</span> — bot as a service, no UI) and <b>interactive</b> (<span class="hl-box">examples/dashboard/</span> — bot + <a href="dashboard-guide.html" style="color:#111;font-weight:bold;">TUI admin panel</a>). You can also use the SDK as a package from your own project, or contribute via <span class="hl-box">BACKLOG.md</span> + <span class="hl-box">specs/</span>.
+    Dos arquetipos: <b>headless</b> (<span class="hl-box">examples/console-app/</span>) e <b>interactive</b> (<span class="hl-box">examples/dashboard/</span> — <a href="dashboard-guide.html" style="color:#111;font-weight:bold;">TUI admin panel</a>). Detalles completos en la <a href="quick-start.html" style="color:#111;font-weight:bold;">guía de Quick Start</a>.
   </div>
 </div>
 
@@ -266,7 +254,7 @@ registerPlugins(bot, plugins, tracker);</div>
         <tr><td>bun run release &lt;bump&gt;</td><td>version tag</td></tr>
       </table>
       <div style="font-size:0.66rem;margin-top:8px;">
-        Runtime scripts require <span class="hl-box">.env</span> with <span class="hl-box">BOT_TOKEN</span>.
+        Sin <span class="hl-box">.env</span> la app arranca en modo mock — ver <a href="quick-start.html" style="color:var(--link);font-weight:bold;">Quick Start</a>.
       </div>
     </div>
 
@@ -279,7 +267,7 @@ registerPlugins(bot, plugins, tracker);</div>
         <span class="kw">Telegram Bot API</span>
         <br><br>
         <b>License:</b> AIPL — Animus Iocandi Public License<br>
-        <b>Org:</b> <a href="https://escrivivir.co" style="color:#111;">Escrivivir.co</a>
+        <b>Org:</b> <a href="https://escrivivir.co" style="color:var(--link);">Escrivivir.co</a>
       </div>
     </div>
   </div>
@@ -322,7 +310,7 @@ registerPlugins(bot, plugins, tracker);</div>
   <div style="font-size:0.68rem;margin-top:8px;">
     <b>hacker-devops</b> — Un hacker DevOps experimentado analiza la codebase en 5 fases: revisión inquisitiva → adaptación por rol → plan de ataque → offboarding → cierre. Invócalo con <span class="hl-box">@workspace /hacker-devops</span> y <b>añade lore al final</b> para especializar al agente.
   </div>
-  <div style="font-size:0.68rem;margin-top:6px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+  <div style="font-size:0.68rem;margin-top:6px;border:1px solid var(--border-soft);padding:6px 8px;background:var(--bg-warm);">
     <b>Tip:</b> los prompts viven en <span class="hl-box">.github/prompts/</span> — puedes copiarlos y pegarlos en cualquier agente de IA, no solo Copilot.
   </div>
 </div>
@@ -332,24 +320,24 @@ registerPlugins(bot, plugins, tracker);</div>
   <h3>Contributing</h3>
 
   <div style="margin-bottom:8px;">
-    <b>1.</b> Check <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:#111;font-weight:bold;">BACKLOG.md</a> for open tasks (🔲)<br>
+    <b>1.</b> Check <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:var(--link);font-weight:bold;">BACKLOG.md</a> for open tasks (🗒)
     <b>2.</b> Fork → branch from <span class="hl-box">main</span> → <code>feat/</code> <code>fix/</code> <code>docs/</code><br>
     <b>3.</b> Implement → <code>bun run lint</code> → <code>bun run test</code><br>
     <b>4.</b> Update docs + backlog when a contributor-facing phase closes<br>
     <b>5.</b> Open a PR against <span class="hl-box">main</span> — reference the backlog item #
   </div>
 
-  <div style="margin-bottom:8px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+  <div style="margin-bottom:8px;border:1px solid var(--border-soft);padding:6px 8px;background:var(--bg-warm);">
     <b>Session handoff:</b> finish with <code>bun run lint</code> and <code>bun run test</code>, update <code>BACKLOG.md</code> if a phase is done, and keep GH Pages aligned with <code>README.md</code> and related specs/docs.
   </div>
 
   <table class="tbl">
     <tr><th>Resource</th><td>Link</td></tr>
-    <tr><td>Source</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="color:#111;">github.com/escrivivir-co/heteronimos-semi-asistidos-sdk</a></td></tr>
-    <tr><td>Docs</td><td><a href="https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk" style="color:#111;">escrivivir-co.github.io/heteronimos-semi-asistidos-sdk</a></td></tr>
-    <tr><td>Backlog</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:#111;">BACKLOG.md</a></td></tr>
-    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
-    <tr><td>Specs</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/specs" style="color:#111;">specs/</a></td></tr>
+    <tr><td>Source</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="color:var(--link);">github.com/escrivivir-co/heteronimos-semi-asistidos-sdk</a></td></tr>
+    <tr><td>Docs</td><td><a href="https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk" style="color:var(--link);">escrivivir-co.github.io/heteronimos-semi-asistidos-sdk</a></td></tr>
+    <tr><td>Backlog</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:var(--link);">BACKLOG.md</a></td></tr>
+    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/CONTRIBUTING.md" style="color:var(--link);">CONTRIBUTING.md</a></td></tr>
+    <tr><td>Specs</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/specs" style="color:var(--link);">specs/</a></td></tr>
     <tr><td>License</td><td>AIPL — Animus Iocandi Public License</td></tr>
   </table>
 </div>
@@ -358,5 +346,19 @@ registerPlugins(bot, plugins, tracker);</div>
   heteronimos-semi-asistidos-sdk · v0.0.0 · 165 tests passing · Escrivivir.co · AIPL
 </div>
 
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>
+<script>(function(){
+  var btn=document.getElementById('theme-toggle');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=t==='dark'?'☀':'☾';
+    localStorage.setItem('fanzine-theme',t);
+  }
+  apply(document.documentElement.getAttribute('data-theme')||'light');
+  btn.addEventListener('click',function(){
+    apply(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+})();
+</script>
 </body>
 </html>
