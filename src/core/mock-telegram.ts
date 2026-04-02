@@ -14,6 +14,7 @@
  */
 
 import type { BotCommand } from "./command-handler.js";
+import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -22,6 +23,8 @@ import type { BotCommand } from "./command-handler.js";
 export interface MockBotOptions {
   /** Comandos pre-cargados que getMyCommands devuelve. Default: [] */
   initialCommands?: BotCommand[];
+  /** RuntimeEmitter para emitir command-executed y command-response. Opcional. */
+  emitter?: RuntimeEmitter;
 }
 
 export interface SimulateOpts {
@@ -80,6 +83,7 @@ export class MockTelegramBot {
   private messageHandlers: Array<(ctx: object) => Promise<void>> = [];
   private storedCommands: BotCommand[];
   private sentMessages: SentMessage[] = [];
+  private emitter?: RuntimeEmitter;
 
   readonly api: {
     getMyCommands(): Promise<BotCommand[]>;
@@ -89,6 +93,7 @@ export class MockTelegramBot {
 
   constructor(options?: MockBotOptions) {
     this.storedCommands = [...(options?.initialCommands ?? [])];
+    this.emitter = options?.emitter;
 
     this.api = {
       getMyCommands: async () => [...this.storedCommands],
@@ -146,21 +151,55 @@ export class MockTelegramBot {
   /**
    * Simula un comando (sin /).
    * Ejecuta middlewares + handler del comando.
+   * Retorna los SentMessage producidos por ESTA ejecución.
+   * Emite command-executed y command-response por el emitter si está configurado.
    * Lanza si el comando no está registrado.
    */
-  async simulateCommand(name: string, opts?: SimulateOpts): Promise<void> {
+  async simulateCommand(name: string, opts?: SimulateOpts): Promise<SentMessage[]> {
     const handler = this.commandHandlers.get(name);
     if (!handler) throw new Error(`MockTelegramBot: no handler registered for command "${name}"`);
+
+    const chatId  = opts?.chatId   ?? MOCK_FIXTURES.chatId;
+    const userId  = opts?.userId   ?? MOCK_FIXTURES.userId;
+    const username = opts?.username ?? MOCK_FIXTURES.username;
+    const before = this.sentMessages.length;
+
+    // Emit command-executed before running the handler
+    this.emitter?.emit({
+      type: "command-executed",
+      command: name,
+      chatId,
+      userId,
+      username,
+      timestamp: new Date().toISOString(),
+    });
+
     const ctx = createMockContext({
       text:         `/${name}`,
       commandMatch: "",
-      chatId:   opts?.chatId   ?? MOCK_FIXTURES.chatId,
-      userId:   opts?.userId   ?? MOCK_FIXTURES.userId,
-      username: opts?.username ?? MOCK_FIXTURES.username,
+      chatId,
+      userId,
+      username,
       sentMessages: this.sentMessages,
     });
     for (const mw of this.middlewares) await mw(ctx, async () => {});
     await handler(ctx);
+
+    // Collect messages produced by this execution
+    const produced = this.sentMessages.slice(before);
+
+    // Emit command-response for each reply
+    for (const msg of produced) {
+      this.emitter?.emit({
+        type: "command-response",
+        command: name,
+        text: msg.text,
+        chatId: msg.chatId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return produced;
   }
 
   // --- Introspección ---

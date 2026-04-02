@@ -34,7 +34,10 @@ describe("SDK barrel", () => {
     expect(SDK.createStore).toBeDefined();
     expect(SDK.LOG_BUFFER_SIZE).toBeDefined();
     expect(SDK.MSG_BUFFER_SIZE).toBeDefined();
+    expect(SDK.CMD_BUFFER_SIZE).toBeDefined();
     expect(SDK.getDefaultBaseState).toBeDefined();
     expect(SDK.connectEmitterToStore).toBeDefined();
+    // Mock utilities
+    expect(SDK.MockTelegramBot).toBeDefined();
   });
 });

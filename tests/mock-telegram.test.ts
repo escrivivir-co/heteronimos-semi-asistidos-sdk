@@ -1,6 +1,7 @@
 import { describe, test, expect } from "bun:test";
 import { MockTelegramBot, MOCK_FIXTURES } from "../src/core/mock-telegram";
 import {
+  RuntimeEmitter,
   registerPlugins,
   syncCommandsWithTelegram,
   ChatTracker,
@@ -322,6 +323,84 @@ describe("syncCommandsWithTelegram con MockTelegramBot", () => {
     });
     const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
     expect(updated).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// simulateCommand — con RuntimeEmitter (AE-200)
+// ---------------------------------------------------------------------------
+
+describe("MockTelegramBot — simulateCommand con RuntimeEmitter", () => {
+  test("simulateCommand returns SentMessage array with replies", async () => {
+    const bot = new MockTelegramBot();
+    bot.command("hello", async (ctx: any) => { await ctx.reply("hi!"); });
+    const messages = await bot.simulateCommand("hello");
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatchObject({ text: "hi!" });
+  });
+
+  test("returns only messages from this execution, not previous ones", async () => {
+    const bot = new MockTelegramBot();
+    bot.command("a", async (ctx: any) => { await ctx.reply("first"); });
+    bot.command("b", async (ctx: any) => { await ctx.reply("second"); });
+    await bot.simulateCommand("a");
+    const result = await bot.simulateCommand("b");
+    expect(result).toHaveLength(1);
+    expect(result[0]?.text).toBe("second");
+  });
+
+  test("emits command-executed event before handler runs", async () => {
+    const emitter = new RuntimeEmitter();
+    const events: string[] = [];
+    emitter.events$.subscribe(e => events.push(e.type));
+
+    const bot = new MockTelegramBot({ emitter });
+    bot.command("ping", async (ctx: any) => { await ctx.reply("pong"); });
+    await bot.simulateCommand("ping");
+
+    expect(events).toContain("command-executed");
+    const execIdx = events.indexOf("command-executed");
+    const respIdx = events.indexOf("command-response");
+    expect(execIdx).toBeLessThan(respIdx);
+  });
+
+  test("emits command-response event per reply", async () => {
+    const emitter = new RuntimeEmitter();
+    const responses: any[] = [];
+    emitter.events$.subscribe(e => { if (e.type === "command-response") responses.push(e); });
+
+    const bot = new MockTelegramBot({ emitter });
+    bot.command("multi", async (ctx: any) => {
+      await ctx.reply("one");
+      await ctx.reply("two");
+    });
+    await bot.simulateCommand("multi");
+    expect(responses).toHaveLength(2);
+    expect(responses[0].text).toBe("one");
+    expect(responses[1].text).toBe("two");
+  });
+
+  test("command-executed event carries command name and user info", async () => {
+    const emitter = new RuntimeEmitter();
+    let execEvent: any = null;
+    emitter.events$.subscribe(e => { if (e.type === "command-executed") execEvent = e; });
+
+    const bot = new MockTelegramBot({ emitter });
+    bot.command("test", async () => {});
+    await bot.simulateCommand("test");
+
+    expect(execEvent).not.toBeNull();
+    expect(execEvent.command).toBe("test");
+    expect(execEvent.chatId).toBe(MOCK_FIXTURES.chatId);
+    expect(execEvent.username).toBe(MOCK_FIXTURES.username);
+  });
+
+  test("no emitter — simulateCommand still returns SentMessage[]", async () => {
+    const bot = new MockTelegramBot(); // no emitter
+    bot.command("silent", async (ctx: any) => { await ctx.reply("ok"); });
+    const messages = await bot.simulateCommand("silent");
+    expect(messages).toHaveLength(1);
+    expect(messages[0]?.text).toBe("ok");
   });
 });
 

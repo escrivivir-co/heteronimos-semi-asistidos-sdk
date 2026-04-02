@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompts & Agentes · heteronimos-semi-asistidos-sdk</title>
+<script>(function(){var t=localStorage.getItem('fanzine-theme');if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);})();</script>
 <link rel="stylesheet" href="poster-template/fanzine.css">
 <style>
   body { max-width: 900px; margin: 0 auto; padding: 24px; }
@@ -12,20 +13,20 @@
     margin-bottom: 14px;
     letter-spacing: 1px;
   }
-  .nav-back a { color: #111; font-weight: bold; text-decoration: none; }
+  .nav-back a { color: var(--link); font-weight: bold; text-decoration: none; }
   .nav-back a:hover { text-decoration: underline; }
   .prompt-card {
-    border: 2.5px solid #111;
+    border: 2.5px solid var(--border-soft);
     padding: 16px 18px;
     margin-bottom: 20px;
     position: relative;
-    background: #fff;
+    background: var(--bg);
   }
   .prompt-card::before {
     content: '';
     position: absolute;
     inset: -4px;
-    border: 1.5px dashed #000;
+    border: 1.5px dashed var(--border);
     pointer-events: none;
   }
   .prompt-card h2 { margin: 0 0 6px; font-size: 1.1rem; }
@@ -34,8 +35,8 @@
     position: absolute;
     top: -10px;
     right: 10px;
-    background: #111;
-    color: #fff;
+    background: var(--inv-bg);
+    color: var(--inv-fg);
     font-size: 0.6rem;
     padding: 2px 8px;
     font-weight: bold;
@@ -51,7 +52,7 @@
   .phase-list li {
     counter-increment: phase;
     padding: 5px 0;
-    border-bottom: 1px dotted #999;
+    border-bottom: 1px dotted var(--border-soft);
   }
   .phase-list li::before {
     content: "FASE " counter(phase) " → ";
@@ -59,22 +60,22 @@
     letter-spacing: 1px;
   }
   .howto-box {
-    border: 2px solid #111;
+    border: 2px solid var(--border-soft);
     padding: 14px 16px;
     margin: 16px 0;
-    background: #f6f1e8;
+    background: var(--bg-warm);
     font-size: 0.72rem;
   }
   .howto-box h3 { font-size: 0.85rem; margin-bottom: 8px; }
   .placeholder-card {
-    border: 2px dashed #999;
+    border: 2px dashed var(--border-soft);
     padding: 16px 18px;
     margin-bottom: 16px;
     text-align: center;
-    color: #999;
+    color: var(--fg-soft);
     font-size: 0.75rem;
   }
-  .divider { border: none; border-top: 2px solid #111; margin: 24px 0; }
+  .divider { border: none; border-top: 2px solid var(--border-soft); margin: 24px 0; }
 </style>
 </head>
 <body>
@@ -111,7 +112,7 @@
     <b>se adapta y acota sus respuestas</b> a esa información.
   </p>
 
-  <div style="border:1px solid #111;padding:8px 10px;margin-top:8px;background:#fff;">
+  <div style="border:1px solid var(--border-soft);padding:8px 10px;margin-top:8px;background:var(--bg);">
     <b>Uso en VS Code / GitHub Copilot:</b><br>
     <span class="hl-box">.github/prompts/*.prompt.md</span> →
     invócalos desde el chat con <span class="hl-box">@workspace /hacker-devops</span>
@@ -136,7 +137,7 @@
 <!-- ═══ PROMPT: HACKER DEVOPS ═══ -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="prompt-card">
-  <div class="badge" style="background:#111;">★ FLAGSHIP</div>
+  <div class="badge" style="background:var(--inv-bg);">★ FLAGSHIP</div>
   <div class="tape tape-tl"></div>
   <div class="tape tape-br"></div>
 
@@ -150,7 +151,7 @@
     con realidad (<code>git log</code>, barrel, backlog) y guía la mejora paso a paso.
   </div>
 
-  <div style="font-size:0.72rem;border:1px solid #111;padding:8px 10px;margin-bottom:10px;background:#f6f1e8;">
+  <div style="font-size:0.72rem;border:1px solid var(--border-soft);padding:8px 10px;margin-bottom:10px;background:var(--bg-warm);">
     <b>⚡ Clave:</b> el prompt acepta <b>información extra al final</b>. Sin ella, el agente
     procede como codebase owner general. Con lore adicional (artículos, contexto de un
     componente, rol específico, datos técnicos), <b>el agente se especializa y acota</b>
@@ -193,7 +194,7 @@ del SDK. Aquí está el contexto relevante:
 - El backlog tiene tareas pendientes relacionadas
 
 Tu rol: QA especialista en UX de bots</div>
-      <div style="margin-top:6px;padding:6px 8px;border:1px solid #111;background:#f6f1e8;">
+      <div style="margin-top:6px;padding:6px 8px;border:1px solid var(--border-soft);background:var(--bg-warm);">
         <b>Resultado:</b> el agente arranca como un QA de UX especializado en el subsistema de menús,
         cruza la implementación real con los specs y el backlog, y guía la sesión
         acotado a ese contexto.
@@ -203,7 +204,7 @@ Tu rol: QA especialista en UX de bots</div>
 
   <div style="margin-top:10px;">
     <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/.github/prompts/hacker-devops.prompt.md"
-       style="display:inline-block;font-weight:bold;font-size:0.78rem;background:#111;color:#fff;padding:4px 10px;text-decoration:none;">
+       style="display:inline-block;font-weight:bold;font-size:0.78rem;background:var(--inv-bg);color:var(--inv-fg);padding:4px 10px;text-decoration:none;">
       ☞ VER PROMPT COMPLETO EN GITHUB
     </a>
   </div>
@@ -299,6 +300,21 @@ y las fases de la sesión.</div>
 <footer class="footer">
   heteronimos-semi-asistidos-sdk · Prompts & Agentes · v0.0.0 · Escrivivir.co · AIPL
 </footer>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>
+<script>(function(){
+  var btn=document.getElementById('theme-toggle');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=t==='dark'?'☀':'☾';
+    localStorage.setItem('fanzine-theme',t);
+  }
+  apply(document.documentElement.getAttribute('data-theme')||'light');
+  btn.addEventListener('click',function(){
+    apply(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+})();
+</script>
 
 </body>
 </html>

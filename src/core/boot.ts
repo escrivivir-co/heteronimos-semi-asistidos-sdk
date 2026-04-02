@@ -11,6 +11,7 @@
 import { Bot } from "grammy";
 import { ensureEnv } from "./startup.js";
 import { MockTelegramBot } from "./mock-telegram.js";
+import type { SimulateOpts, SentMessage } from "./mock-telegram.js";
 import { registerPlugins, syncCommands } from "./bot-handler.js";
 import type { BotPlugin } from "./bot-handler.js";
 import type { SyncOptions } from "./command-handler.js";
@@ -44,6 +45,12 @@ export interface BootResult {
   mock: boolean;
   /** true if the bot actually started (false = user declined everything). */
   started: boolean;
+  /**
+   * Executes a registered command locally and returns the bot's reply messages.
+   * Available in both mock and real mode (runs handlers in-process via a local
+   * MockTelegramBot — no messages are sent to Telegram).
+   */
+  executeCommand?: (name: string, opts?: SimulateOpts) => Promise<SentMessage[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -59,8 +66,8 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   const env = await ensureEnv({ envDir: opts.envDir, nonInteractive });
 
   if (env.mock) {
-    await startMock(opts, log, syncOpts);
-    return { mock: true, started: true };
+    const mockBot = await startMock(opts, log, syncOpts);
+    return { mock: true, started: true, executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts) };
   }
 
   if (!env.token) {
@@ -76,10 +83,30 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 
     registerPlugins(bot, opts.plugins, tracker, emitter);
     await syncCommands(bot, opts.plugins, tracker, syncOpts, emitter);
+
+    // Mock auxiliar para ejecución local de comandos desde la UI.
+    // Registra los mismos plugins sin emitter/tracker para evitar
+    // duplicar plugins-registered y middleware de tracking.
+    // El emitter del constructor se usa solo para command-* events.
+    const localMock = new MockTelegramBot({ emitter });
+    registerPlugins(localMock as any, opts.plugins);
+
     log.info("Bot started — polling...");
     emitStatus(emitter, "running");
-    await bot.start();
-    return { mock: false, started: true };
+
+    // Polling en background — bootBot retorna inmediatamente.
+    // El event loop se mantiene vivo por el polling HTTP de grammY.
+    bot.start().catch((err: unknown) => {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      log.error(`Polling error: ${errMsg}`);
+      emitStatus(emitter, "error");
+    });
+
+    return {
+      mock: false,
+      started: true,
+      executeCommand: (name: string, simOpts?: SimulateOpts) => localMock.simulateCommand(name, simOpts),
+    };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     log.error(`Bot startup failed. ${msg}`);
@@ -90,8 +117,8 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       await confirm("¿Arrancar en modo mock (sin Telegram)?").catch(() => false);
 
     if (useMock) {
-      await startMock(opts, log, syncOpts);
-      return { mock: true, started: true };
+      const mockBot = await startMock(opts, log, syncOpts);
+      return { mock: true, started: true, executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts) };
     }
 
     return { mock: false, started: false };
@@ -102,17 +129,18 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 // Helpers internos
 // ---------------------------------------------------------------------------
 
-async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<void> {
+async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<MockTelegramBot> {
   const { emitter } = opts;
   log.warn("[MOCK] Sin conexión a Telegram — arrancando en modo mock.");
   const store = new FileChatStore(opts.chatStorePath);
   const tracker = new ChatTracker(store, emitter);
-  const mockBot = new MockTelegramBot();
+  const mockBot = new MockTelegramBot({ emitter });
   registerPlugins(mockBot as any, opts.plugins, tracker, emitter);
   await syncCommands(mockBot as any, opts.plugins, tracker, syncOpts, emitter);
   emitStatus(emitter, "running");
   log.info("[MOCK] Bot mock activo. Comandos registrados: " + mockBot.getRegisteredCommands().join(", "));
   await mockBot.start();
+  return mockBot;
 }
 
 function emitStatus(emitter: RuntimeEmitter | undefined, status: string): void {

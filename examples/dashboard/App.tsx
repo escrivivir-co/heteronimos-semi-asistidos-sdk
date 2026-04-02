@@ -7,8 +7,9 @@ import { StatusPanel } from "./components/StatusPanel.js";
 import { LogViewer } from "./components/LogViewer.js";
 import { ChatList } from "./components/ChatList.js";
 import { ConfigPanel } from "./components/ConfigPanel.js";
+import { CommandPanel } from "./components/CommandPanel.js";
 
-const PANELS = ["Overview", "Logs", "Chats", "Config"] as const;
+const PANELS = ["Overview", "Logs", "Chats", "Config", "Commands"] as const;
 type Panel = (typeof PANELS)[number];
 
 interface AppProps {
@@ -34,6 +35,7 @@ export function App({ store }: AppProps) {
     if (input === "2") setActivePanel("Logs");
     if (input === "3") setActivePanel("Chats");
     if (input === "4") setActivePanel("Config");
+    if (input === "5") setActivePanel("Commands");
     if (key.tab) {
       const idx = PANELS.indexOf(activePanel);
       setActivePanel(PANELS[(idx + 1) % PANELS.length]);
@@ -67,12 +69,13 @@ export function App({ store }: AppProps) {
         {activePanel === "Logs"     && <LogViewer state={state} />}
         {activePanel === "Chats"    && <ChatList state={state} />}
         {activePanel === "Config"   && <ConfigPanel state={state} store={store} />}
+        {activePanel === "Commands" && <CommandPanel state={state} />}
       </Box>
 
       {/* Footer */}
       <Box borderStyle="single" borderColor={theme.border} paddingX={1}>
         <Text color={theme.muted}>
-          [1] Overview  [2] Logs  [3] Chats  [4] Config  [Tab] Cycle  [q] Quit
+          [1] Overview  [2] Logs  [3] Chats  [4] Config  [5] Commands  [Tab] Cycle  [q] Quit
         </Text>
       </Box>
     </Box>

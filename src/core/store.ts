@@ -25,6 +25,15 @@ export interface MessageEntry {
 /** Tamaños por defecto para los buffers circulares. */
 export const LOG_BUFFER_SIZE = 200;
 export const MSG_BUFFER_SIZE = 100;
+export const CMD_BUFFER_SIZE = 50;
+
+/** Respuesta de un comando ejecutado desde la UI (mock mode). */
+export interface CommandResponseEntry {
+  command: string;
+  text: string;
+  chatId: number;
+  timestamp: string;
+}
 
 // --- Store ---
 

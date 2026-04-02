@@ -352,6 +352,107 @@
 
 ---
 
+## Sprint 4g — GH Pages Light/Dark Mode (from SDS-11)
+
+> Objetivo: toggle de light/dark mode en todas las páginas GH Pages.
+> Convertir colores hardcoded a CSS custom properties, añadir paleta oscura,
+> toggle button con persistencia y respeto a `prefers-color-scheme`.
+> Spec: `specs/11-dark-mode.md`
+
+### Fase AA · CSS custom properties + dark theme en `fanzine.css`
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 178 | Definir `:root` con CSS custom properties para todos los colores en `fanzine.css` | ✅ | SDS-11 §3.1 |
+| 179 | Definir `[data-theme="dark"]` con paleta oscura | ✅ | SDS-11 §3.1 |
+| 180 | Sustituir todos los literales de color en `fanzine.css` por `var(--xxx)` | ✅ | SDS-11 §3.2 |
+| 181 | Añadir regla `@media print` que fuerce light theme | ✅ | SDS-11 §3.7 |
+| 182 | Verificar visualmente: light mode idéntico al estado actual | ✅ | SDS-11 §6.1 |
+
+### Fase AB · Toggle button + script anti-flash
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 183 | Añadir estilos `.theme-toggle` a `fanzine.css` | ✅ | SDS-11 §3.3 |
+| 184 | Insertar script anti-flash en `<head>` de `docs/index.html` | ✅ | SDS-11 §3.4 |
+| 185 | Insertar toggle button + script en `<body>` de `docs/index.html` | ✅ | SDS-11 §3.4 |
+| 186 | Verificar: toggle funciona, persiste en localStorage, respeta prefers-color-scheme | ✅ | SDS-11 §6.3–6.6 |
+
+### Fase AC · Migrar inline styles de todas las páginas
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 187 | `docs/index.html` — sustituir colores hardcoded en `<style>` por CSS vars + añadir anti-flash + toggle | ✅ | SDS-11 §3.5 |
+| 188 | `docs/quick-start.html` — sustituir colores en `<style>` + añadir anti-flash + toggle | ✅ | SDS-11 §3.5 |
+| 189 | `docs/dashboard-guide.html` — sustituir colores en `<style>` + añadir anti-flash + toggle | ✅ | SDS-11 §3.5 |
+| 190 | `docs/prompts-agents.html` — sustituir colores en `<style>` + añadir anti-flash + toggle | ✅ | SDS-11 §3.5 |
+| 191 | Verificar: las 4 páginas se ven bien en ambos modos (light y dark) | ✅ | SDS-11 §6.8 |
+
+### Fase AD · Templates + docs
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 192 | Actualizar `docs/poster-template/template.html` — incluir anti-flash + toggle pattern | ✅ | SDS-11 §3.6 |
+| 193 | Actualizar `docs/poster-template/spec-template.html` — incluir anti-flash + toggle | ✅ | SDS-11 §3.6 |
+| 194 | Actualizar `docs/poster-template/README.md` — documentar dark mode pattern | 🗒 | SDS-11 §3.6 |
+| 195 | Verificar todos los criterios de aceptación SDS-11 §6 (9 puntos) | ✅ | SDS-11 §6 |
+
+---
+
+## Sprint 4h — Mock Command Execution from Dashboard (from SDS-12)
+
+> Objetivo: permitir que la dashboard (y cualquier UI) ejecute comandos contra el MockTelegramBot
+> en modo mock, simulando interacción como si viniera de Telegram. El admin selecciona un comando,
+> lo ejecuta y ve la respuesta — todo dentro de la TUI.
+> Principio: el SDK carga con la implementación; la app de ejemplo solo consume.
+> Spec: `specs/12-mock-command-execution.md`
+
+### Fase AE · SDK: mock ejecutable + eventos
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 198 | Ampliar `PluginInfo` — añadir `commands: PluginCommandInfo[]` con command + description | ✅ | SDS-12 §3.1 |
+| 199 | Ampliar `RuntimeEvent` union — añadir `command-executed` y `command-response` | ✅ | SDS-12 §3.2 |
+| 200 | Ampliar `MockTelegramBot` — aceptar `RuntimeEmitter?` en options, emitir eventos en simulate, retornar `SentMessage[]` | ✅ | SDS-12 §3.3 |
+| 201 | Ampliar `BootResult` — añadir `executeCommand?`, `startMock()` retorna mock | ✅ | SDS-12 §3.4 |
+| 202 | Crear `CommandResponseEntry` + `CMD_BUFFER_SIZE` en `store.ts`, ampliar `BaseRuntimeState` con `commandResponses[]` | ✅ | SDS-12 §3.5 |
+| 203 | Ampliar `emitter-bridge.ts` — manejar `command-response` → buffer circular en state | ✅ | SDS-12 §3.6 |
+| 204 | Ampliar `bot-handler.ts` — `plugins-registered` event incluye command details en PluginInfo | ✅ | SDS-12 §3.1 |
+| 205 | Ampliar barrel `src/index.ts` — exportar `CommandResponseEntry`, `CMD_BUFFER_SIZE`, `SentMessage`, `SimulateOpts`, `PluginCommandInfo` | ✅ | SDS-12 §3.8 |
+
+### Fase AF · SDK: tests
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 206 | Tests: `mock-telegram.test.ts` — emitter integration, simulateCommand retorna mensajes, emite eventos | ✅ | SDS-12 §6 |
+| 207 | Tests: `emitter-bridge.test.ts` — command-response reduce correctamente, buffer no excede max | ✅ | SDS-12 §6 |
+| 208 | Tests: `runtime-emitter.test.ts` — nuevos eventos fluyen por streams | ✅ | SDS-12 §6 |
+| 209 | Tests: `barrel.test.ts` — nuevos exports existen | ✅ | SDS-12 §6 |
+
+### Fase AG · Dashboard: CommandPanel
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 210 | Ampliar `DashboardState` — `executeCommand` ref + hereda `commandResponses` del SDK | ✅ | SDS-12 §4.1 |
+| 211 | Crear `components/CommandPanel.tsx` — lista plugins→commands, selector ↑↓, execute Enter, visor respuestas | ✅ | SDS-12 §4.2 |
+| 212 | Actualizar `App.tsx` — tab `[5] Commands`, tecla 5, footer actualizado | ✅ | SDS-12 §4.3 |
+| 213 | Actualizar `main.tsx` — pasar `result.executeCommand` al store/state | ✅ | SDS-12 §4.4 |
+
+### Fase AH · Integración + docs
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 214 | Full test suite verde + lint limpio | ✅ | SDS-12 §6 |
+| 215 | Actualizar `docs/dashboard-guide.html` — mencionar Commands panel | ✅ | SDS-12 §7 |
+| 216 | Actualizar `docs/index.html` — 5 paneles, mock command execution | ✅ | SDS-12 §7 |
+| 217 | Actualizar `specs/00-overview.md` — mencionar ejecución de comandos desde UI como capacidad | ✅ | SDS-12 §7 |
+
+---
+
+## Sprint 4h-fix — Command execution hotfixes (post-sprint)
+
+> Bugs y mejoras detectados al probar SDS-12 en dashboard.
+
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 218 | Fix double-prefix en `CommandPanel` — `PluginInfo.commands[].command` ya tiene prefijo, no re-prefixar | ✅ | SDS-12 §4.2 |
+| 219 | Ampliar `boot.ts` — modo real: `bot.start()` non-blocking + local mock para `executeCommand` | ✅ | SDS-12 §3.4 |
+| 220 | Test de regresión prefijo en `bot-handler.test.ts` + spec SDS-12 actualizada para ambos modos | ✅ | SDS-12 §6 |
+
+---
+
 ## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
@@ -389,4 +490,4 @@
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4f Fases Y-Z (agentes expertos) 🔲 next · Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-03 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4g Fases AA-AC + AD (dark mode) ✅ · Sprint 4h (mock command execution) ✅ · Sprint 4h-fix (command execution hotfixes) ✅ · next: poster-template README 🔲 · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*

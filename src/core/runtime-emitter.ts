@@ -3,10 +3,20 @@ import { filter, scan, shareReplay } from "rxjs/operators";
 
 // --- Snapshot del estado runtime (construido por el consumidor desde eventos) ---
 
+/** Detalle de un comando registrado por un plugin. */
+export interface PluginCommandInfo {
+  /** Nombre del comando CON prefijo (e.g. "rb_aleph") */
+  command: string;
+  /** Descripción para el usuario */
+  description: string;
+}
+
 export interface PluginInfo {
   name: string;
   pluginCode: string;
   commandCount: number;
+  /** Lista de comandos registrados con sus descripciones. */
+  commands: PluginCommandInfo[];
 }
 
 export interface BotRuntime {
@@ -26,7 +36,9 @@ export type RuntimeEvent =
   | { type: "chat-tracked"; chatId: number; total: number; timestamp: string }
   | { type: "broadcast"; chatCount: number; message: string; timestamp: string }
   | { type: "commands-synced"; commandCount: number; timestamp: string }
-  | { type: "plugins-registered"; plugins: PluginInfo[]; timestamp: string };
+  | { type: "plugins-registered"; plugins: PluginInfo[]; timestamp: string }
+  | { type: "command-executed"; command: string; chatId: number; userId: number; username: string; timestamp: string }
+  | { type: "command-response"; command: string; text: string; chatId: number; timestamp: string };
 
 // --- Reducer puro para BotRuntime ---
 

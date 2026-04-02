@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{TITLE}}</title>
+<!-- Anti-flash: detect theme before first paint -->
+<script>(function(){var t=localStorage.getItem('fanzine-theme');if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);})();</script>
 <link rel="stylesheet" href="fanzine.css">
 <!-- Poster-specific overrides (optional):
 <link rel="stylesheet" href="my-poster.css">
@@ -165,6 +167,22 @@ key: value</div>
 <footer class="footer">
   {{DEVICE}} · {{STACK}} · {{DATE}} · {{SOURCE}}
 </footer>
+
+<!-- Dark mode toggle -->
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>
+<script>(function(){
+  var btn=document.getElementById('theme-toggle');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme',t);
+    btn.textContent=t==='dark'?'☀':'☾';
+    localStorage.setItem('fanzine-theme',t);
+  }
+  apply(document.documentElement.getAttribute('data-theme')||'light');
+  btn.addEventListener('click',function(){
+    apply(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+})();
+</script>
 
 </body>
 </html>

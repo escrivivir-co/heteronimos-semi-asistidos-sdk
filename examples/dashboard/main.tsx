@@ -41,6 +41,7 @@ async function main() {
     envExampleExists: existsSync(path.join(appDir, ".env.example")),
     appDir,
     botStatus: result.started ? s.botStatus : "error",
+    executeCommand: result.executeCommand ?? null,
   }));
 
   const { unmount } = render(<App store={store} />);

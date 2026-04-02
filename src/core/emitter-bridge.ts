@@ -1,6 +1,6 @@
 import type { RuntimeEmitter, RuntimeEvent, PluginInfo } from "./runtime-emitter.js";
-import type { Store, LogEntry, MessageEntry } from "./store.js";
-import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE } from "./store.js";
+import type { Store, LogEntry, MessageEntry, CommandResponseEntry } from "./store.js";
+import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, CMD_BUFFER_SIZE } from "./store.js";
 
 /**
  * Estado base que el bridge sabe reducir.
@@ -15,6 +15,8 @@ export interface BaseRuntimeState {
   chatIds: number[];
   logs: LogEntry[];
   messages: MessageEntry[];
+  /** Respuestas de comandos ejecutados desde la UI (mock mode). Buffer circular. */
+  commandResponses: CommandResponseEntry[];
 }
 
 /** Estado base por defecto — usado como initial si el consumidor no aporta el suyo. */
@@ -27,6 +29,7 @@ export function getDefaultBaseState(): BaseRuntimeState {
     chatIds: [],
     logs: [],
     messages: [],
+    commandResponses: [],
   };
 }
 
@@ -36,6 +39,8 @@ export interface EmitterBridgeOptions {
   logBufferSize?: number;
   /** Tamaño máximo del buffer de mensajes. Default: MSG_BUFFER_SIZE (100). */
   msgBufferSize?: number;
+  /** Tamaño máximo del buffer de respuestas de comandos. Default: CMD_BUFFER_SIZE (50). */
+  cmdBufferSize?: number;
 }
 
 /**
@@ -50,6 +55,7 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
 ): () => void {
   const maxLogs = options?.logBufferSize ?? LOG_BUFFER_SIZE;
   const maxMsgs = options?.msgBufferSize ?? MSG_BUFFER_SIZE;
+  const maxCmds = options?.cmdBufferSize ?? CMD_BUFFER_SIZE;
 
   function handleEvent(event: RuntimeEvent) {
     store.setState((prev) => {
@@ -96,6 +102,21 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
           const messages = [...prev.messages, entry].slice(-maxMsgs) as T["messages"];
           return { ...prev, messages };
         }
+
+        case "command-response": {
+          const entry: CommandResponseEntry = {
+            command: event.command,
+            text: event.text,
+            chatId: event.chatId,
+            timestamp: event.timestamp,
+          };
+          const commandResponses = [...prev.commandResponses, entry].slice(-maxCmds) as T["commandResponses"];
+          return { ...prev, commandResponses };
+        }
+
+        case "command-executed":
+          // Informativo; no requiere campo propio en state
+          return prev;
 
         default:
           return prev;

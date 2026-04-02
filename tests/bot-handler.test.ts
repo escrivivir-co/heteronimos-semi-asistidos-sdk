@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { collectPluginFatherSettings, registerPlugins, type BotPlugin, type CommandDefinition } from "../src/index";
+import { collectPluginFatherSettings, registerPlugins, RuntimeEmitter, type BotPlugin, type CommandDefinition } from "../src/index";
 import { MockTelegramBot } from "../src/core/mock-telegram";
 
 function makePlugin(code: string, cmds: string[]): BotPlugin {
@@ -86,5 +86,27 @@ describe("registerPlugins — mock bot", () => {
     registerPlugins(bot as any, [plugin]);
     await bot.simulateCommand("ec_hello");
     expect(bot.getSentMessages()[0]?.text).toBe("Hi!");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// registerPlugins — PluginInfo.commands has single prefix
+// ---------------------------------------------------------------------------
+
+describe("registerPlugins — PluginInfo.commands prefix", () => {
+  test("emitted PluginInfo.commands[].command has exactly one prefix", () => {
+    const emitter = new RuntimeEmitter();
+    const bot = new MockTelegramBot();
+    const captured: any[] = [];
+    emitter.events$.subscribe(e => { if (e.type === "plugins-registered") captured.push(e); });
+
+    const plugin = makePlugin("rb", ["aleph", "join"]);
+    registerPlugins(bot as any, [plugin], undefined, emitter);
+
+    expect(captured).toHaveLength(1);
+    const cmds = captured[0].plugins[0].commands;
+    expect(cmds.map((c: any) => c.command)).toEqual(["rb_aleph", "rb_join"]);
+    // Regression guard: must NOT be "rb_rb_aleph"
+    expect(cmds[0].command).not.toContain("rb_rb_");
   });
 });

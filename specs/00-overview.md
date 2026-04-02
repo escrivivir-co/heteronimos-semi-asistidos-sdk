@@ -53,7 +53,9 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | Re-exports de grammY: `Bot`, `Context` | |
 | `Store<T>`, `createStore` | |
 | `BaseRuntimeState`, `connectEmitterToStore` | |
-| `LogEntry`, `MessageEntry`, buffer constants | |
+| `LogEntry`, `MessageEntry`, `CommandResponseEntry`, buffer constants | |
+| `MockTelegramBot`, `SentMessage`, `SimulateOpts` | |
+| `PluginCommandInfo`, `CMD_BUFFER_SIZE` | |
 
 ## 4. Entregables de esta especificación
 
@@ -68,6 +70,9 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | [SDS-07](07-mock-telegram.md) | MockTelegramBot para tests y fallback |
 | [SDS-08](08-example-packages.md) | Extracción de ejemplos como paquetes independientes |
 | [SDS-09](09-ui-bridge-layer.md) | Capa de UI Bridge: Store, emitter-bridge, tipos de buffer |
+| [SDS-10](10-prompts-agents.md) | Prompts & Agentes Expertos — sistema de prompts + página GH Pages |
+| [SDS-11](11-dark-mode.md) | Light/Dark Mode Toggle para GH Pages |
+| [SDS-12](12-mock-command-execution.md) | Mock Command Execution from Dashboard |
 
 ## 5. Restricciones
 
