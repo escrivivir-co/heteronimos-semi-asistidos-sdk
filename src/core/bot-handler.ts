@@ -83,11 +83,15 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     });
   }
 
-  const pluginInfos = plugins.map(p => ({
-    name: p.name,
-    pluginCode: p.pluginCode,
-    commandCount: p.commands().length,
-  }));
+  const pluginInfos = plugins.map(p => {
+    const cmds = prefixCommands(p.pluginCode, p.commands());
+    return {
+      name: p.name,
+      pluginCode: p.pluginCode,
+      commandCount: p.commands().length,
+      commands: cmds.map(c => ({ command: c.command, description: c.description })),
+    };
+  });
   emitter?.emit({
     type: "plugins-registered",
     plugins: pluginInfos,

@@ -11,6 +11,7 @@
 import { Bot } from "grammy";
 import { ensureEnv } from "./startup.js";
 import { MockTelegramBot } from "./mock-telegram.js";
+import type { SimulateOpts, SentMessage } from "./mock-telegram.js";
 import { registerPlugins, syncCommands } from "./bot-handler.js";
 import type { BotPlugin } from "./bot-handler.js";
 import type { SyncOptions } from "./command-handler.js";
@@ -44,6 +45,11 @@ export interface BootResult {
   mock: boolean;
   /** true if the bot actually started (false = user declined everything). */
   started: boolean;
+  /**
+   * Available only in mock mode. Executes a registered command as if
+   * a Telegram user sent it, and returns the bot's reply messages.
+   */
+  executeCommand?: (name: string, opts?: SimulateOpts) => Promise<SentMessage[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -59,8 +65,8 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   const env = await ensureEnv({ envDir: opts.envDir, nonInteractive });
 
   if (env.mock) {
-    await startMock(opts, log, syncOpts);
-    return { mock: true, started: true };
+    const mockBot = await startMock(opts, log, syncOpts);
+    return { mock: true, started: true, executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts) };
   }
 
   if (!env.token) {
@@ -90,8 +96,8 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       await confirm("¿Arrancar en modo mock (sin Telegram)?").catch(() => false);
 
     if (useMock) {
-      await startMock(opts, log, syncOpts);
-      return { mock: true, started: true };
+      const mockBot = await startMock(opts, log, syncOpts);
+      return { mock: true, started: true, executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts) };
     }
 
     return { mock: false, started: false };
@@ -102,17 +108,18 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 // Helpers internos
 // ---------------------------------------------------------------------------
 
-async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<void> {
+async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<MockTelegramBot> {
   const { emitter } = opts;
   log.warn("[MOCK] Sin conexión a Telegram — arrancando en modo mock.");
   const store = new FileChatStore(opts.chatStorePath);
   const tracker = new ChatTracker(store, emitter);
-  const mockBot = new MockTelegramBot();
+  const mockBot = new MockTelegramBot({ emitter });
   registerPlugins(mockBot as any, opts.plugins, tracker, emitter);
   await syncCommands(mockBot as any, opts.plugins, tracker, syncOpts, emitter);
   emitStatus(emitter, "running");
   log.info("[MOCK] Bot mock activo. Comandos registrados: " + mockBot.getRegisteredCommands().join(", "));
   await mockBot.start();
+  return mockBot;
 }
 
 function emitStatus(emitter: RuntimeEmitter | undefined, status: string): void {
