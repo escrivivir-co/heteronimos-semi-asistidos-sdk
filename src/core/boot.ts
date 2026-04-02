@@ -46,8 +46,9 @@ export interface BootResult {
   /** true if the bot actually started (false = user declined everything). */
   started: boolean;
   /**
-   * Available only in mock mode. Executes a registered command as if
-   * a Telegram user sent it, and returns the bot's reply messages.
+   * Executes a registered command locally and returns the bot's reply messages.
+   * Available in both mock and real mode (runs handlers in-process via a local
+   * MockTelegramBot — no messages are sent to Telegram).
    */
   executeCommand?: (name: string, opts?: SimulateOpts) => Promise<SentMessage[]>;
 }
@@ -82,10 +83,30 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 
     registerPlugins(bot, opts.plugins, tracker, emitter);
     await syncCommands(bot, opts.plugins, tracker, syncOpts, emitter);
+
+    // Mock auxiliar para ejecución local de comandos desde la UI.
+    // Registra los mismos plugins sin emitter/tracker para evitar
+    // duplicar plugins-registered y middleware de tracking.
+    // El emitter del constructor se usa solo para command-* events.
+    const localMock = new MockTelegramBot({ emitter });
+    registerPlugins(localMock as any, opts.plugins);
+
     log.info("Bot started — polling...");
     emitStatus(emitter, "running");
-    await bot.start();
-    return { mock: false, started: true };
+
+    // Polling en background — bootBot retorna inmediatamente.
+    // El event loop se mantiene vivo por el polling HTTP de grammY.
+    bot.start().catch((err: unknown) => {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      log.error(`Polling error: ${errMsg}`);
+      emitStatus(emitter, "error");
+    });
+
+    return {
+      mock: false,
+      started: true,
+      executeCommand: (name: string, simOpts?: SimulateOpts) => localMock.simulateCommand(name, simOpts),
+    };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     log.error(`Bot startup failed. ${msg}`);
