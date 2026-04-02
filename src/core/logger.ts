@@ -101,12 +101,19 @@ export class Logger {
 
 /**
  * Prompt interactivo y/n en terminal.
+ *
+ * readline.close() pausa process.stdin y lo desreferencia del event loop.
+ * Restauramos ambos aquí para que consumidores TUI (Ink) puedan tomar
+ * stdin en raw mode después de que bootBot() termine.
  */
 export function confirm(question: string): Promise<boolean> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
     rl.question(`${question} (y/n): `, (answer: string) => {
       rl.close();
+      // Restaurar stdin — rl.close() lo pausa y puede desreferienciarlo
+      if (process.stdin.isPaused()) process.stdin.resume();
+      if (typeof (process.stdin as any).ref === "function") (process.stdin as any).ref();
       resolve(answer.trim().toLowerCase() === "y");
     });
   });

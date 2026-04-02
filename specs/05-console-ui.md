@@ -19,11 +19,12 @@ Tras completar la extracción del SDK (Sprints 0–3), la app de ejemplo en `exa
 
 | Decisión | Resultado |
 |----------|-----------|
-| Stack TUI | Ink 5 + React 19 (no copiar renderer custom del submódulo) |
-| Alcance | 3 paneles: Overview, Logs, Chats — sin vim input ni virtual lists |
+| Stack TUI | Ink 6 + React 19 (no copiar renderer custom del submódulo) |
+| Alcance | 4 paneles: Overview, Logs, Chats, Config — sin vim input ni virtual lists |
 | Frontera SDK / UI | SDK expone `RuntimeEmitter` + `RuntimeEvent`; la UI suscribe vía `emitter-bridge.ts` |
 | Estado | Mini-store reactivo propio (~30 líneas), no Redux ni Zustand |
-| Navegación | Tabs 1/2/3 + Tab/Shift+Tab; q/Ctrl+C para salir |
+| Navegación | Tabs 1/2/3/4 + Tab/Shift+Tab; q/Ctrl+C para salir |
+| Arranque | `bootBot({ nonInteractive: true })` siempre — Ink controla stdin, readline no se usa. Config/mock se gestiona en panel Config |
 
 ---
 
@@ -48,7 +49,12 @@ Tras completar la extracción del SDK (Sprints 0–3), la app de ejemplo en `exa
 - `<ChatList>`, `<MessageStream>`, buffer de mensajes (100).
 
 ### Fase L · Navegación
-- Sistema de tabs, `<Header>`, `<Footer>`, keybinding q/Ctrl+C.
+- Sistema de tabs (4 paneles), `<Header>`, `<Footer>`, keybinding q/Ctrl+C.
+
+### Fase L-bis · Panel Config
+- `<ConfigPanel>` muestra modo actual (mock/telegram), estado del token, estado de `.env`, variables de entorno, instrucciones para conectar.
+- Acción interactiva `[c]` para crear `.env` desde `.env.example` sin salir de la TUI.
+- `<StatusPanel>` muestra warning prominente en modo mock con flecha a `[4] Config`.
 
 ### Fase M · Integración
 - Arranque conjunto bot + TUI, tests smoke, README, docs actualizados.
@@ -62,13 +68,18 @@ Tras completar la extracción del SDK (Sprints 0–3), la app de ejemplo en `exa
 
 ```
 examples/dashboard/
-├── App.tsx              ← layout raíz con tabs
+├── .env.example         ← plantilla de configuración
+├── App.tsx              ← layout raíz con 4 tabs
 ├── emitter-bridge.ts    ← RxJS stream → store
-├── main.tsx             ← entrypoint Ink
-├── state.ts             ← tipos de estado + buffers
+├── main.tsx             ← entrypoint Ink (nonInteractive: true siempre)
+├── state.ts             ← tipos de estado + buffers + config flags
 ├── store.ts             ← mini-store reactivo
 ├── theme.ts             ← paleta y estilos
-└── components/          ← StatusPanel, LogViewer, ChatList, etc.
+└── components/
+    ├── ChatList.tsx
+    ├── ConfigPanel.tsx  ← modo, token, .env, acción [c] crear .env
+    ├── LogViewer.tsx
+    └── StatusPanel.tsx  ← warning mock → [4] Config
 ```
 
 ---

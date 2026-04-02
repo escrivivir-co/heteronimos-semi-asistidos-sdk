@@ -21,6 +21,16 @@ export interface DashboardState {
   /** Estado del bot */
   botStatus: "starting" | "running" | "stopped" | "error";
   startedAt: Date | null;
+  /** true si el bot arrancó en mock mode */
+  mockMode: boolean;
+  /** true si BOT_TOKEN está configurado en el entorno */
+  tokenConfigured: boolean;
+  /** true si .env existe en appDir */
+  envFileExists: boolean;
+  /** true si .env.example existe en appDir */
+  envExampleExists: boolean;
+  /** Directorio de la app (para operaciones de archivo) */
+  appDir: string;
   /** Plugins cargados (recibido en plugins-registered) */
   plugins: PluginInfo[];
   /** Número de comandos sincronizados con Telegram */
@@ -40,6 +50,11 @@ export function getDefaultDashboardState(): DashboardState {
   return {
     botStatus: "starting",
     startedAt: null,
+    mockMode: false,
+    tokenConfigured: false,
+    envFileExists: false,
+    envExampleExists: false,
+    appDir: "",
     plugins: [],
     commandCount: 0,
     chatIds: [],

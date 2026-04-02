@@ -27,6 +27,22 @@ const STATUS_COLOR: Record<DashboardState["botStatus"], (typeof theme)[keyof typ
 export function StatusPanel({ state }: Props) {
   return (
     <Box flexDirection="column" gap={1} paddingTop={1}>
+      {/* Warning de configuración */}
+      {state.mockMode && !state.tokenConfigured && (
+        <Box borderStyle="round" borderColor={theme.warning} paddingX={1} flexDirection="column">
+          <Text bold color={theme.warning}>⚠  Running in MOCK mode</Text>
+          {!state.envFileExists ? (
+            <Text color={theme.muted}>
+              No .env file found. Go to <Text bold color={theme.primary}>[4] Config</Text> to create one from template.
+            </Text>
+          ) : (
+            <Text color={theme.muted}>
+              Set <Text bold>BOT_TOKEN</Text> in .env and restart to connect to Telegram.
+            </Text>
+          )}
+        </Box>
+      )}
+
       {/* Estado del bot */}
       <Box flexDirection="column">
         <Text bold color={theme.title}>Bot Status</Text>
