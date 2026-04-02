@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { Logger } from "../src/core/logger";
+import { Logger } from "../src/index";
 
 describe("Logger", () => {
   test("creates instance with scope", () => {

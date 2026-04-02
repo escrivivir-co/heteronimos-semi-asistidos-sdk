@@ -1,6 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { collectPluginFatherSettings, type BotPlugin } from "../src/core/bot-handler";
-import type { CommandDefinition } from "../src/core/command-handler";
+import { collectPluginFatherSettings, type BotPlugin, type CommandDefinition } from "../src/index";
 
 function makePlugin(code: string, cmds: string[]): BotPlugin {
   return {
