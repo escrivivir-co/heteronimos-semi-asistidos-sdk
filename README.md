@@ -16,6 +16,8 @@ A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define b
 
 ## Quick Start
 
+Before you run the bot, create a local `.env` file. `BOT_TOKEN` is required and the app will fail fast without it.
+
 ```bash
 # Install Bun (if you don't have it)
 curl -fsSL https://bun.sh/install | bash
@@ -30,8 +32,10 @@ bun install
 
 ## Bot Token
 
-1. Talk to [@BotFather](https://t.me/BotFather) — [official tutorial](https://core.telegram.org/bots/tutorial)
-2. Copy `.env.example` to `.env` and fill in your values:
+1. Open [@BotFather](https://t.me/BotFather) in Telegram — [official tutorial](https://core.telegram.org/bots/tutorial)
+2. If you are creating a new bot, use `/newbot` and copy the HTTP API token BotFather returns.
+3. If your bot already exists, use `/mybots`, select the bot, and open the API token section to view or regenerate the token.
+4. Copy `.env.example` to `.env` before running any `bun run dev` or `bun run start` command:
 
 ```bash
 cp .env.example .env
@@ -44,7 +48,11 @@ SOLANA_ADDRESS=your-address
 
 `BOT_TOKEN` is required. `SOLANA_ADDRESS` is optional.
 
+If startup fails with an alert about missing `.env` or `BOT_TOKEN`, come back to this section and complete these steps first.
+
 ## Run
+
+If `.env` does not exist or `BOT_TOKEN` is empty, startup fails immediately in `src/config.ts`.
 
 ```bash
 bun run dev            # watch mode
@@ -76,6 +84,7 @@ The SDK follows a **bot-of-bots** pattern. Each bot is a plugin (`BotPlugin`) th
 
 ```
 src/
+├── index.ts                    ← public SDK entrypoint
 ├── main.ts                     ← entry point
 ├── config.ts                   ← env-var loader (BOT_TOKEN, etc.)
 ├── core/
@@ -110,8 +119,7 @@ On startup, `syncCommands()` diffs local commands against Telegram's `getMyComma
 Implement the `BotPlugin` interface:
 
 ```ts
-import { BotPlugin } from "./core/bot-handler";
-import { CommandDefinition } from "./core/command-handler";
+import type { BotPlugin, CommandDefinition } from "heteronimos-semi-asistidos-sdk";
 
 export class MyBot implements BotPlugin {
   name = "my-bot";
@@ -134,10 +142,17 @@ export class MyBot implements BotPlugin {
 Register it in `main.ts`:
 
 ```ts
+import { Bot, ChatTracker, registerPlugins, syncCommands } from "heteronimos-semi-asistidos-sdk";
+
+const bot = new Bot(process.env.BOT_TOKEN!);
+const tracker = new ChatTracker();
 const plugins = [
   new RabbitBot(SOLANA_ADDRESS),
   new MyBot(),
 ];
+
+registerPlugins(bot, plugins, tracker);
+await syncCommands(bot, plugins, tracker);
 ```
 
 That's it. Commands get prefixed, registered, synced with Telegram, and ready.
@@ -227,7 +242,14 @@ Creates a git tag `vX.Y.Z` and commit. Push with `git push && git push --tags`.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+We welcome contributions! The workflow:
+
+1. Check [**BACKLOG.md**](BACKLOG.md) for open tasks (🔲)
+2. Fork the repo & create a branch from `main` (`feat/`, `fix/`, `docs/`...)
+3. Implement, lint (`bun run lint`), test (`bun run test`)
+4. Open a PR against `main` — reference the backlog item
+
+Full guide: [CONTRIBUTING.md](CONTRIBUTING.md) · PR template included.
 
 ## License
 

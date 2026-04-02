@@ -97,14 +97,24 @@
 <span class="prompt">cd heteronimos-semi-asistidos-sdk/Nodejs &amp;&amp; bun install</span></div>
 
   <div style="font-size:0.68rem;margin-top:8px;">
-    Copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
+    <b>Required before any run command:</b> copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
     <a href="https://t.me/BotFather" style="color:#111;">@BotFather</a> ·
     <a href="https://core.telegram.org/bots/tutorial" style="color:#111;">tutorial</a>
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;">
+    New bot: open <span class="hl-box">@BotFather</span> → send <span class="hl-box">/newbot</span> → copy the token it returns.
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;">
+    Existing bot: open <span class="hl-box">/mybots</span> → choose your bot → open the API token section → view or regenerate the token → paste it into <span class="hl-box">BOT_TOKEN</span>.
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+    Alert on startup: if <span class="hl-box">.env</span> is missing or incomplete, the app exits immediately and points you to <span class="hl-box">README.md → Bot Token</span>.
   </div>
   <div class="cmd"><span class="comment"># .env (keep out of git)</span>
 BOT_TOKEN=your-bot-token
 SOLANA_ADDRESS=your-address</div>
-  <div class="cmd"><span class="prompt">bun run dev</span></div>
+  <div class="cmd"><span class="comment"># only after .env exists</span>
+<span class="prompt">bun run dev</span></div>
 </div>
 
 <!-- ═══ ARCHITECTURE ═══ -->
@@ -113,7 +123,7 @@ SOLANA_ADDRESS=your-address</div>
   <div class="tape tape-tl"></div>
 
   <h2>Architecture — Bot-of-Bots</h2>
-  <div class="meta">Each bot is a BotPlugin. The core wires, prefixes, syncs, and broadcasts.</div>
+  <div class="meta">Each bot is a BotPlugin. The public entrypoint is <span class="hl-box">src/index.ts</span>; the core wires, prefixes, syncs, and broadcasts.</div>
 
 <pre class="diagram">
  ┌──────────────────────────────────────────────┐
@@ -171,7 +181,7 @@ SOLANA_ADDRESS=your-address</div>
   <details>
     <summary>Example — minimal plugin</summary>
     <div class="detail-body">
-<div class="cmd">import { BotPlugin } from "./src/core/bot-handler";
+<div class="cmd">import type { BotPlugin } from "heteronimos-semi-asistidos-sdk";
 
 export class MyBot implements BotPlugin {
   name = "my-bot";
@@ -187,6 +197,8 @@ export class MyBot implements BotPlugin {
   }
 }</div>
 <div class="cmd"><span class="comment"># src/main.ts</span>
+import { registerPlugins } from "./src/index";
+
 const plugins = [new MyBot()];
 registerPlugins(bot, plugins, tracker);</div>
     </div>
@@ -247,6 +259,9 @@ registerPlugins(bot, plugins, tracker);</div>
         <tr><td>bun run test:coverage</td><td>coverage report</td></tr>
         <tr><td>bun run release &lt;bump&gt;</td><td>version tag</td></tr>
       </table>
+      <div style="font-size:0.66rem;margin-top:8px;">
+        Runtime scripts require <span class="hl-box">.env</span> with <span class="hl-box">BOT_TOKEN</span>.
+      </div>
     </div>
 
     <div class="cutout tilt-l2" style="margin-top:12px;">
@@ -291,12 +306,21 @@ registerPlugins(bot, plugins, tracker);</div>
 <!-- ═══ CONTRIBUTING ═══ -->
 <div class="cutout" style="font-size:0.72rem;">
   <h3>Contributing</h3>
+
+  <div style="margin-bottom:8px;">
+    <b>1.</b> Check <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/BACKLOG.md" style="color:#111;font-weight:bold;">BACKLOG.md</a> for open tasks (🔲)<br>
+    <b>2.</b> Fork → branch from <span class="hl-box">main</span> → <code>feat/</code> <code>fix/</code> <code>docs/</code><br>
+    <b>3.</b> Implement → <code>bun run lint</code> → <code>bun run test</code><br>
+    <b>4.</b> Open a PR against <span class="hl-box">main</span> — reference the backlog item #
+  </div>
+
   <table class="tbl">
     <tr><th>Resource</th><td>Link</td></tr>
     <tr><td>Source</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="color:#111;">github.com/escrivivir-co/heteronimos-semi-asistidos-sdk</a></td></tr>
     <tr><td>Docs</td><td><a href="https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk" style="color:#111;">escrivivir-co.github.io/heteronimos-semi-asistidos-sdk</a></td></tr>
-    <tr><td>License</td><td>AIPL — Animus Iocandi Public License</td></tr>
+    <tr><td>Backlog</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/BACKLOG.md" style="color:#111;">BACKLOG.md</a></td></tr>
     <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
+    <tr><td>License</td><td>AIPL — Animus Iocandi Public License</td></tr>
   </table>
 </div>
 
