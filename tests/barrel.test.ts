@@ -30,5 +30,11 @@ describe("SDK barrel", () => {
     expect(SDK.commandsMatch).toBeDefined();
     expect(SDK.syncCommandsWithTelegram).toBeDefined();
     expect(SDK.registerMenu).toBeDefined();
+    // Store + UI bridge
+    expect(SDK.createStore).toBeDefined();
+    expect(SDK.LOG_BUFFER_SIZE).toBeDefined();
+    expect(SDK.MSG_BUFFER_SIZE).toBeDefined();
+    expect(SDK.getDefaultBaseState).toBeDefined();
+    expect(SDK.connectEmitterToStore).toBeDefined();
   });
 });
