@@ -1,4 +1,5 @@
-import * as readline from "readline";
+import * as process from "node:process";
+import * as readline from "node:readline";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -94,7 +95,7 @@ export class Logger {
 export function confirm(question: string): Promise<boolean> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
-    rl.question(`${question} (y/n): `, (answer) => {
+    rl.question(`${question} (y/n): `, (answer: string) => {
       rl.close();
       resolve(answer.trim().toLowerCase() === "y");
     });

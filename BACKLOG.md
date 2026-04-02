@@ -82,10 +82,10 @@
 ### Fase D · Build publicable
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 40 | Crear `tsconfig.build.json` (declaration, outDir dist, sin bun-types) | 🔲 | SDS-04 Fase D |
-| 41 | Actualizar package.json: main/types/exports/files apuntan a dist | 🔲 | SDS-04 Fase D |
-| 42 | Script `build:sdk` — tsc compile del barrel y core | 🔲 | SDS-04 Fase D |
-| 43 | Verificar: `dist/*.d.ts` sin referencias a bun-types | 🔲 | SDS-04 Fase D |
+| 40 | Crear `tsconfig.build.json` (declaration, outDir dist, sin bun-types) | ✅ | SDS-04 Fase D |
+| 41 | Actualizar package.json: main/types/exports/files apuntan a dist | ✅ | SDS-04 Fase D |
+| 42 | Script `build:sdk` — tsc compile del barrel y core | ✅ | SDS-04 Fase D |
+| 43 | Verificar: `dist/*.d.ts` sin referencias a bun-types | ✅ | SDS-04 Fase D |
 
 ### Fase E · Ejemplo como consumidor real
 | # | Task | Status | Ref |

@@ -1,5 +1,5 @@
 import { Bot, Context } from "grammy";
-import { Logger, confirm } from "./logger";
+import { Logger, confirm } from "./logger.js";
 
 const log = new Logger("command-handler");
 

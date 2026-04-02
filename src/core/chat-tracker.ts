@@ -1,6 +1,6 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { Bot } from "grammy";
-import { Logger } from "./logger";
+import { Logger } from "./logger.js";
 
 const log = new Logger("chat-tracker");
 

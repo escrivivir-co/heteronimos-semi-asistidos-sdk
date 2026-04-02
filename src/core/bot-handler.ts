@@ -1,8 +1,8 @@
 import { Bot, Context } from "grammy";
-import { CommandDefinition, registerCommands, toBotFatherFormat, syncCommandsWithTelegram, SyncOptions } from "./command-handler";
-import { MenuDefinition, registerMenu } from "./menu-handler";
-import { Logger } from "./logger";
-import { ChatTracker } from "./chat-tracker";
+import { CommandDefinition, registerCommands, toBotFatherFormat, syncCommandsWithTelegram, SyncOptions } from "./command-handler.js";
+import { MenuDefinition, registerMenu } from "./menu-handler.js";
+import { Logger } from "./logger.js";
+import { ChatTracker } from "./chat-tracker.js";
 
 const log = new Logger("bot-handler");
 

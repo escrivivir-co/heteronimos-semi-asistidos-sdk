@@ -67,8 +67,10 @@ bun run start          # single run
 | `bun run dev` | Watch mode (auto-reload) |
 | `bun run dev:verbose` | Watch + debug logging |
 | `bun run start` | Run once |
-| `bun run build` | Bundle to `dist/` |
-| `bun run dist` | Run bundled output |
+| `bun run build` | Compile the SDK to `dist/` |
+| `bun run build:sdk` | Emit publishable JS + `.d.ts` for the SDK |
+| `bun run build:example` | Bundle the example app to `dist-example/` |
+| `bun run dist` | Build and run the bundled example output |
 | `bun run lint` | Type-check (tsc --noEmit) |
 | `bun run bot-father-settings` | Generate `bot-father-settings.md` |
 | `bun run test` | Run unit tests |
