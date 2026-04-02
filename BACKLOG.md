@@ -135,6 +135,7 @@
 | 61 | **Web dashboard** — real-time bot monitoring UI | 💡 |
 | 62 | **Multi-bot instance** — run multiple Bot tokens in one process | 💡 |
 | 63 | **E2E tests** — integration tests against Telegram test server | 💡 |
+| 64 | **Better example console app** — richer TUI/dashboard example backed by `reference-console-app` research | 💡 |
 
 ---
 
