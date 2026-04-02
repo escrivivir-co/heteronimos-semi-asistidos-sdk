@@ -57,10 +57,10 @@
     Una app de terminal interactiva que conecta al SDK mediante streams RxJS y muestra en tiempo real:
   </div>
 <pre class="diagram">
- ┌─ heteronimos-semi-asistidos-sdk ── dashboard ─────────────────┐
+ ┌─ heteronimos-semi-asistidos-sdk ── dashboard ──────────────────┐
  │                                                                │
  │  ┌──────────────────────────────────────────────────────────┐  │
- │  │  [Overview]  [Logs]  [Chats]                      [q]   │  │
+ │  │  [Overview]  [Logs]  [Chats]                       [q]   │  │
  │  ├──────────────────────────────────────────────────────────┤  │
  │  │                                                          │  │
  │  │  Bot Status                                              │  │
@@ -73,7 +73,7 @@
  │  │  [rb] RabbitBot (4 cmds)                                 │  │
  │  │                                                          │  │
  │  ├──────────────────────────────────────────────────────────┤  │
- │  │  [1] Overview  [2] Logs  [3] Chats  [Tab] Cycle  [q]    │  │
+ │  │  [1] Overview  [2] Logs  [3] Chats  [Tab] Cycle  [q]     │  │
  │  └──────────────────────────────────────────────────────────┘  │
  │                                                                │
  └────────────────────────────────────────────────────────────────┘
@@ -126,20 +126,20 @@
  ──────────────                    ───────────────────
 
  Logger ──────┐
- ChatTracker ─┤                    ┌──────────────┐
+ ChatTracker ─┤                    ┌────────────────┐
  bot-handler ─┼─→ RuntimeEmitter ─→│ emitter─bridge │
-              │   events$/logs$/  │ (switch/case)  │
-              │   messages$/      └───────┬────────┘
+              │   events$/logs$/  │ (switch/case)   │
+              │   messages$/      └───────┬─────────┘
               │   snapshot$               │
-              │                    ┌──────▼──────┐
+              │                    ┌──────▼───────┐
               │                    │    Store     │
               │                    │ (state + sub)│
-              │                    └──────┬──────┘
+              │                    └──────┬───────┘
               │                           │ subscribe()
-              │                    ┌──────▼──────┐
+              │                    ┌──────▼─────────────┐
               │                    │   &lt;App /&gt;    │
-              │                    │  React/Ink   │
-              │                    └─────────────┘
+              │                    │  React/Ink         │
+              │                    └────────────────────┘
 </pre>
   <div style="font-size:0.66rem;">
     El flujo es <b>unidireccional</b>: SDK emite → bridge reduce → store muta → React re-renderiza.
@@ -177,14 +177,15 @@
   <div class="cmd">examples/dashboard/
 ├── main.tsx           <span class="comment"># entrypoint — crea bot, emitter, store, monta App</span>
 ├── App.tsx            <span class="comment"># layout raíz con navegación por tabs</span>
-├── store.ts           <span class="comment"># mini-store reactivo genérico (~30 líneas)</span>
-├── state.ts           <span class="comment"># DashboardState type + defaults + buffers</span>
+├── state.ts           <span class="comment"># DashboardState extends BaseRuntimeState (campos propios)</span>
 ├── theme.ts           <span class="comment"># paleta de colores (objeto plano)</span>
-├── emitter-bridge.ts  <span class="comment"># conecta RuntimeEmitter → Store</span>
 └── components/
     ├── StatusPanel.tsx <span class="comment"># panel de estado del bot</span>
     ├── LogViewer.tsx   <span class="comment"># logs en vivo con filtros</span>
     └── ChatList.tsx    <span class="comment"># chats activos + mensajes</span></div>
+  <div style="font-size:0.66rem;margin-top:6px;">
+    <code>Store&lt;T&gt;</code>, <code>createStore</code>, <code>connectEmitterToStore</code>, <code>LogEntry</code> y <code>MessageEntry</code> vienen del SDK — no hay que crearlos.
+  </div>
 </div>
 
 <!-- ════════════ STEP 1 ════════════ -->
@@ -344,34 +345,19 @@ export function getDefaultDashboardState(): DashboardState {
     <b>Buffer circular:</b> se implementa con <code>[...prev, nuevo].slice(-MAX_SIZE)</code>. Así el array nunca crece indefinidamente.
   </div>
 
-  <div class="step-title">3b. <span class="file-tag">store.ts</span> — Mini-store reactivo</div>
-  <div class="cmd">type Listener = () =&gt; void;
+  <div class="step-title">3b. <span class="file-tag">store + bridge</span> — Vienen del SDK</div>
+  <div class="cmd"><span class="comment">// No necesitas crear store.ts ni emitter-bridge.ts.</span>
+<span class="comment">// El SDK los exporta directamente:</span>
+import {
+  createStore,
+  connectEmitterToStore,
+} from "heteronimos-semi-asistidos-sdk";
 
-export interface Store&lt;T&gt; {
-  getState(): T;
-  setState(updater: (prev: T) =&gt; T): void;
-  subscribe(listener: Listener): () =&gt; void;  <span class="comment">// retorna unsub</span>
-}
-
-export function createStore&lt;T&gt;(initial: T): Store&lt;T&gt; {
-  let state = initial;
-  const listeners = new Set&lt;Listener&gt;();
-
-  return {
-    getState: () =&gt; state,
-    setState: (updater) =&gt; {
-      state = updater(state);
-      for (const l of listeners) l();  <span class="comment">// notifica a todos</span>
-    },
-    subscribe: (listener) =&gt; {
-      listeners.add(listener);
-      return () =&gt; listeners.delete(listener);
-    },
-  };
-}</div>
+<span class="comment">// Store&lt;T&gt;, LogEntry, MessageEntry también disponibles:</span>
+import type { Store, LogEntry, MessageEntry } from "heteronimos-semi-asistidos-sdk";</div>
 
   <div class="concept-box">
-    30 líneas. Sin dependencias. Genérico sobre <code>T</code>.
+    30 líneas. Sin dependencias extras. Genérico sobre <code>T</code>.
     Cada <code>setState</code> notifica a todos los listeners — React se re-renderiza.
     Mismo patrón que Zustand simplificado.
   </div>
@@ -383,61 +369,22 @@ export function createStore&lt;T&gt;(initial: T): Store&lt;T&gt; {
   <div class="tape tape-br"></div>
   <h3>Paso 4 · Emitter Bridge — conectar SDK → Store</h3>
   <div style="font-size:0.68rem;margin-bottom:6px;">
-    Este archivo es la pieza más importante: transforma cada evento del SDK en una mutación de estado.
+    <code>connectEmitterToStore</code> es la pieza más importante: transforma cada evento del SDK en una mutación de estado.
+    Viene directo del SDK — no hay que escribirla.
   </div>
 
-  <div class="step-title"><span class="file-tag">emitter-bridge.ts</span></div>
-  <div class="cmd">import type { RuntimeEmitter, RuntimeEvent } from "heteronimos-semi-asistidos-sdk";
-import type { Store } from "./store.js";
-import type { DashboardState } from "./state.js";
-import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE } from "./state.js";
+  <div class="step-title"><span class="file-tag">main.tsx (fragmento)</span></div>
+  <div class="cmd">import {
+  createStore,
+  connectEmitterToStore,
+  getDefaultBaseState,
+} from "heteronimos-semi-asistidos-sdk";
+import { getDefaultDashboardState } from "./state.js";
 
-export function connectEmitterToStore(
-  emitter: RuntimeEmitter,
-  store: Store&lt;DashboardState&gt;
-): () =&gt; void {
+const store = createStore(getDefaultDashboardState());
+connectEmitterToStore(emitter, store);
 
-  function handleEvent(event: RuntimeEvent) {
-    store.setState((prev) =&gt; {
-      switch (event.type) {
-        case "plugins-registered":
-          return {
-            ...prev,
-            plugins: event.plugins,
-            botStatus: "running",
-            startedAt: prev.startedAt ?? new Date(event.timestamp),
-          };
-
-        case "commands-synced":
-          return { ...prev, commandCount: event.commandCount };
-
-        case "status-change":
-          return { ...prev, botStatus: event.status };
-
-        case "chat-tracked":
-          if (prev.chatIds.includes(event.chatId)) return prev;
-          return { ...prev, chatIds: [...prev.chatIds, event.chatId] };
-
-        case "broadcast":
-          return prev; <span class="comment">// informativo — aparece en logs</span>
-
-        case "log": {
-          const entry = {
-            level: event.level, scope: event.scope,
-            message: event.message, timestamp: event.timestamp,
-          };
-          const logs = [...prev.logs, entry].slice(-LOG_BUFFER_SIZE);
-          return { ...prev, logs };
-        }
-
-        case "message": {
-          const entry = {
-            chatId: event.chatId, username: event.username,
-            text: event.text, timestamp: event.timestamp,
-          };
-          const messages = [...prev.messages, entry].slice(-MSG_BUFFER_SIZE);
-          return { ...prev, messages };
-        }
+<span class="comment">// Listo — cada RuntimeEvent muta el store automáticamente.</span></div>
 
         default:
           return prev;
@@ -577,7 +524,7 @@ export function StatusPanel({ state }: Props) {
 import { Box, Text, useInput, useApp } from "ink";
 import { theme } from "./theme.js";
 import type { DashboardState } from "./state.js";
-import type { Store } from "./store.js";
+import type { Store } from "heteronimos-semi-asistidos-sdk";
 import { StatusPanel } from "./components/StatusPanel.js";
 import { LogViewer } from "./components/LogViewer.js";
 import { ChatList } from "./components/ChatList.js";
@@ -663,12 +610,11 @@ import { existsSync } from "fs";
 import path from "path";
 import {
   RuntimeEmitter, Logger, bootBot,
+  createStore, connectEmitterToStore,
 } from "heteronimos-semi-asistidos-sdk";
 import { SOLANA_ADDRESS } from "./config.js";
 import { RabbitBot } from "./rabbit-bot.js";
-import { createStore } from "./store.js";
 import { getDefaultDashboardState } from "./state.js";
-import { connectEmitterToStore } from "./emitter-bridge.js";
 import { App } from "./App.js";
 
 const appDir = import.meta.dir;

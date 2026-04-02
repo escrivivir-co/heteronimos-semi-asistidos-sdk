@@ -290,33 +290,33 @@
 ### Fase U · SDK: store + bridge genéricos
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 148 | Crear `src/core/store.ts` — `Store<T>`, `createStore()`, `LogEntry`, `MessageEntry`, `LOG_BUFFER_SIZE`, `MSG_BUFFER_SIZE` | 🔲 | SDS-09 §3.1 |
-| 149 | Crear `src/core/emitter-bridge.ts` — `BaseRuntimeState`, `getDefaultBaseState()`, `EmitterBridgeOptions`, `connectEmitterToStore()` | 🔲 | SDS-09 §3.1 |
-| 150 | Ampliar `src/index.ts` — exportar nuevos tipos y funciones del store + bridge | 🔲 | SDS-09 §3.2 |
-| 151 | `bun run build:sdk` — verificar que `dist/` incluye `store.js/.d.ts` y `emitter-bridge.js/.d.ts` | 🔲 | SDS-09 §7 |
-| 152 | Tests: `tests/store.test.ts` — createStore, setState, subscribe, unsub | 🔲 | SDS-09 §5 |
-| 153 | Tests: `tests/emitter-bridge.test.ts` — connectEmitterToStore reduce todos los RuntimeEvent, buffers max, unsub | 🔲 | SDS-09 §5 |
-| 154 | Tests: ampliar `tests/barrel.test.ts` — smoke test con nuevos exports | 🔲 | SDS-09 §5 |
+| 148 | Crear `src/core/store.ts` — `Store<T>`, `createStore()`, `LogEntry`, `MessageEntry`, `LOG_BUFFER_SIZE`, `MSG_BUFFER_SIZE` | ✅ | SDS-09 §3.1 |
+| 149 | Crear `src/core/emitter-bridge.ts` — `BaseRuntimeState`, `getDefaultBaseState()`, `EmitterBridgeOptions`, `connectEmitterToStore()` | ✅ | SDS-09 §3.1 |
+| 150 | Ampliar `src/index.ts` — exportar nuevos tipos y funciones del store + bridge | ✅ | SDS-09 §3.2 |
+| 151 | `bun run build:sdk` — verificar que `dist/` incluye `store.js/.d.ts` y `emitter-bridge.js/.d.ts` | ✅ | SDS-09 §7 |
+| 152 | Tests: `tests/store.test.ts` — createStore, setState, subscribe, unsub | ✅ | SDS-09 §5 |
+| 153 | Tests: `tests/emitter-bridge.test.ts` — connectEmitterToStore reduce todos los RuntimeEvent, buffers max, unsub | ✅ | SDS-09 §5 |
+| 154 | Tests: ampliar `tests/barrel.test.ts` — smoke test con nuevos exports | ✅ | SDS-09 §5 |
 
 ### Fase V · Dashboard: consumir del SDK
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 155 | Refactorizar `examples/dashboard/state.ts` — `DashboardState extends BaseRuntimeState`, re-exportar tipos del SDK | 🔲 | SDS-09 §3.3 |
-| 156 | Eliminar `examples/dashboard/store.ts` — importar `createStore` del SDK | 🔲 | SDS-09 §3.3 |
-| 157 | Eliminar `examples/dashboard/emitter-bridge.ts` — importar `connectEmitterToStore` del SDK | 🔲 | SDS-09 §3.3 |
-| 158 | Actualizar `examples/dashboard/main.tsx` — nuevos imports del SDK | 🔲 | SDS-09 §3.3 |
-| 159 | Actualizar `examples/dashboard/App.tsx` + componentes — `import type { Store }` del SDK | 🔲 | SDS-09 §3.3 |
-| 160 | `bun run build:sdk && bun run examples:install` — verificar dashboard funciona | 🔲 | SDS-09 §7 |
+| 155 | Refactorizar `examples/dashboard/state.ts` — `DashboardState extends BaseRuntimeState`, re-exportar tipos del SDK | ✅ | SDS-09 §3.3 |
+| 156 | Eliminar `examples/dashboard/store.ts` — importar `createStore` del SDK | ✅ | SDS-09 §3.3 |
+| 157 | Eliminar `examples/dashboard/emitter-bridge.ts` — importar `connectEmitterToStore` del SDK | ✅ | SDS-09 §3.3 |
+| 158 | Actualizar `examples/dashboard/main.tsx` — nuevos imports del SDK | ✅ | SDS-09 §3.3 |
+| 159 | Actualizar `examples/dashboard/App.tsx` + componentes — `import type { Store }` del SDK | ✅ | SDS-09 §3.3 |
+| 160 | `bun run build:sdk && bun run examples:install` — verificar dashboard funciona | ✅ | SDS-09 §7 |
 
 ### Fase W · Tests de integración + docs
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 161 | Full test suite verde — core + dashboard smoke | 🔲 | SDS-09 §7 |
-| 162 | Actualizar `examples/dashboard/README.md` — store y bridge vienen del SDK | 🔲 | SDS-09 §5 |
-| 163 | Actualizar `docs/dashboard-guide.html` — Paso 3 importa store del SDK | 🔲 | SDS-09 §5 |
-| 164 | Actualizar `docs/index.html` — stats si cambian | 🔲 | SDS-09 §5 |
-| 165 | Actualizar `README.md` raíz — mencionar dos arquetipos (headless vs interactive) | 🔲 | SDS-09 §5 |
-| 166 | Actualizar `specs/00-overview.md` §3 — añadir Capa 4 (UI Bridge) al diagrama | 🔲 | SDS-09 §6 |
+| 161 | Full test suite verde — core + dashboard smoke | ✅ | SDS-09 §7 |
+| 162 | Actualizar `examples/dashboard/README.md` — store y bridge vienen del SDK | ✅ | SDS-09 §5 |
+| 163 | Actualizar `docs/dashboard-guide.html` — Paso 3 importa store del SDK | ✅ | SDS-09 §5 |
+| 164 | Actualizar `docs/index.html` — stats si cambian | ✅ | SDS-09 §5 |
+| 165 | Actualizar `README.md` raíz — mencionar dos arquetipos (headless vs interactive) | ✅ | SDS-09 §5 |
+| 166 | Actualizar `specs/00-overview.md` §3 — añadir Capa 4 (UI Bridge) al diagrama | ✅ | SDS-09 §6 |
 
 ---
 
@@ -389,4 +389,4 @@
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) 🔲 next · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4f Fases Y-Z (agentes expertos) 🔲 next · Sprint 2 (CI) 🔲*

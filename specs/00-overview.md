@@ -17,6 +17,11 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 
 ```
 ┌─────────────────────────────────────────────────────────┐
+│  Capa 4 · UI Bridge                                    │
+│  Store<T> · createStore · connectEmitterToStore         │
+│  BaseRuntimeState · LogEntry · MessageEntry             │
+│  → App con interfaz (TUI, web, Electron)                │
+├─────────────────────────────────────────────────────────┤
 │  Capa 3 · Orquestación                                 │
 │  registerPlugins · syncCommands · ChatTracker           │
 │  → Integrador / DevOps                                  │
@@ -46,6 +51,9 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | `ChatTracker` (con persistencia configurable) | |
 | `Logger`, `LogLevel`, `confirm` | |
 | Re-exports de grammY: `Bot`, `Context` | |
+| `Store<T>`, `createStore` | |
+| `BaseRuntimeState`, `connectEmitterToStore` | |
+| `LogEntry`, `MessageEntry`, buffer constants | |
 
 ## 4. Entregables de esta especificación
 
@@ -55,6 +63,11 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | [SDS-02](02-type-surface.md) | Superficie de tipos: diseño, imports por segmento |
 | [SDS-03](03-coupling-analysis.md) | Análisis de acoplamiento y propuestas de desacoplo |
 | [SDS-04](04-migration-path.md) | Plan de migración faseado (del plan original a implementación) |
+| [SDS-05](05-console-ui.md) | Spec del dashboard TUI (Ink/React) |
+| [SDS-06](06-rxjs-migration.md) | Migración de RuntimeEmitter a RxJS |
+| [SDS-07](07-mock-telegram.md) | MockTelegramBot para tests y fallback |
+| [SDS-08](08-example-packages.md) | Extracción de ejemplos como paquetes independientes |
+| [SDS-09](09-ui-bridge-layer.md) | Capa de UI Bridge: Store, emitter-bridge, tipos de buffer |
 
 ## 5. Restricciones
 

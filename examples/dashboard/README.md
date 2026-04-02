@@ -66,14 +66,19 @@ Flechas `↑↓` para hacer scroll en el historial.
 examples/dashboard/
 ├── main.tsx          ← entrypoint: bot + TUI arrancan en paralelo
 ├── App.tsx           ← componente raíz: header, panel activo, footer
-├── store.ts          ← mini reactive store (getState/setState/subscribe)
-├── state.ts          ← DashboardState, buffers, tipos
+├── state.ts          ← DashboardState extends BaseRuntimeState (campos propios)
 ├── theme.ts          ← paleta de colores
-├── emitter-bridge.ts ← conecta RuntimeEmitter → store
 └── components/
     ├── StatusPanel.tsx ← panel Overview
     ├── LogViewer.tsx   ← panel Logs con filtros y scroll
-    └── ChatList.tsx    ← panel Chats + stream de mensajes
+    ├── ChatList.tsx    ← panel Chats + stream de mensajes
+    └── ConfigPanel.tsx ← panel Config (modo mock / setup token)
+```
+
+Las piezas genéricas (`Store<T>`, `createStore`, `connectEmitterToStore`, `LogEntry`, `MessageEntry`) viven en el SDK y se importan directamente:
+
+```ts
+import { createStore, connectEmitterToStore } from "heteronimos-semi-asistidos-sdk";
 ```
 
 ### Flujo de datos
@@ -82,7 +87,7 @@ examples/dashboard/
 SDK core (Logger, ChatTracker, registerPlugins, syncCommands)
     ↓ emit RuntimeEvent
 RuntimeEmitter
-    ↓ emitter-bridge connectEmitterToStore()
+    ↓ connectEmitterToStore()  ← SDK
 Store<DashboardState>  (inmutable, setState con updater)
     ↓ subscribe → forceUpdate
 Ink React tree re-render (<App> → panel activo)
