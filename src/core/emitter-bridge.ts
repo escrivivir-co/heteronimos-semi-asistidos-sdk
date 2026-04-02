@@ -67,20 +67,28 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
   // Cargar historial persistido antes de suscribirnos a eventos nuevos.
   if (messageStore) {
     const loaded = messageStore.load();
-    if (loaded instanceof Promise) {
-      loaded.then((data) => {
-        store.setState((prev) => ({
+    const applyLoaded = (data: import("./message-store.js").PersistedMessages) => {
+      // Derivar chatIds de los mensajes cargados + los persistidos directamente.
+      // ChatTracker no re-emite chat-tracked para chats ya conocidos al arrancar.
+      const chatIdSet = new Set<number>(data.chatIds ?? []);
+      for (const m of data.messages) chatIdSet.add(m.chatId);
+      for (const c of data.commandResponses) chatIdSet.add(c.chatId);
+      store.setState((prev) => {
+        // Merge con chatIds que ya pueda haber (e.g. cargados por ChatTracker)
+        const merged = new Set([...prev.chatIds, ...chatIdSet]);
+        return {
           ...prev,
           messages: (data.messages as T["messages"]),
           commandResponses: (data.commandResponses as T["commandResponses"]),
-        }));
+          chatIds: [...merged] as T["chatIds"],
+        };
       });
+    };
+    const loaded2 = messageStore.load();
+    if (loaded2 instanceof Promise) {
+      loaded2.then(applyLoaded);
     } else {
-      store.setState((prev) => ({
-        ...prev,
-        messages: (loaded.messages as T["messages"]),
-        commandResponses: (loaded.commandResponses as T["commandResponses"]),
-      }));
+      applyLoaded(loaded2);
     }
   }
 
@@ -90,13 +98,13 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
     if (!messageStore) return;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      messageStore.save({ messages: state.messages, commandResponses: state.commandResponses });
+      messageStore.save({ messages: state.messages, commandResponses: state.commandResponses, chatIds: state.chatIds });
     }, 500);
   }
   function flushSave(state: BaseRuntimeState): void {
     if (!messageStore) return;
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-    messageStore.save({ messages: state.messages, commandResponses: state.commandResponses });
+    messageStore.save({ messages: state.messages, commandResponses: state.commandResponses, chatIds: state.chatIds });
   }
 
   function handleEvent(event: RuntimeEvent) {
@@ -118,7 +126,11 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
 
         case "chat-tracked":
           if (prev.chatIds.includes(event.chatId)) return prev;
-          return { ...prev, chatIds: [...prev.chatIds, event.chatId] };
+          {
+            const nextChatState = { ...prev, chatIds: [...prev.chatIds, event.chatId] };
+            scheduleSave(nextChatState);
+            return nextChatState;
+          }
 
         case "broadcast":
           return prev;

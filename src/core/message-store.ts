@@ -9,6 +9,8 @@ const log = new Logger("message-store");
 export interface PersistedMessages {
   messages: MessageEntry[];
   commandResponses: CommandResponseEntry[];
+  /** Chat IDs conocidos — complementa los de FileChatStore para cubrir reinicios. */
+  chatIds?: number[];
 }
 
 /** Contrato mínimo de almacenamiento de mensajes. */
@@ -19,12 +21,12 @@ export interface MessageStore {
   save(data: PersistedMessages): void | Promise<void>;
 }
 
-const EMPTY: PersistedMessages = { messages: [], commandResponses: [] };
+const EMPTY: PersistedMessages = { messages: [], commandResponses: [], chatIds: [] };
 
 /** Implementación en memoria — para tests y entornos headless. */
 export class MemoryMessageStore implements MessageStore {
   private data: PersistedMessages = { messages: [], commandResponses: [] };
-  load(): PersistedMessages { return { messages: [...this.data.messages], commandResponses: [...this.data.commandResponses] }; }
+  load(): PersistedMessages { return { messages: [...this.data.messages], commandResponses: [...this.data.commandResponses], chatIds: [...(this.data.chatIds ?? [])] }; }
   save(data: PersistedMessages): void { this.data = data; }
 }
 
@@ -47,9 +49,11 @@ export class FileMessageStore implements MessageStore {
       if (!data || typeof data !== "object") return { ...EMPTY };
       const messages: MessageEntry[] = Array.isArray(data.messages) ? data.messages : [];
       const commandResponses: CommandResponseEntry[] = Array.isArray(data.commandResponses) ? data.commandResponses : [];
+      const chatIds: number[] = Array.isArray(data.chatIds) ? data.chatIds : [];
       return {
         messages: messages.slice(-this.maxMessages),
         commandResponses: commandResponses.slice(-this.maxResponses),
+        chatIds,
       };
     } catch {
       log.warn(`Could not load messages file at ${this.filePath}, starting fresh.`);

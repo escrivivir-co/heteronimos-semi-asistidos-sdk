@@ -78,6 +78,24 @@ export class ChatTracker {
   }
 
   /**
+   * Emite eventos chat-tracked para todos los chats ya cargados desde el store.
+   * Llamar una sola vez al arrancar para que el bridge / dashboard los muestre
+   * aunque no llegue ningún mensaje nuevo.
+   */
+  emitLoaded(): void {
+    if (!this.emitter) return;
+    const total = this.chatIds.size;
+    for (const chatId of this.chatIds) {
+      this.emitter.emit({
+        type: "chat-tracked",
+        chatId,
+        total,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  /**
    * Registra middleware en el bot para trackear automáticamente todos los chats.
    */
   register(bot: Bot) {

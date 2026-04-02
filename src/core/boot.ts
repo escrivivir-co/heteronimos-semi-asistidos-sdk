@@ -83,6 +83,9 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 
     registerPlugins(bot, opts.plugins, tracker, emitter);
     await syncCommands(bot, opts.plugins, tracker, syncOpts, emitter);
+    // Notify the dashboard/bridge about already-known chats so they appear
+    // in the UI without waiting for a new message to arrive.
+    tracker.emitLoaded();
 
     // Mock auxiliar para ejecución local de comandos desde la UI.
     // Registra los mismos plugins sin emitter/tracker para evitar
@@ -137,6 +140,7 @@ async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOption
   const mockBot = new MockTelegramBot({ emitter });
   registerPlugins(mockBot as any, opts.plugins, tracker, emitter);
   await syncCommands(mockBot as any, opts.plugins, tracker, syncOpts, emitter);
+  tracker.emitLoaded();
   emitStatus(emitter, "running");
   log.info("[MOCK] Bot mock activo. Comandos registrados: " + mockBot.getRegisteredCommands().join(", "));
   await mockBot.start();
