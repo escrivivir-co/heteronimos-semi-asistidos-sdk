@@ -281,6 +281,77 @@
 
 ---
 
+## Sprint 4e — UI Bridge Layer (from SDS-09)
+
+> Objetivo: mover las piezas genéricas del dashboard (store reactivo, bridge emitter→store,
+> tipos de buffer) al SDK para formalizar los dos arquetipos de app: headless y con UI.
+> Spec: `specs/09-ui-bridge-layer.md`
+
+### Fase U · SDK: store + bridge genéricos
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 148 | Crear `src/core/store.ts` — `Store<T>`, `createStore()`, `LogEntry`, `MessageEntry`, `LOG_BUFFER_SIZE`, `MSG_BUFFER_SIZE` | 🔲 | SDS-09 §3.1 |
+| 149 | Crear `src/core/emitter-bridge.ts` — `BaseRuntimeState`, `getDefaultBaseState()`, `EmitterBridgeOptions`, `connectEmitterToStore()` | 🔲 | SDS-09 §3.1 |
+| 150 | Ampliar `src/index.ts` — exportar nuevos tipos y funciones del store + bridge | 🔲 | SDS-09 §3.2 |
+| 151 | `bun run build:sdk` — verificar que `dist/` incluye `store.js/.d.ts` y `emitter-bridge.js/.d.ts` | 🔲 | SDS-09 §7 |
+| 152 | Tests: `tests/store.test.ts` — createStore, setState, subscribe, unsub | 🔲 | SDS-09 §5 |
+| 153 | Tests: `tests/emitter-bridge.test.ts` — connectEmitterToStore reduce todos los RuntimeEvent, buffers max, unsub | 🔲 | SDS-09 §5 |
+| 154 | Tests: ampliar `tests/barrel.test.ts` — smoke test con nuevos exports | 🔲 | SDS-09 §5 |
+
+### Fase V · Dashboard: consumir del SDK
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 155 | Refactorizar `examples/dashboard/state.ts` — `DashboardState extends BaseRuntimeState`, re-exportar tipos del SDK | 🔲 | SDS-09 §3.3 |
+| 156 | Eliminar `examples/dashboard/store.ts` — importar `createStore` del SDK | 🔲 | SDS-09 §3.3 |
+| 157 | Eliminar `examples/dashboard/emitter-bridge.ts` — importar `connectEmitterToStore` del SDK | 🔲 | SDS-09 §3.3 |
+| 158 | Actualizar `examples/dashboard/main.tsx` — nuevos imports del SDK | 🔲 | SDS-09 §3.3 |
+| 159 | Actualizar `examples/dashboard/App.tsx` + componentes — `import type { Store }` del SDK | 🔲 | SDS-09 §3.3 |
+| 160 | `bun run build:sdk && bun run examples:install` — verificar dashboard funciona | 🔲 | SDS-09 §7 |
+
+### Fase W · Tests de integración + docs
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 161 | Full test suite verde — core + dashboard smoke | 🔲 | SDS-09 §7 |
+| 162 | Actualizar `examples/dashboard/README.md` — store y bridge vienen del SDK | 🔲 | SDS-09 §5 |
+| 163 | Actualizar `docs/dashboard-guide.html` — Paso 3 importa store del SDK | 🔲 | SDS-09 §5 |
+| 164 | Actualizar `docs/index.html` — stats si cambian | 🔲 | SDS-09 §5 |
+| 165 | Actualizar `README.md` raíz — mencionar dos arquetipos (headless vs interactive) | 🔲 | SDS-09 §5 |
+| 166 | Actualizar `specs/00-overview.md` §3 — añadir Capa 4 (UI Bridge) al diagrama | 🔲 | SDS-09 §6 |
+
+---
+
+## Sprint 4f — Prompts & Agentes Expertos (from SDS-10)
+
+> Objetivo: formalizar los prompts de IA como artefactos de primera clase del proyecto.
+> Crear una página GH Pages dedicada, un sistema de characterización vía lore, y los
+> prompts de agentes expertos por área de la codebase.
+> Spec: `specs/10-prompts-agents.md`
+
+### Fase X · Página GH Pages + integración index
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 167 | Crear `specs/10-prompts-agents.md` — spec del sistema de prompts y agentes | ✅ | SDS-10 §7 |
+| 168 | Crear `docs/prompts-agents.html` — página fanzine con hacker-devops, mecanismo lore, guía de creación | ✅ | SDS-10 §3.2 |
+| 169 | Actualizar `docs/index.html` — botón ☞ PROMPTS & AGENTES en Quick Start | ✅ | SDS-10 §3.3 |
+| 170 | Actualizar `docs/index.html` — card AI con descripción hacker-devops + tip lore | ✅ | SDS-10 §3.3 |
+
+### Fase Y · Agentes expertos especializados
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 171 | Crear `.github/prompts/arquitecto-sdk.prompt.md` — rol arquitecto, foco SDS-00/02/03 | 🔲 | SDS-10 §5 |
+| 172 | Crear `.github/prompts/qa-tester.prompt.md` — rol QA, foco tests/ y criterios de aceptación | 🔲 | SDS-10 §5 |
+| 173 | Crear `.github/prompts/plugin-developer.prompt.md` — rol dev de plugins, foco BotPlugin API | 🔲 | SDS-10 §5 |
+| 174 | Crear `.github/prompts/dashboard-builder.prompt.md` — rol TUI builder, foco SDS-05/06/09 | 🔲 | SDS-10 §5 |
+| 175 | Actualizar `docs/prompts-agents.html` — cards completas para cada agente experto (reemplazar placeholders) | 🔲 | SDS-10 §3.2 |
+
+### Fase Z · Docs + criterios de aceptación
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 176 | Verificar todos los criterios SDS-10 §6 — página navegable, lore explicado, links a GitHub | 🔲 | SDS-10 §6 |
+| 177 | Actualizar `specs/00-overview.md` — mencionar sistema de prompts como artefacto del repo | 🔲 | SDS-10 §7 |
+
+---
+
 ## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
@@ -318,4 +389,4 @@
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 2 (CI) 🔲 next*
+*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) 🔲 next · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
