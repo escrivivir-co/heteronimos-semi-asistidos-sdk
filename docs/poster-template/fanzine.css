@@ -5,12 +5,47 @@
    ══════════════════════════════════════════════════════════ */
 @page { size: A3 portrait; margin: 12mm; }
 
+/* ── THEME TOKENS ── */
+:root {
+  --fg:          #000;
+  --fg-soft:     #111;
+  --bg:          #fff;
+  --bg-alt:      #f4f4f4;
+  --bg-warm:     #f6f1e8;
+  --bg-muted:    #fafafa;
+  --bg-concept:  #f0f0f0;
+  --border:      #000;
+  --border-soft: #111;
+  --inv-bg:      #000;
+  --inv-fg:      #fff;
+  --inv-bg-dim:  #444;
+  --tape-bg:     rgba(0,0,0,0.07);
+  --link:        #111;
+}
+
+[data-theme="dark"] {
+  --fg:          #e0e0e0;
+  --fg-soft:     #ccc;
+  --bg:          #1a1a1a;
+  --bg-alt:      #252525;
+  --bg-warm:     #2a2520;
+  --bg-muted:    #222;
+  --bg-concept:  #2a2a2a;
+  --border:      #c0c0c0;
+  --border-soft: #aaa;
+  --inv-bg:      #e0e0e0;
+  --inv-fg:      #1a1a1a;
+  --inv-bg-dim:  #999;
+  --tape-bg:     rgba(255,255,255,0.07);
+  --link:        #ccc;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: 'Courier New', Courier, monospace;
-  background: #fff;
-  color: #000;
+  background: var(--bg);
+  color: var(--fg);
   padding: 24px;
   max-width: 900px;
   margin: 0 auto;
@@ -21,17 +56,17 @@ body {
 
 /* ── cutout box (dashed outer border) ── */
 .cutout {
-  border: 2.5px solid #000;
+  border: 2.5px solid var(--border);
   padding: 14px 16px;
   margin: 18px 0;
   position: relative;
-  background: #fff;
+  background: var(--bg);
 }
 .cutout::before {
   content: '';
   position: absolute;
   inset: -4px;
-  border: 1.5px dashed #000;
+  border: 1.5px dashed var(--border);
   pointer-events: none;
 }
 
@@ -39,8 +74,8 @@ body {
 .tape {
   position: absolute;
   width: 60px; height: 18px;
-  background: rgba(0,0,0,0.07);
-  border: 1px solid #000;
+  background: var(--tape-bg);
+  border: 1px solid var(--border);
   z-index: 2;
 }
 .tape-tl { top: -10px; left: 18px;  transform: rotate(-3deg); }
@@ -52,7 +87,7 @@ body {
 .header {
   text-align: center;
   padding: 28px 10px 18px;
-  border: 4px double #000;
+  border: 4px double var(--border);
   margin-bottom: 6px;
   position: relative;
 }
@@ -78,7 +113,7 @@ body {
 .stamp {
   position: absolute;
   top: 12px; right: 16px;
-  border: 3px solid #000;
+  border: 3px solid var(--border);
   padding: 4px 10px;
   font-size: 0.7rem;
   font-weight: bold;
@@ -101,8 +136,8 @@ body {
   gap: 8px;
   margin: 14px 0;
   padding: 10px 6px;
-  border-top: 2px solid #000;
-  border-bottom: 2px solid #000;
+  border-top: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 .stat {
   text-align: center;
@@ -139,10 +174,10 @@ body {
   line-height: 1.28;
   white-space: pre;
   overflow-x: auto;
-  background: #000;
-  color: #fff;
+  background: var(--inv-bg);
+  color: var(--inv-fg);
   padding: 14px 12px;
-  border: 2px solid #000;
+  border: 2px solid var(--border);
 }
 
 /* ── COLUMNS ── */
@@ -161,7 +196,7 @@ h3 {
   font-size: 0.85rem;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid var(--border);
   padding-bottom: 4px;
   margin-bottom: 10px;
 }
@@ -172,8 +207,8 @@ h3 {
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-all;
-  background: #f4f4f4;
-  border-left: 4px solid #000;
+  background: var(--bg-alt);
+  border-left: 4px solid var(--border);
   padding: 8px 10px;
   margin: 8px 0;
 }
@@ -188,14 +223,14 @@ h3 {
   margin: 8px 0;
 }
 .tbl th, .tbl td {
-  border: 1.5px solid #000;
+  border: 1.5px solid var(--border);
   padding: 5px 7px;
   text-align: left;
   vertical-align: top;
 }
 .tbl th {
-  background: #000;
-  color: #fff;
+  background: var(--inv-bg);
+  color: var(--inv-fg);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-size: 0.62rem;
@@ -204,7 +239,7 @@ h3 {
 
 /* ── COMPONENT CARDS ── */
 .card {
-  border: 2px solid #000;
+  border: 2px solid var(--border);
   padding: 10px 12px;
   margin-bottom: 10px;
   position: relative;
@@ -233,7 +268,7 @@ h3 {
   opacity: 0.45;
   margin-top: 18px;
   padding-top: 10px;
-  border-top: 1px solid #000;
+  border-top: 1px solid var(--border);
   text-transform: uppercase;
 }
 
@@ -245,7 +280,7 @@ h3 {
 
 /* ── CALLOUT (★ star box) ── */
 .callout {
-  border: 3px solid #000;
+  border: 3px solid var(--border);
   padding: 10px 14px;
   text-align: center;
   font-weight: bold;
@@ -274,7 +309,7 @@ h3 {
 .washi {
   height: 8px;
   background: repeating-linear-gradient(
-    90deg, #000 0px, #000 4px, transparent 4px, transparent 8px
+    90deg, var(--fg) 0px, var(--fg) 4px, transparent 4px, transparent 8px
   );
   margin: 8px 0;
 }
@@ -282,8 +317,8 @@ h3 {
 /* ── highlight box (inverted) ── */
 .hl-box {
   display: inline-block;
-  background: #000;
-  color: #fff;
+  background: var(--inv-bg);
+  color: var(--inv-fg);
   padding: 2px 8px;
   font-size: 0.72rem;
   letter-spacing: 1px;
@@ -293,8 +328,8 @@ h3 {
 /* ── COLLAPSIBLE <details> ── */
 details {
   margin: 8px 0;
-  border: 1.5px solid #000;
-  background: #fafafa;
+  border: 1.5px solid var(--border);
+  background: var(--bg-muted);
 }
 details summary {
   cursor: pointer;
@@ -303,7 +338,7 @@ details summary {
   font-weight: bold;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  border-bottom: 1px dashed #000;
+  border-bottom: 1px dashed var(--border);
   list-style: none;
   position: relative;
   padding-left: 22px;
@@ -329,7 +364,7 @@ details .detail-body .cmd { font-size: 0.64rem; }
 /* ── keyword tags ── */
 .kw {
   display: inline-block;
-  border: 1.5px solid #000;
+  border: 1.5px solid var(--border);
   padding: 1px 6px;
   font-size: 0.58rem;
   letter-spacing: 1px;
@@ -338,8 +373,8 @@ details .detail-body .cmd { font-size: 0.64rem; }
 }
 .kw-inv {
   display: inline-block;
-  background: #000;
-  color: #fff;
+  background: var(--inv-bg);
+  color: var(--inv-fg);
   padding: 1px 6px;
   font-size: 0.58rem;
   letter-spacing: 1px;
@@ -353,11 +388,11 @@ details .detail-body .cmd { font-size: 0.64rem; }
   padding: 6px 10px 6px 28px;
   margin: 6px 0;
   position: relative;
-  border-left: 4px solid #000;
+  border-left: 4px solid var(--border);
 }
 .tip::before    { content: '💡'; position: absolute; left: 6px; top: 5px; }
 .warn::before   { content: '⚠️'; position: absolute; left: 4px; top: 4px; }
-.key-concept { border-left: 4px solid #000; background: #f0f0f0; }
+.key-concept { border-left: 4px solid var(--border); background: var(--bg-concept); }
 .key-concept::before { content: '◆'; position: absolute; left: 8px; top: 6px; font-size: 0.7rem; }
 
 /* ── deep-dive link ── */
@@ -365,29 +400,29 @@ details .detail-body .cmd { font-size: 0.64rem; }
   display: inline-block;
   font-size: 0.62rem;
   letter-spacing: 1px;
-  border-bottom: 1.5px solid #000;
+  border-bottom: 1.5px solid var(--border);
   text-decoration: none;
-  color: #000;
+  color: var(--fg);
   padding: 1px 0;
   margin-top: 4px;
 }
-.deep-link:hover { background: #000; color: #fff; }
+.deep-link:hover { background: var(--inv-bg); color: var(--inv-fg); }
 .deep-link::before { content: '→ '; }
 
 /* ── back-to-poster nav (for spec sub-pages) ── */
 .nav-back {
   font-size: 0.65rem;
   padding: 8px 0;
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid var(--border);
   margin-bottom: 16px;
 }
 .nav-back a {
   text-decoration: none;
-  color: #000;
-  border-bottom: 1.5px solid #000;
+  color: var(--fg);
+  border-bottom: 1.5px solid var(--border);
   letter-spacing: 1px;
 }
-.nav-back a:hover { background: #000; color: #fff; }
+.nav-back a:hover { background: var(--inv-bg); color: var(--inv-fg); }
 
 /* ── STEP numbering ── */
 .step-title {
@@ -396,10 +431,40 @@ details .detail-body .cmd { font-size: 0.64rem; }
   margin: 10px 0 6px;
 }
 
+/* ── DARK MODE TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  background: var(--bg);
+  color: var(--fg);
+  border: 2px solid var(--border);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+.theme-toggle:hover {
+  background: var(--inv-bg);
+  color: var(--inv-fg);
+}
+
 /* ── print ── */
 @media print {
   body { padding: 0; max-width: none; }
   .cutout::before { border-color: #999; }
   details { break-inside: avoid; }
   details[open] .detail-body { break-inside: avoid; }
+  .theme-toggle { display: none; }
+  /* force light theme */
+  html {
+    --fg: #000; --fg-soft: #111; --bg: #fff; --bg-alt: #f4f4f4;
+    --bg-warm: #f6f1e8; --bg-muted: #fafafa; --bg-concept: #f0f0f0;
+    --border: #000; --border-soft: #111; --inv-bg: #000; --inv-fg: #fff;
+    --inv-bg-dim: #444; --tape-bg: rgba(0,0,0,0.07); --link: #111;
+  }
 }
