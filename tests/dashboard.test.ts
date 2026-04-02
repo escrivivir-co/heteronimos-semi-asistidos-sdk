@@ -4,13 +4,12 @@
  * that Ink component modules export the expected function shapes.
  */
 import { describe, test, expect } from "bun:test";
-import { createStore } from "../examples/dashboard/store";
+import { createStore, connectEmitterToStore } from "../src/index";
 import {
   getDefaultDashboardState,
   LOG_BUFFER_SIZE,
   MSG_BUFFER_SIZE,
 } from "../examples/dashboard/state";
-import { connectEmitterToStore } from "../examples/dashboard/emitter-bridge";
 import { RuntimeEmitter } from "../src/index";
 
 // ---------------------------------------------------------------------------

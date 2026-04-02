@@ -4,7 +4,7 @@ import { copyFileSync } from "node:fs";
 import * as path from "node:path";
 import { theme } from "../theme.js";
 import type { DashboardState } from "../state.js";
-import type { Store } from "../store.js";
+import type { Store } from "heteronimos-semi-asistidos-sdk";
 
 interface Props {
   state: DashboardState;

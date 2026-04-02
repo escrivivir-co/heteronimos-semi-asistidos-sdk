@@ -2,12 +2,10 @@ import React from "react";
 import { render } from "ink";
 import * as path from "node:path";
 import { existsSync } from "node:fs";
-import { RuntimeEmitter, Logger, bootBot } from "heteronimos-semi-asistidos-sdk";
+import { RuntimeEmitter, Logger, bootBot, createStore, connectEmitterToStore } from "heteronimos-semi-asistidos-sdk";
 import { SOLANA_ADDRESS } from "./config.js";
 import { RabbitBot } from "./rabbit-bot.js";
-import { createStore } from "./store.js";
 import { getDefaultDashboardState } from "./state.js";
-import { connectEmitterToStore } from "./emitter-bridge.js";
 import { App } from "./App.js";
 
 const appDir = import.meta.dir;

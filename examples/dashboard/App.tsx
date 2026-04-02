@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Text, useInput, useApp } from "ink";
 import { theme } from "./theme.js";
 import type { DashboardState } from "./state.js";
-import type { Store } from "./store.js";
+import type { Store } from "heteronimos-semi-asistidos-sdk";
 import { StatusPanel } from "./components/StatusPanel.js";
 import { LogViewer } from "./components/LogViewer.js";
 import { ChatList } from "./components/ChatList.js";
