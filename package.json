@@ -24,9 +24,9 @@
     "build:example": "bun build ./examples/console-app/main.ts --outdir ./dist-example --target node",
     "bot-father-settings": "bun run ./scripts/build-bot-father-settings.ts",
     "lint": "tsc --noEmit",
-    "test": "bun test ./tests",
-    "test:report": "bun test ./tests --reporter=junit --reporter-outfile=test-results.xml",
-    "test:coverage": "bun test ./tests --coverage",
+    "test": "bun run build:sdk && bun test ./tests",
+    "test:report": "bun run build:sdk && bun test ./tests --reporter=junit --reporter-outfile=test-results.xml",
+    "test:coverage": "bun run build:sdk && bun test ./tests --coverage",
     "release": "bun run ./scripts/release.ts"
   },
   "author": "",

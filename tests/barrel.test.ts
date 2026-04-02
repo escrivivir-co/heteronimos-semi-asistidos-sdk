@@ -1,8 +1,20 @@
-import { describe, expect, test } from "bun:test";
-import * as SDK from "../src/index";
+import { afterEach, describe, expect, test } from "bun:test";
+
+const ORIGINAL_BOT_TOKEN = process.env.BOT_TOKEN;
+
+afterEach(() => {
+  if (ORIGINAL_BOT_TOKEN === undefined) {
+    delete process.env.BOT_TOKEN;
+    return;
+  }
+  process.env.BOT_TOKEN = ORIGINAL_BOT_TOKEN;
+});
 
 describe("SDK barrel", () => {
-  test("exports the public API surface", () => {
+  test("exports the public API surface without env side effects", async () => {
+    delete process.env.BOT_TOKEN;
+    const SDK = await import("../src/index");
+
     expect(SDK.Bot).toBeDefined();
     expect(SDK.ChatTracker).toBeDefined();
     expect(SDK.FileChatStore).toBeDefined();

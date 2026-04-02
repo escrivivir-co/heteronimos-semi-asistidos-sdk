@@ -4,7 +4,7 @@
 ![status](https://img.shields.io/badge/status-pre--kick--off-orange)
 ![license](https://img.shields.io/badge/license-AIPL-green)
 ![runtime](https://img.shields.io/badge/runtime-Bun-f472b6)
-![tests](https://img.shields.io/badge/tests-27%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6)
 
 A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define bots as plugins — commands, menus, message handlers — and compose them into a single runtime.
@@ -14,7 +14,9 @@ A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define b
 
 ---
 
-## Quick Start
+## Quick Start (Repo)
+
+Use this path if you're working inside this repository and want to run the included console example.
 
 Before you run the bot, create a local `.env` file. `BOT_TOKEN` is required and the app will fail fast without it.
 
@@ -29,6 +31,31 @@ cd heteronimos-semi-asistidos-sdk/Nodejs
 # Install deps
 bun install
 ```
+
+## Quick Start (npm Consumer)
+
+Use this path if you want to consume the SDK from another project.
+
+```bash
+mkdir my-telegram-bot
+cd my-telegram-bot
+bun init -y
+bun add heteronimos-semi-asistidos-sdk grammy
+```
+
+Create your own entrypoint and import only from the package barrel:
+
+```ts
+import { Bot, ChatTracker, registerPlugins, syncCommands } from "heteronimos-semi-asistidos-sdk";
+
+const bot = new Bot(process.env.BOT_TOKEN!);
+const tracker = new ChatTracker();
+
+registerPlugins(bot, [], tracker);
+await syncCommands(bot, [], tracker);
+```
+
+You still need a valid `BOT_TOKEN` in your runtime environment.
 
 ## Bot Token
 
@@ -224,12 +251,12 @@ Try it: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot) �
 ## Testing
 
 ```bash
-bun run test             # 40 tests across 8 suites
+bun run test             # 44 tests across 9 suites
 bun run test:coverage    # with coverage report
 bun run test:report      # JUnit XML → test-results.xml
 ```
 
-Test suites cover: command-handler, bot-handler, logger, rabbit-bot.
+Test suites cover: command-handler, bot-handler, logger, rabbit-bot, chat-tracker, logger options, barrel, phase-b, package.
 
 ## Release
 

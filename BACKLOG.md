@@ -90,15 +90,15 @@
 ### Fase E · Ejemplo como consumidor real
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 44 | `examples/console-app/main.ts` importa solo desde barrel (no deep imports) | 🔲 | SDS-04 Fase E |
-| 45 | README: separar "Quick Start (repo)" vs "Quick Start (npm consumer)" | 🔲 | SDS-04 Fase E |
+| 44 | `examples/console-app/main.ts` importa solo desde barrel (no deep imports) | ✅ | SDS-04 Fase E |
+| 45 | README: separar "Quick Start (repo)" vs "Quick Start (npm consumer)" | ✅ | SDS-04 Fase E |
 
 ### Fase F · Tests adaptados + smoke
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 46 | Tests de core importan desde barrel en vez de deep imports | 🔲 | SDS-04 Fase F |
-| 47 | `tests/barrel.test.ts` — smoke test de exports sin side effects | 🔲 | SDS-04 Fase F |
-| 48 | `tests/package.test.ts` — smoke test de dist/*.d.ts post-build | 🔲 | SDS-04 Fase F |
+| 46 | Tests de core importan desde barrel en vez de deep imports | ✅ | SDS-04 Fase F |
+| 47 | `tests/barrel.test.ts` — smoke test de exports sin side effects | ✅ | SDS-04 Fase F |
+| 48 | `tests/package.test.ts` — smoke test de dist/*.d.ts post-build | ✅ | SDS-04 Fase F |
 
 ---
 

@@ -1,8 +1,7 @@
-import { Bot } from "grammy";
 import { RabbitBot } from "./rabbit-bot";
 import { SOLANA_ADDRESS, TOKEN } from "./config";
-import { registerPlugins, syncCommands, ChatTracker, FileChatStore, Logger } from "../../src/index";
-import * as path from "path";
+import { Bot, registerPlugins, syncCommands, ChatTracker, FileChatStore, Logger } from "../../src/index";
+import * as path from "node:path";
 
 const log = new Logger("main");
 
@@ -18,8 +17,14 @@ const plugins = [
 
 registerPlugins(bot, plugins, tracker);
 
-// Sync commands with Telegram + start
-syncCommands(bot, plugins, tracker).then(() => {
-  log.info("Starting bot...");
-  bot.start();
+async function main() {
+	await syncCommands(bot, plugins, tracker);
+	log.info("Starting bot...");
+	await bot.start();
+}
+
+main().catch((error: unknown) => {
+	const message = error instanceof Error ? error.message : "Unknown startup error.";
+	log.error(`Bot startup failed. ${message}`);
+	globalThis.process.exitCode = 1;
 });

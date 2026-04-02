@@ -3,6 +3,7 @@ import {
   toBotFatherFormat,
   toBotCommands,
   commandsMatch,
+  syncCommandsWithTelegram,
   type CommandDefinition,
   type BotCommand,
 } from "../src/index";
@@ -71,5 +72,39 @@ describe("commandsMatch", () => {
 
   test("returns true for two empty arrays", () => {
     expect(commandsMatch([], [])).toBe(true);
+  });
+});
+
+describe("syncCommandsWithTelegram", () => {
+  const commands: CommandDefinition[] = [
+    { command: "hello", description: "Say hello", buildText: () => "hi" },
+  ];
+
+  test("throws a clear error when Telegram rejects the token", async () => {
+    const bot = {
+      api: {
+        getMyCommands: async () => {
+          throw { error_code: 404, description: "Not Found" };
+        },
+      },
+    } as any;
+
+    await expect(syncCommandsWithTelegram(bot, commands, { autoConfirm: true })).rejects.toThrow(
+      "Telegram rejected the bot token while trying to sync commands with Telegram.",
+    );
+  });
+
+  test("throws a clear error when Telegram API is unavailable", async () => {
+    const bot = {
+      api: {
+        getMyCommands: async () => {
+          throw new Error("network timeout");
+        },
+      },
+    } as any;
+
+    await expect(syncCommandsWithTelegram(bot, commands, { autoConfirm: true })).rejects.toThrow(
+      "Could not sync commands with Telegram because Telegram API is unavailable: network timeout",
+    );
   });
 });
