@@ -53,7 +53,9 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | Re-exports de grammY: `Bot`, `Context` | |
 | `Store<T>`, `createStore` | |
 | `BaseRuntimeState`, `connectEmitterToStore` | |
-| `LogEntry`, `MessageEntry`, buffer constants | |
+| `LogEntry`, `MessageEntry`, `CommandResponseEntry`, buffer constants | |
+| `MockTelegramBot`, `SentMessage`, `SimulateOpts` | |
+| `PluginCommandInfo`, `CMD_BUFFER_SIZE` | |
 
 ## 4. Entregables de esta especificación
 
