@@ -1,5 +1,5 @@
 import { Bot, Context } from "grammy";
-import { CommandDefinition, registerCommands, toBotFatherFormat, syncCommandsWithTelegram } from "./command-handler";
+import { CommandDefinition, registerCommands, toBotFatherFormat, syncCommandsWithTelegram, SyncOptions } from "./command-handler";
 import { MenuDefinition, registerMenu } from "./menu-handler";
 import { Logger } from "./logger";
 import { ChatTracker } from "./chat-tracker";
@@ -38,11 +38,11 @@ function prefixMenus(pluginCode: string, menus: MenuDefinition[]): MenuDefinitio
   return menus.map(m => ({ ...m, command: `${pluginCode}_${m.command}` }));
 }
 
-export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker: ChatTracker) {
+export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker) {
   const allCommands: CommandDefinition[] = [];
 
   // Middleware de tracking antes de cualquier handler
-  tracker.register(bot);
+  if (tracker) tracker.register(bot);
 
   for (const plugin of plugins) {
     // Comandos prefijados
@@ -100,10 +100,10 @@ export function collectPluginFatherSettings(plugins: BotPlugin[]): { commands: C
  * Sincroniza los comandos de todos los plugins con Telegram.
  * Delega a command-handler la lógica de diff y sync.
  */
-export async function syncCommands(bot: Bot, plugins: BotPlugin[], tracker: ChatTracker) {
+export async function syncCommands(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, options?: SyncOptions) {
   const { commands } = collectPluginFatherSettings(plugins);
-  const updated = await syncCommandsWithTelegram(bot, commands);
-  if (updated) {
+  const updated = await syncCommandsWithTelegram(bot, commands, options);
+  if (updated && tracker) {
     await tracker.broadcast(
       bot,
       "⚠️ [ACTUALIZACIÓN DE COMANDOS] Los comandos del bot se han actualizado. Si ves este mensaje, sal de la conversación y vuelve a entrar para ver los nuevos comandos."

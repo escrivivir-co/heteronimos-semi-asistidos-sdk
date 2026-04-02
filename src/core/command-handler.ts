@@ -103,7 +103,18 @@ export function logCommandsDiff(local: BotCommand[], remote: BotCommand[]) {
  * Solo actúa si hay diferencias. Muestra diff y pide confirmación.
  * Devuelve true si se actualizaron los comandos.
  */
-export async function syncCommandsWithTelegram(bot: Bot, commands: CommandDefinition[]): Promise<boolean> {
+export interface SyncOptions {
+  /** Si true, aplica cambios sin pedir confirmación. Default: false. */
+  autoConfirm?: boolean;
+  /** Función custom para confirmar. Default: readline prompt. */
+  confirmFn?: (question: string) => Promise<boolean>;
+}
+
+export async function syncCommandsWithTelegram(
+  bot: Bot,
+  commands: CommandDefinition[],
+  options?: SyncOptions,
+): Promise<boolean> {
   const localCmds = toBotCommands(commands);
   const remoteCmds = await bot.api.getMyCommands();
 
@@ -114,7 +125,8 @@ export async function syncCommandsWithTelegram(bot: Bot, commands: CommandDefini
 
   logCommandsDiff(localCmds, remoteCmds);
 
-  const ok = await confirm("Proceed to update BotFather commands?");
+  const doConfirm = options?.confirmFn ?? confirm;
+  const ok = options?.autoConfirm || await doConfirm("Proceed to update BotFather commands?");
   if (!ok) {
     log.warn("Sync cancelled by user.");
     return false;

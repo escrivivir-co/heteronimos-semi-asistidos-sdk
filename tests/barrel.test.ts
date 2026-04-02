@@ -5,6 +5,8 @@ describe("SDK barrel", () => {
   test("exports the public API surface", () => {
     expect(SDK.Bot).toBeDefined();
     expect(SDK.ChatTracker).toBeDefined();
+    expect(SDK.FileChatStore).toBeDefined();
+    expect(SDK.MemoryChatStore).toBeDefined();
     expect(SDK.Logger).toBeDefined();
     expect(SDK.registerPlugins).toBeDefined();
     expect(SDK.syncCommands).toBeDefined();

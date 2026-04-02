@@ -33,31 +33,58 @@ function format(level: LogLevel, scope: string, msg: string, ...args: unknown[])
   return `${color}[${timestamp()}] [${level.toUpperCase()}] [${scope}]${RESET} ${msg}${extra}`;
 }
 
+export interface LoggerOptions {
+  level?: LogLevel;
+  transport?: (formatted: string) => void;
+  colors?: boolean;
+}
+
 export class Logger {
-  constructor(private scope: string) {}
+  private options: LoggerOptions;
+
+  constructor(private scope: string, options?: LoggerOptions) {
+    this.options = options ?? {};
+  }
+
+  private getLevel(): LogLevel {
+    return this.options.level ?? getGlobalLevel();
+  }
 
   private shouldLog(level: LogLevel): boolean {
-    return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[getGlobalLevel()];
+    return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[this.getLevel()];
+  }
+
+  private output(level: LogLevel, consoleMethod: (...a: unknown[]) => void, msg: string, ...args: unknown[]) {
+    if (!this.shouldLog(level)) return;
+    const useColors = this.options.colors ?? true;
+    const formatted = useColors
+      ? format(level, this.scope, msg, ...args)
+      : `[${timestamp()}] [${level.toUpperCase()}] [${this.scope}] ${msg}${args.length ? " " + args.map(a => JSON.stringify(a)).join(" ") : ""}`;
+    if (this.options.transport) {
+      this.options.transport(formatted);
+    } else {
+      consoleMethod(formatted);
+    }
   }
 
   info(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("info")) console.log(format("info", this.scope, msg, ...args));
+    this.output("info", console.log, msg, ...args);
   }
 
   warn(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("warn")) console.warn(format("warn", this.scope, msg, ...args));
+    this.output("warn", console.warn, msg, ...args);
   }
 
   error(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("error")) console.error(format("error", this.scope, msg, ...args));
+    this.output("error", console.error, msg, ...args);
   }
 
   debug(msg: string, ...args: unknown[]) {
-    if (this.shouldLog("debug")) console.debug(format("debug", this.scope, msg, ...args));
+    this.output("debug", console.debug, msg, ...args);
   }
 
   child(subscope: string): Logger {
-    return new Logger(`${this.scope}:${subscope}`);
+    return new Logger(`${this.scope}:${subscope}`, this.options);
   }
 }
 

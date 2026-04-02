@@ -64,12 +64,12 @@
 ### Fase B · Desacoplo de componentes core
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 30 | Definir `ChatStore` interface + `FileChatStore` + `MemoryChatStore` | 🔲 | SDS-02 §2.5 |
-| 31 | Refactorizar `ChatTracker` constructor: acepta `ChatStore?` (default: memory) | 🔲 | SDS-03 P2 |
-| 32 | Añadir `SyncOptions` a `syncCommandsWithTelegram` (autoConfirm, confirmFn) | 🔲 | SDS-03 P3 |
-| 33 | Añadir `LoggerOptions` al constructor de `Logger` (level, transport, colors) | 🔲 | SDS-03 P4 |
-| 34 | Hacer `tracker` opcional en `registerPlugins` | 🔲 | SDS-03 P5 |
-| 35 | Tests nuevos: MemoryChatStore, autoConfirm, tracker opcional, Logger con options | 🔲 | SDS-04 Fase B |
+| 30 | Definir `ChatStore` interface + `FileChatStore` + `MemoryChatStore` | ✅ | SDS-02 §2.5 |
+| 31 | Refactorizar `ChatTracker` constructor: acepta `ChatStore?` (default: memory) | ✅ | SDS-03 P2 |
+| 32 | Añadir `SyncOptions` a `syncCommandsWithTelegram` (autoConfirm, confirmFn) | ✅ | SDS-03 P3 |
+| 33 | Añadir `LoggerOptions` al constructor de `Logger` (level, transport, colors) | ✅ | SDS-03 P4 |
+| 34 | Hacer `tracker` opcional en `registerPlugins` | ✅ | SDS-03 P5 |
+| 35 | Tests nuevos: MemoryChatStore, autoConfirm, tracker opcional, Logger con options | ✅ | SDS-04 Fase B |
 
 ### Fase C · RabbitBot a examples/
 | # | Task | Status | Ref |

@@ -3,12 +3,15 @@ import { RabbitBot } from "./bots/rabbit-bot";
 import { SOLANA_ADDRESS, TOKEN } from "./config";
 import { registerPlugins, syncCommands } from "./core/bot-handler";
 import { ChatTracker } from "./core/chat-tracker";
+import { FileChatStore } from "./core/chat-tracker";
 import { Logger } from "./core/logger";
+import * as path from "path";
 
 const log = new Logger("main");
 
 const bot = new Bot(TOKEN);
-const tracker = new ChatTracker();
+const store = new FileChatStore(path.join(__dirname, "..", ".chats.json"));
+const tracker = new ChatTracker(store);
 
 // Registrar plugins (sub-bots)
 const plugins = [
