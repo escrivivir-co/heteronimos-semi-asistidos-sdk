@@ -1,8 +1,8 @@
-import type { BaseRuntimeState } from "heteronimos-semi-asistidos-sdk";
+import type { BaseRuntimeState, SentMessage, SimulateOpts } from "heteronimos-semi-asistidos-sdk";
 
 // Re-export buffer types and constants from SDK so components can import from here
-export type { LogEntry, MessageEntry } from "heteronimos-semi-asistidos-sdk";
-export { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE } from "heteronimos-semi-asistidos-sdk";
+export type { LogEntry, MessageEntry, CommandResponseEntry } from "heteronimos-semi-asistidos-sdk";
+export { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, CMD_BUFFER_SIZE } from "heteronimos-semi-asistidos-sdk";
 
 /** Estado del dashboard = estado base del SDK + campos propios de la app */
 export interface DashboardState extends BaseRuntimeState {
@@ -16,6 +16,11 @@ export interface DashboardState extends BaseRuntimeState {
   envExampleExists: boolean;
   /** Directorio de la app (para operaciones de archivo) */
   appDir: string;
+  /**
+   * Función para ejecutar un comando mock desde la UI.
+   * null cuando el bot está en modo real (Telegram activo).
+   */
+  executeCommand: ((name: string, opts?: SimulateOpts) => Promise<SentMessage[]>) | null;
 }
 
 export function getDefaultDashboardState(): DashboardState {
@@ -28,11 +33,13 @@ export function getDefaultDashboardState(): DashboardState {
     chatIds: [],
     logs: [],
     messages: [],
+    commandResponses: [],
     // Campos propios del dashboard
     mockMode: false,
     tokenConfigured: false,
     envFileExists: false,
     envExampleExists: false,
     appDir: "",
+    executeCommand: null,
   };
 }
