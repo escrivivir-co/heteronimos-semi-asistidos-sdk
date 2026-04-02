@@ -2,7 +2,7 @@ import React from "react";
 import { render } from "ink";
 import * as path from "node:path";
 import { existsSync } from "node:fs";
-import { RuntimeEmitter, Logger, bootBot, createStore, connectEmitterToStore } from "heteronimos-semi-asistidos-sdk";
+import { RuntimeEmitter, Logger, bootBot, createStore, connectEmitterToStore, FileMessageStore } from "heteronimos-semi-asistidos-sdk";
 import { SOLANA_ADDRESS } from "./config.js";
 import { RabbitBot } from "./rabbit-bot.js";
 import { getDefaultDashboardState } from "./state.js";
@@ -16,7 +16,8 @@ const log = new Logger("dashboard", { emitter });
 
 // --- Store reactivo de la UI ---
 const store = createStore(getDefaultDashboardState());
-connectEmitterToStore(emitter, store);
+const messageStore = new FileMessageStore(path.join(appDir, ".messages.json"));
+connectEmitterToStore(emitter, store, { messageStore });
 
 // --- Arrancar el bot y montar la TUI ---
 // nonInteractive: true siempre — la TUI es la interfaz, no readline.

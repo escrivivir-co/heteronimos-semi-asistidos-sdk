@@ -48,3 +48,7 @@ export { getDefaultBaseState, connectEmitterToStore } from "./core/emitter-bridg
 // --- Mock utilities ---
 export type { SentMessage, SimulateOpts, MockBotOptions } from "./core/mock-telegram.js";
 export { MockTelegramBot } from "./core/mock-telegram.js";
+
+// --- Message persistence ---
+export type { MessageStore, PersistedMessages } from "./core/message-store.js";
+export { FileMessageStore, MemoryMessageStore } from "./core/message-store.js";
