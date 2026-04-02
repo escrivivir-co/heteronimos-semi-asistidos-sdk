@@ -52,7 +52,7 @@ If startup fails with an alert about missing `.env` or `BOT_TOKEN`, come back to
 
 ## Run
 
-If `.env` does not exist or `BOT_TOKEN` is empty, startup fails immediately in `src/config.ts`.
+If `.env` does not exist or `BOT_TOKEN` is empty, startup fails immediately in `examples/console-app/config.ts`.
 
 ```bash
 bun run dev            # watch mode
@@ -84,17 +84,18 @@ The SDK follows a **bot-of-bots** pattern. Each bot is a plugin (`BotPlugin`) th
 
 ```
 src/
-├── index.ts                    ← public SDK entrypoint
-├── main.ts                     ← entry point
-├── config.ts                   ← env-var loader (BOT_TOKEN, etc.)
-├── core/
-│   ├── bot-handler.ts          ← BotPlugin interface + orchestrator
-│   ├── command-handler.ts      ← command registration + Telegram sync
-│   ├── menu-handler.ts         ← inline keyboard menus (declarative)
-│   ├── chat-tracker.ts         ← persistent chat tracking + broadcast
-│   └── logger.ts               ← scoped logger with LOG_LEVEL
-└── bots/
-    └── rabbit-bot.ts           ← example plugin (pluginCode = "rb")
+├── index.ts                    ← public SDK barrel
+└── core/
+    ├── bot-handler.ts          ← BotPlugin interface + orchestrator
+    ├── command-handler.ts      ← command registration + Telegram sync
+    ├── menu-handler.ts         ← inline keyboard menus (declarative)
+    ├── chat-tracker.ts         ← persistent chat tracking + broadcast
+    └── logger.ts               ← scoped logger with LOG_LEVEL
+examples/
+└── console-app/
+    ├── main.ts                 ← example entrypoint
+    ├── config.ts               ← env-var loader (BOT_TOKEN, etc.)
+    └── rabbit-bot.ts           ← demo plugin (pluginCode = "rb")
 scripts/
 ├── build-bot-father-settings.ts
 └── release.ts
@@ -139,7 +140,7 @@ export class MyBot implements BotPlugin {
 }
 ```
 
-Register it in `main.ts`:
+Register it in your entrypoint (e.g. `examples/console-app/main.ts`):
 
 ```ts
 import { Bot, ChatTracker, registerPlugins, syncCommands } from "heteronimos-semi-asistidos-sdk";
@@ -221,7 +222,7 @@ Try it: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot) �
 ## Testing
 
 ```bash
-bun run test             # 27 tests across 4 suites
+bun run test             # 40 tests across 8 suites
 bun run test:coverage    # with coverage report
 bun run test:report      # JUnit XML → test-results.xml
 ```

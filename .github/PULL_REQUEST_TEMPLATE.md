@@ -9,7 +9,7 @@ Implements #
 
 ## Type
 
-- [ ] New plugin (`src/bots/`)
+- [ ] New plugin (`examples/`)
 - [ ] Core SDK change (`src/core/`)
 - [ ] Bug fix
 - [ ] Refactor

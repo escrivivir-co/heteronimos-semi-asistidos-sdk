@@ -74,10 +74,10 @@
 ### Fase C · RabbitBot a examples/
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 36 | Crear `examples/console-app/` con main.ts, config.ts, rabbit-bot.ts | 🔲 | SDS-04 Fase C |
-| 37 | Eliminar `src/bots/`, `src/config.ts`, `src/main.ts` | 🔲 | SDS-04 Fase C |
-| 38 | Actualizar package.json scripts (start/dev → examples/) | 🔲 | SDS-04 Fase C |
-| 39 | Actualizar imports en tests de rabbit-bot | 🔲 | SDS-04 Fase C |
+| 36 | Crear `examples/console-app/` con main.ts, config.ts, rabbit-bot.ts | ✅ | SDS-04 Fase C |
+| 37 | Eliminar `src/bots/`, `src/config.ts`, `src/main.ts` | ✅ | SDS-04 Fase C |
+| 38 | Actualizar package.json scripts (start/dev → examples/) | ✅ | SDS-04 Fase C |
+| 39 | Actualizar imports en tests de rabbit-bot | ✅ | SDS-04 Fase C |
 
 ### Fase D · Build publicable
 | # | Task | Status | Ref |

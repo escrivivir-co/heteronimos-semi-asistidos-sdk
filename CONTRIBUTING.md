@@ -80,7 +80,7 @@ docs/                     ← GitHub Pages site
 
 ### Creating a Plugin
 
-The main contribution path is adding new bot plugins. Use `src/index.ts` as the public API reference, and see `src/bots/rabbit-bot.ts` as a working example plugin.
+The main contribution path is adding new bot plugins. Use `src/index.ts` as the public API reference, and see `examples/console-app/rabbit-bot.ts` as a working example plugin.
 
 Each plugin needs:
 - A unique `pluginCode` (2-3 lowercase alphanumeric chars) to avoid command collisions
