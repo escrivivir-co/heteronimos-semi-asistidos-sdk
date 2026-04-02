@@ -14,12 +14,12 @@ function formatTime(iso: string): string {
 export function CommandPanel({ state }: Props) {
   const { plugins, commandResponses, executeCommand, mockMode } = state;
 
-  // Flatten all plugin commands into a selectable list
+  // Flatten all plugin commands into a selectable list.
+  // commands[].command already has the pluginCode prefix (e.g. "rb_aleph").
   const allCommands: { display: string; full: string }[] = [];
   for (const plugin of plugins) {
     for (const cmd of plugin.commands ?? []) {
-      const full = `${plugin.pluginCode}_${cmd.command}`;
-      allCommands.push({ display: `/${full}`, full });
+      allCommands.push({ display: `/${cmd.command}`, full: cmd.command });
     }
   }
 
@@ -33,7 +33,7 @@ export function CommandPanel({ state }: Props) {
     : 0;
 
   useInput((input, key) => {
-    if (!mockMode || !executeCommand) return;
+    if (!executeCommand) return;
 
     if ((key.upArrow || input === "k") && clampedIdx > 0) {
       setSelectedIdx(clampedIdx - 1);
@@ -55,12 +55,12 @@ export function CommandPanel({ state }: Props) {
     }
   });
 
-  if (!mockMode) {
+  if (!executeCommand) {
     return (
       <Box flexDirection="column" paddingTop={1} gap={1}>
         <Text bold color={theme.title}>Command Execution</Text>
         <Text color={theme.muted} dimColor>
-          Available in mock mode only. In real mode, commands arrive via Telegram.
+          Bot not started. Command execution will be available once the bot is running.
         </Text>
       </Box>
     );
@@ -73,6 +73,10 @@ export function CommandPanel({ state }: Props) {
         <Text color={theme.muted}>({allCommands.length} registered)</Text>
         {running && <Text color={theme.warning}>running…</Text>}
       </Box>
+
+      {!mockMode && (
+        <Text color={theme.muted} dimColor>Local execution — no messages sent to Telegram.</Text>
+      )}
 
       {allCommands.length === 0 && (
         <Text color={theme.muted} dimColor>No commands registered yet.</Text>

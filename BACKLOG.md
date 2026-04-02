@@ -441,6 +441,18 @@
 
 ---
 
+## Sprint 4h-fix — Command execution hotfixes (post-sprint)
+
+> Bugs y mejoras detectados al probar SDS-12 en dashboard.
+
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 218 | Fix double-prefix en `CommandPanel` — `PluginInfo.commands[].command` ya tiene prefijo, no re-prefixar | ✅ | SDS-12 §4.2 |
+| 219 | Ampliar `boot.ts` — modo real: `bot.start()` non-blocking + local mock para `executeCommand` | ✅ | SDS-12 §3.4 |
+| 220 | Test de regresión prefijo en `bot-handler.test.ts` + spec SDS-12 actualizada para ambos modos | ✅ | SDS-12 §6 |
+
+---
+
 ## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
@@ -478,4 +490,4 @@
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4g Fases AA-AC + AD (dark mode) ✅ · Sprint 4h (mock command execution) ✅ · next: poster-template README 🔲 · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-03 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4g Fases AA-AC + AD (dark mode) ✅ · Sprint 4h (mock command execution) ✅ · Sprint 4h-fix (command execution hotfixes) ✅ · next: poster-template README 🔲 · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
