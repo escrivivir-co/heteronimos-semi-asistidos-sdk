@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import { Bot } from "grammy";
 import { Logger } from "./logger.js";
+import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 const log = new Logger("chat-tracker");
 
@@ -45,9 +46,11 @@ export class MemoryChatStore implements ChatStore {
 export class ChatTracker {
   private chatIds: Set<number>;
   private store: ChatStore;
+  private emitter?: RuntimeEmitter;
 
-  constructor(store?: ChatStore) {
+  constructor(store?: ChatStore, emitter?: RuntimeEmitter) {
     this.store = store ?? new MemoryChatStore();
+    this.emitter = emitter;
     const loaded = this.store.load();
     this.chatIds = new Set(Array.isArray(loaded) ? loaded : []);
   }
@@ -61,6 +64,12 @@ export class ChatTracker {
       this.chatIds.add(chatId);
       this.save();
       log.debug(`Tracked new chat: ${chatId}`);
+      this.emitter?.emit({
+        type: "chat-tracked",
+        chatId,
+        total: this.chatIds.size,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 
@@ -106,5 +115,11 @@ export class ChatTracker {
     }
 
     log.info(`Broadcast complete: ${sent} sent, ${failed} failed.`);
+    this.emitter?.emit({
+      type: "broadcast",
+      chatCount: chats.length,
+      message,
+      timestamp: new Date().toISOString(),
+    });
   }
 }

@@ -26,5 +26,8 @@ export { Logger } from "./core/logger.js";
 export type { ChatStore } from "./core/chat-tracker.js";
 export { ChatTracker, FileChatStore, MemoryChatStore } from "./core/chat-tracker.js";
 
+export type { BotRuntime, PluginInfo, RuntimeEvent } from "./core/runtime-emitter.js";
+export { RuntimeEmitter, reduceRuntime, DEFAULT_BOT_RUNTIME } from "./core/runtime-emitter.js";
+
 export { Bot } from "grammy";
 export type { Context } from "grammy";

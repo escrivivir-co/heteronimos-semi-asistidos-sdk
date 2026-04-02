@@ -3,6 +3,7 @@ import { CommandDefinition, registerCommands, toBotFatherFormat, syncCommandsWit
 import { MenuDefinition, registerMenu } from "./menu-handler.js";
 import { Logger } from "./logger.js";
 import { ChatTracker } from "./chat-tracker.js";
+import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 const log = new Logger("bot-handler");
 
@@ -38,7 +39,7 @@ function prefixMenus(pluginCode: string, menus: MenuDefinition[]): MenuDefinitio
   return menus.map(m => ({ ...m, command: `${pluginCode}_${m.command}` }));
 }
 
-export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker) {
+export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, emitter?: RuntimeEmitter) {
   const allCommands: CommandDefinition[] = [];
 
   // Middleware de tracking antes de cualquier handler
@@ -65,14 +66,33 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
   if (messagePlugins.length > 0) {
     bot.on("message", async (ctx) => {
       if (!ctx?.from) return;
-      log.info(`${ctx.from.first_name} wrote ${"text" in ctx.message ? ctx.message.text : ""}`);
+      const text = "text" in ctx.message ? (ctx.message.text ?? "") : "";
+      log.info(`${ctx.from.first_name} wrote ${text}`);
+      emitter?.emit({
+        type: "message",
+        chatId: ctx.chat!.id,
+        userId: ctx.from.id,
+        username: ctx.from.first_name,
+        text,
+        timestamp: new Date().toISOString(),
+      });
       for (const plugin of messagePlugins) {
-        const text = await plugin.onMessage!(ctx);
-        await ctx.reply(text, { entities: ctx.message?.entities });
+        const reply = await plugin.onMessage!(ctx);
+        await ctx.reply(reply, { entities: ctx.message?.entities });
       }
     });
   }
 
+  const pluginInfos = plugins.map(p => ({
+    name: p.name,
+    pluginCode: p.pluginCode,
+    commandCount: p.commands().length,
+  }));
+  emitter?.emit({
+    type: "plugins-registered",
+    plugins: pluginInfos,
+    timestamp: new Date().toISOString(),
+  });
   log.info("Registered commands:\n" + toBotFatherFormat(allCommands));
 }
 
@@ -100,9 +120,14 @@ export function collectPluginFatherSettings(plugins: BotPlugin[]): { commands: C
  * Sincroniza los comandos de todos los plugins con Telegram.
  * Delega a command-handler la lógica de diff y sync.
  */
-export async function syncCommands(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, options?: SyncOptions) {
+export async function syncCommands(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, options?: SyncOptions, emitter?: RuntimeEmitter) {
   const { commands } = collectPluginFatherSettings(plugins);
   const updated = await syncCommandsWithTelegram(bot, commands, options);
+  emitter?.emit({
+    type: "commands-synced",
+    commandCount: commands.length,
+    timestamp: new Date().toISOString(),
+  });
   if (updated && tracker) {
     await tracker.broadcast(
       bot,

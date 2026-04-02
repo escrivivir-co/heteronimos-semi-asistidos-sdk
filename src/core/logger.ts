@@ -1,5 +1,6 @@
 import * as process from "node:process";
 import * as readline from "node:readline";
+import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -38,6 +39,7 @@ export interface LoggerOptions {
   level?: LogLevel;
   transport?: (formatted: string) => void;
   colors?: boolean;
+  emitter?: RuntimeEmitter;
 }
 
 export class Logger {
@@ -57,15 +59,23 @@ export class Logger {
 
   private output(level: LogLevel, consoleMethod: (...a: unknown[]) => void, msg: string, ...args: unknown[]) {
     if (!this.shouldLog(level)) return;
+    const ts = timestamp();
     const useColors = this.options.colors ?? true;
     const formatted = useColors
       ? format(level, this.scope, msg, ...args)
-      : `[${timestamp()}] [${level.toUpperCase()}] [${this.scope}] ${msg}${args.length ? " " + args.map(a => JSON.stringify(a)).join(" ") : ""}`;
+      : `[${ts}] [${level.toUpperCase()}] [${this.scope}] ${msg}${args.length ? " " + args.map(a => JSON.stringify(a)).join(" ") : ""}`;
     if (this.options.transport) {
       this.options.transport(formatted);
     } else {
       consoleMethod(formatted);
     }
+    this.options.emitter?.emit({
+      type: "log",
+      level,
+      scope: this.scope,
+      message: args.length ? `${msg} ${args.map(a => JSON.stringify(a)).join(" ")}` : msg,
+      timestamp: ts,
+    });
   }
 
   info(msg: string, ...args: unknown[]) {

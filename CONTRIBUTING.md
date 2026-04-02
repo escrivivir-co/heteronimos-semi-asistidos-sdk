@@ -17,15 +17,11 @@ Each task has an ID number and a short description. Pick one that matches your i
 ```bash
 # Fork via GitHub UI, then:
 git clone https://github.com/<your-user>/heteronimos-semi-asistidos-sdk.git
-cd heteronimos-semi-asistidos-sdk/Nodejs
+cd heteronimos-semi-asistidos-sdk
 bun install
 ```
 
-Copy the environment file:
-```bash
-cp .env.example .env
-# Edit .env → add your BOT_TOKEN from @BotFather
-```
+Copy `.env.example` to `.env`, then edit `.env` and add your `BOT_TOKEN` from `@BotFather`.
 
 Do this before running `bun run dev` or `bun run start`. The app reads `BOT_TOKEN` on startup and exits if it is missing.
 
@@ -63,15 +59,17 @@ bun run test         # run all unit tests
 ```
 src/
 ├── index.ts              ← SDK barrel (public API)
-├── main.ts               ← current console entrypoint
-├── config.ts             ← env-var loader for the local app
-├── core/
-│   ├── bot-handler.ts    ← BotPlugin interface + orchestrator
-│   ├── command-handler.ts
-│   ├── menu-handler.ts
-│   ├── chat-tracker.ts
-│   └── logger.ts
-└── bots/                 ← demo plugins (will move to examples/)
+└── core/
+	├── bot-handler.ts    ← BotPlugin interface + orchestrator
+	├── command-handler.ts
+	├── menu-handler.ts
+	├── chat-tracker.ts
+	└── logger.ts
+examples/
+└── console-app/
+	├── main.ts           ← reference app entrypoint
+	├── config.ts         ← env-var loader for the local app
+	└── rabbit-bot.ts     ← example plugin consumer
 tests/
 scripts/
 specs/                    ← design documents (SDS-00 to SDS-04)
@@ -98,6 +96,16 @@ bun run bot-father-settings   # verify command output (if you changed commands)
 ```
 
 If you're adding new functionality, add tests. Test files go in `tests/` and follow the pattern `<module>.test.ts`.
+
+## 5.1 Session Handoff / Offboarding
+
+Before you stop working, push a branch, or hand the repo to the next contributor:
+
+1. Run `bun run lint`
+2. Run `bun run test`
+3. Update [BACKLOG.md](BACKLOG.md) if a task, phase, or docs milestone was completed
+4. Keep [README.md](README.md), [docs/index.html](docs/index.html), and any affected files in [specs/](specs/) aligned when the contributor experience changes
+5. Make sure secrets such as `.env` contents are still out of git
 
 ## 6. Commit
 
