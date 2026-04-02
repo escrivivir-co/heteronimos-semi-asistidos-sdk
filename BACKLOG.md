@@ -216,6 +216,71 @@
 
 ---
 
+## Sprint 4c — Config Panel + UX de arranque (from SDS-05 §L-bis)
+
+> Objetivo: reemplazar el prompt readline en el dashboard por un panel Config dentro de la TUI.
+> Ink controla stdin en raw mode — readline.close() lo destruye. Solución arquitectónica.
+
+### Fase L-bis · Panel Config
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 121 | `dashboard` siempre `nonInteractive: true` — Ink obtiene stdin limpio | ✅ | SDS-05 §L-bis |
+| 122 | Panel `[4] Config` en `App.tsx` — nuevo tab, tecla `4`, footer actualizado | ✅ | SDS-05 §L-bis |
+| 123 | Crear `components/ConfigPanel.tsx` — muestra modo (MOCK/TELEGRAM), estado BOT_TOKEN, estado `.env` | ✅ | SDS-05 §L-bis |
+| 124 | Acción `[c]` en ConfigPanel — `copyFileSync(.env.example → .env)` + feedback sin salir del TUI | ✅ | SDS-05 §L-bis |
+| 125 | Banner de aviso mock en `StatusPanel` — si `mockMode && !tokenConfigured`, redirige a `[4] Config` | ✅ | SDS-05 §L-bis |
+| 126 | `DashboardState` — nuevos campos: `mockMode`, `tokenConfigured`, `envFileExists`, `envExampleExists`, `appDir` | ✅ | SDS-05 §L-bis |
+| 127 | `main.tsx` — `store.setState` tras `bootBot()` con los 5 campos nuevos | ✅ | SDS-05 §L-bis |
+| 128 | `confirm()` en `src/core/logger.ts` — restaura stdin tras `rl.close()` para que console-app siga interactivo | ✅ | SDS-05 §L-bis |
+| 129 | Full test suite verde — 143 tests / 12 suites / 0 fail | ✅ | — |
+| 130 | Actualizar `specs/05-console-ui.md` — Ink 6, 4 paneles, Fase L-bis, navegación 1/2/3/4 | ✅ | — |
+
+---
+
+## Sprint 4d — Ejemplos como paquetes independientes (from SDS-08)
+
+> Objetivo: `examples/console-app/` y `examples/dashboard/` son paquetes npm independientes
+> que consumen el SDK por nombre de paquete en lugar de paths relativos.
+
+### Fase P · Infraestructura de paquetes
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 131 | `examples/console-app/package.json` — instala SDK vía `file:../../` | ✅ | SDS-08 §4.1 |
+| 132 | `examples/dashboard/package.json` — instala SDK + ink + react vía `file:../../` | ✅ | SDS-08 §4.2 |
+| 133 | `examples/console-app/tsconfig.json` + `examples/dashboard/tsconfig.json` | ✅ | SDS-08 §4.3–4.4 |
+| 134 | Añadir `examples/*/node_modules` al `.gitignore` | ✅ | SDS-08 §7.1 |
+
+### Fase Q · Cambio de imports
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 135 | `console-app/main.ts` y `rabbit-bot.ts` — imports de `heteronimos-semi-asistidos-sdk` | ✅ | SDS-08 §5.1–5.2 |
+| 136 | `dashboard/main.tsx`, `emitter-bridge.ts`, `state.ts` — imports de paquete, no `../../src/index.js` | ✅ | SDS-08 §5.3–5.5 |
+| 137 | Copiar `config.ts` y `rabbit-bot.ts` a `examples/dashboard/` (autocontenido) | ✅ | SDS-08 §5.6 |
+
+### Fase R · envDir y archivos de configuración locales
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 138 | `envDir` apunta al directorio propio del ejemplo (`__dirname` / `import.meta.dir`) | ✅ | SDS-08 §5.3 |
+| 139 | `chatStorePath` apunta al directorio propio del ejemplo | ✅ | SDS-08 §5.3 |
+| 140 | Copiar `.env.example` a `examples/console-app/` y `examples/dashboard/` | ✅ | — |
+
+### Fase S · Scripts raíz + tests
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 141 | Scripts `dev`, `dev:verbose`, `dev:dashboard`, `start` delegan al ejemplo (`cd examples/… && bun run …`) | ✅ | SDS-08 §6.1 |
+| 142 | Script `examples:install` — `bun install` en ambos ejemplos | ✅ | SDS-08 §6.3 |
+| 143 | Scripts `test`, `test:report`, `test:coverage` incluyen `examples:install` como paso previo | ✅ | SDS-08 §6.3 |
+| 144 | Verificar: `bun run build:sdk && bun run examples:install && bun test ./tests` verde | ✅ | — |
+
+### Fase T · Documentación
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 145 | `specs/08-example-packages.md` — árbol §2 con `.env.example` + `ConfigPanel.tsx`; §5.3 con `store.setState` completo | ✅ | SDS-08 §7 |
+| 146 | `README.md` — árbol de estructura con `.env.example` + `ConfigPanel`; mock mode diferenciado por ejemplo | ✅ | SDS-08 §7.2 |
+| 147 | `docs/dashboard-guide.html` — 4 imports `../../src/index.js` → paquete; Paso 7 con patrón `bootBot()` real | ✅ | SDS-08 §7.7 |
+
+---
+
 ## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
@@ -253,4 +318,4 @@
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 2 (CI) 🔲 next*
+*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 2 (CI) 🔲 next*
