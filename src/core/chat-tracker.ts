@@ -58,10 +58,12 @@ export class ChatTracker {
   private chatNames = new Map<number, string>();
   private store: ChatStore;
   private emitter?: RuntimeEmitter;
+  private log: Logger;
 
   constructor(store?: ChatStore, emitter?: RuntimeEmitter) {
     this.store = store ?? new MemoryChatStore();
     this.emitter = emitter;
+    this.log = emitter ? new Logger("chat-tracker", { emitter }) : log;
     const loaded = this.store.load();
     this.chatIds = new Set(Array.isArray(loaded) ? loaded : []);
   }
@@ -75,7 +77,7 @@ export class ChatTracker {
     if (!this.chatIds.has(chatId)) {
       this.chatIds.add(chatId);
       this.save();
-      log.debug(`Tracked new chat: ${chatId}${title ? ` (${title})` : ""}`);
+      this.log.debug(`Tracked new chat: ${chatId}${title ? ` (${title})` : ""}`);
       this.emitter?.emit({
         type: "chat-tracked",
         chatId,
@@ -120,7 +122,12 @@ export class ChatTracker {
         } else if ("title" in chat && chat.title) {
           title = chat.title;
         }
+        const utype = ctx.message ? "message" : ctx.channelPost ? "channel_post" : ctx.callbackQuery ? "callback_query" : "other";
+        this.log.debug(`[middleware] update type=${utype} chat.id=${chat.id} chat.type=${chat.type} title=${title ?? "(none)"}`);
         this.track(chat.id, title, chat.type);
+      } else {
+        const utype = ctx.message ? "message" : ctx.channelPost ? "channel_post" : ctx.callbackQuery ? "callback_query" : "other";
+        this.log.debug(`[middleware] update type=${utype} — no ctx.chat`);
       }
       return next();
     });
@@ -133,11 +140,11 @@ export class ChatTracker {
   async broadcast(bot: Bot, message: string) {
     const chats = this.getAll();
     if (chats.length === 0) {
-      log.info("No known chats to broadcast to.");
+      this.log.info("No known chats to broadcast to.");
       return;
     }
 
-    log.info(`Broadcasting to ${chats.length} chat(s)...`);
+    this.log.info(`Broadcasting to ${chats.length} chat(s)...`);
     let sent = 0;
     let failed = 0;
 
@@ -146,12 +153,12 @@ export class ChatTracker {
         await bot.api.sendMessage(chatId, message);
         sent++;
       } catch {
-        log.debug(`Failed to send to chat ${chatId} (user may have blocked the bot).`);
+        this.log.debug(`Failed to send to chat ${chatId} (user may have blocked the bot).`);
         failed++;
       }
     }
 
-    log.info(`Broadcast complete: ${sent} sent, ${failed} failed.`);
+    this.log.info(`Broadcast complete: ${sent} sent, ${failed} failed.`);
     this.emitter?.emit({
       type: "broadcast",
       chatCount: chats.length,

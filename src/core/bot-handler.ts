@@ -5,6 +5,8 @@ import { Logger } from "./logger.js";
 import { ChatTracker } from "./chat-tracker.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
 
+// Logger por defecto SIN emitter (usado por collectPluginFatherSettings, etc.).
+// registerPlugins() crea un hijo con emitter si se le pasa.
 const log = new Logger("bot-handler");
 
 /**
@@ -40,7 +42,19 @@ function prefixMenus(pluginCode: string, menus: MenuDefinition[]): MenuDefinitio
 }
 
 export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, emitter?: RuntimeEmitter) {
+  // Crear logger con emitter para que los logs lleguen al dashboard
+  const plog = emitter ? new Logger("bot-handler", { emitter }) : log;
   const allCommands: CommandDefinition[] = [];
+
+  // --- Middleware 0: log global de CADA update (debug) ---
+  // Se registra primero para que sea lo primero que ve el bot.
+  bot.use(async (ctx, next) => {
+    const chatId = ctx.chat?.id ?? "?";
+    const from = ctx.from?.first_name ?? "?";
+    const utype = ctx.message ? "message" : ctx.channelPost ? "channel_post" : ctx.callbackQuery ? "callback_query" : "other";
+    plog.debug(`[update] type=${utype} chat=${chatId} from=${from} update_id=${(ctx as any).update?.update_id ?? "?"}`);
+    return next();
+  });
 
   // Middleware de tracking antes de cualquier handler
   if (tracker) tracker.register(bot);
@@ -68,11 +82,13 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
 
   // Mensajes en grupos / DMs (update type: message)
   bot.on("message", async (ctx) => {
-    if (!ctx?.from) return;
+    plog.debug(`[message] update received — chat.id=${ctx.chat?.id} from=${ctx.from?.id} (${ctx.from?.first_name})`);
+    if (!ctx?.from) { plog.debug("[message] skipped: no ctx.from"); return; }
     const text = "text" in ctx.message ? (ctx.message.text ?? "") : "";
     const isCmd = ctx.message.entities?.some(e => e.type === "bot_command") ?? false;
-    if (isCmd) return;
-    log.info(`${ctx.from.first_name} wrote: ${text || "(media)"}`);
+    if (isCmd) { plog.debug(`[message] skipped: bot_command entity (text=${text})`); return; }
+    plog.info(`${ctx.from.first_name} wrote: ${text || "(media)"}`);
+    plog.debug(`[message] emitting to dashboard — chatId=${ctx.chat!.id} userId=${ctx.from.id}`);
     emitter?.emit({
       type: "message",
       chatId: ctx.chat!.id,
@@ -81,8 +97,10 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
       text,
       timestamp: new Date().toISOString(),
     });
+    plog.debug(`[message] delegating to ${messagePlugins.length} onMessage plugin(s)`);
     for (const plugin of messagePlugins) {
       const reply = await plugin.onMessage!(ctx);
+      plog.debug(`[message] plugin replied: ${reply.slice(0, 80)}...`);
       await ctx.reply(reply);
     }
   });
@@ -92,9 +110,11 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     const post = ctx.channelPost;
     const text = post.text ?? "";
     const isCmd = post.entities?.some(e => e.type === "bot_command") ?? false;
-    if (isCmd) return;
     const chatTitle = "title" in ctx.chat ? ctx.chat.title : undefined;
-    log.info(`[channel] ${chatTitle ?? ctx.chat.id}: ${text || "(media)"}`);
+    plog.debug(`[channel_post] update received — chat.id=${ctx.chat?.id} title=${chatTitle} isCmd=${isCmd}`);
+    if (isCmd) { plog.debug("[channel_post] skipped: bot_command entity"); return; }
+    plog.info(`[channel] ${chatTitle ?? ctx.chat.id}: ${text || "(media)"}`);
+    plog.debug(`[channel_post] emitting to dashboard`);
     emitter?.emit({
       type: "message",
       chatId: ctx.chat!.id,
@@ -119,7 +139,8 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     plugins: pluginInfos,
     timestamp: new Date().toISOString(),
   });
-  log.info("Registered commands:\n" + toBotFatherFormat(allCommands));
+  plog.info("Registered commands:\n" + toBotFatherFormat(allCommands));
+  plog.debug(`Handlers registered: message=true, channel_post=true, messagePlugins=${messagePlugins.length}`);
 }
 
 /**
