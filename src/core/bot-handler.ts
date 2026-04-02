@@ -61,31 +61,49 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     }
   }
 
-  // Handler genérico de mensajes: delega al primer plugin que tenga onMessage.
-  // Se ignoran mensajes de comando (entities bot_command) para evitar
-  // doble respuesta cuando grammY ya disparó el handler específico del comando.
+  // Handler de mensajes: emite siempre al dashboard; opcionalmente delega a plugins onMessage.
+  // También cubre channel_post (canales de Telegram) que grammY NO enruta por "message".
+  // Se ignoran mensajes de comando para evitar doble respuesta.
   const messagePlugins = plugins.filter(p => p.onMessage);
-  if (messagePlugins.length > 0) {
-    bot.on("message", async (ctx) => {
-      if (!ctx?.from) return;
-      const text = "text" in ctx.message ? (ctx.message.text ?? "") : "";
-      const isCommand = ctx.message.entities?.some(e => e.type === "bot_command") ?? false;
-      if (isCommand) return;
-      log.info(`${ctx.from.first_name} wrote ${text}`);
-      emitter?.emit({
-        type: "message",
-        chatId: ctx.chat!.id,
-        userId: ctx.from.id,
-        username: ctx.from.first_name,
-        text,
-        timestamp: new Date().toISOString(),
-      });
-      for (const plugin of messagePlugins) {
-        const reply = await plugin.onMessage!(ctx);
-        await ctx.reply(reply);
-      }
+
+  // Mensajes en grupos / DMs (update type: message)
+  bot.on("message", async (ctx) => {
+    if (!ctx?.from) return;
+    const text = "text" in ctx.message ? (ctx.message.text ?? "") : "";
+    const isCmd = ctx.message.entities?.some(e => e.type === "bot_command") ?? false;
+    if (isCmd) return;
+    log.info(`${ctx.from.first_name} wrote: ${text || "(media)"}`);
+    emitter?.emit({
+      type: "message",
+      chatId: ctx.chat!.id,
+      userId: ctx.from.id,
+      username: ctx.from.first_name,
+      text,
+      timestamp: new Date().toISOString(),
     });
-  }
+    for (const plugin of messagePlugins) {
+      const reply = await plugin.onMessage!(ctx);
+      await ctx.reply(reply);
+    }
+  });
+
+  // Mensajes en canales (update type: channel_post — distinto de message en grammY)
+  bot.on("channel_post", async (ctx) => {
+    const post = ctx.channelPost;
+    const text = post.text ?? "";
+    const isCmd = post.entities?.some(e => e.type === "bot_command") ?? false;
+    if (isCmd) return;
+    const chatTitle = "title" in ctx.chat ? ctx.chat.title : undefined;
+    log.info(`[channel] ${chatTitle ?? ctx.chat.id}: ${text || "(media)"}`);
+    emitter?.emit({
+      type: "message",
+      chatId: ctx.chat!.id,
+      userId: undefined,
+      username: chatTitle,
+      text,
+      timestamp: new Date().toISOString(),
+    });
+  });
 
   const pluginInfos = plugins.map(p => {
     const cmds = prefixCommands(p.pluginCode, p.commands());
