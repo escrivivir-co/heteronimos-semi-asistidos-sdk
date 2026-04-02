@@ -1,17 +1,20 @@
-# SDS-12 · Mock Command Execution from Dashboard
+# SDS-12 · Command Execution from Dashboard
 
 > **heteronimos-semi-asistidos-sdk** · Software Design Specification
-> Estado: DRAFT · target: v0.3.0
+> Estado: IMPLEMENTED · target: v0.3.0
 
 ---
 
 ## 1. Objetivo
 
-Permitir que el dashboard TUI (y cualquier UI similar) ejecute comandos de bot contra el `MockTelegramBot` en modo mock, simulando la interacción como si viniera de Telegram. El admin selecciona un comando registrado, lo ejecuta, y ve la respuesta — todo dentro de la TUI, sin conexión real.
+Permitir que el dashboard TUI (y cualquier UI similar) ejecute comandos de bot **tanto en modo mock como con Telegram real**, simulando la interacción como si viniera de un usuario. El admin selecciona un comando registrado, lo ejecuta, y ve la respuesta — todo dentro de la TUI.
+
+En ambos modos, la ejecución es **local**: los handlers de plugin corren in-process contra un `MockTelegramBot` ligero. En modo real, el bot de Telegram sigue haciendo polling normalmente; la ejecución local es una "preview" de lo que el bot respondería sin enviar mensajes reales a Telegram.
 
 **Motivación:**
 
 - En modo mock no hay forma de probar interactivamente los comandos del bot; el mock arranca pero nadie le envía mensajes.
+- En modo real, el admin no tiene un chat directo para probar los handlers sin afectar al bot público.
 - La dashboard ya conoce los plugins cargados y sus comandos (vía `PluginInfo`), pero no puede ejecutarlos.
 - El subsistema `MockTelegramBot.simulateCommand()` ya existe y funciona — solo falta exponerlo al consumidor y cerrar el ciclo UI → mock → respuesta → UI.
 
@@ -146,7 +149,7 @@ export class MockTelegramBot {
 
 **Cambio de firma:** `simulateCommand()` pasa de `Promise<void>` a `Promise<SentMessage[]>`. No es breaking: consumidores que no usan el retorno (`await bot.simulateCommand(...)`) siguen funcionando.
 
-### 3.4 `BootResult` ampliado + `startMock` retorna mock
+### 3.4 `BootResult` ampliado + ejecución en ambos modos
 
 ```typescript
 // ANTES
@@ -159,7 +162,12 @@ export interface BootResult {
 export interface BootResult {
   mock: boolean;
   started: boolean;
-  /** Ejecuta un comando contra el mock bot. Solo disponible en mock mode. */
+  /**
+   * Ejecuta un comando contra un mock local. Disponible en AMBOS modos:
+   * - Mock mode: usa el mock principal del bot.
+   * - Real mode: usa un mock auxiliar con los mismos plugins.
+   * En ningún caso se envían mensajes a Telegram.
+   */
   executeCommand?: (name: string, opts?: SimulateOpts) => Promise<SentMessage[]>;
 }
 ```
@@ -184,9 +192,38 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts),
     };
   }
-  // ... fallback mock también monta executeCommand ...
+
+  // --- Real mode ---
+  const bot = new Bot(env.token);
+  // ... setup ...
+  registerPlugins(bot, opts.plugins, tracker, emitter);
+  await syncCommands(bot, opts.plugins, tracker, syncOpts, emitter);
+
+  // Mock auxiliar para ejecución local de comandos desde la UI.
+  // Se registran los mismos plugins sin emitter/tracker para evitar
+  // duplicar el evento plugins-registered y el middleware de tracking.
+  // El emitter del mock constructor se usa solo para command-* events.
+  const localMock = new MockTelegramBot({ emitter });
+  registerPlugins(localMock as any, opts.plugins);
+
+  // Polling en background — bootBot retorna inmediatamente.
+  // El event loop se mantiene vivo por el polling de grammY.
+  bot.start().catch(err => {
+    log.error(`Polling error: ${err instanceof Error ? err.message : String(err)}`);
+    emitStatus(emitter, "error");
+  });
+
+  return {
+    mock: false,
+    started: true,
+    executeCommand: (name, simOpts) => localMock.simulateCommand(name, simOpts),
+  };
 }
 ```
+
+**Nota sobre `bot.start()` non-blocking:** Anteriormente `await bot.start()` hacía que `bootBot()` nunca retornara en modo real, impidiendo que la dashboard se montara. Al usar fire-and-forget con `.catch()`, el polling corre en background y la dashboard puede renderizar inmediatamente. El proceso se mantiene vivo porque grammY mantiene el event loop activo con HTTP polling.
+
+**Nota sobre mock auxiliar en modo real:** Los plugins son instancias compartidas — el `buildText()` de un plugin usa el mismo estado tanto si lo llama el bot real como el mock local. Solo difiere el destino del `ctx.reply()`: en el bot real va a Telegram; en el mock local va a `sentMessages[]` en memoria.
 
 ### 3.5 `CommandResponseEntry` + `BaseRuntimeState` ampliado
 
@@ -264,7 +301,7 @@ export { CMD_BUFFER_SIZE } from "./core/store.js";
 ```typescript
 export interface DashboardState extends BaseRuntimeState {
   // ... campos existentes ...
-  /** Función para ejecutar comandos en mock mode. null si no está en mock. */
+  /** Función para ejecutar comandos localmente. null si bot no arrancó. */
   executeCommand: ((name: string) => Promise<SentMessage[]>) | null;
 }
 ```
@@ -274,10 +311,12 @@ export interface DashboardState extends BaseRuntimeState {
 Panel `[5] Commands` que:
 
 1. **Lista los comandos** agrupados por plugin — lee `state.plugins[].commands[]`.
+   - Los nombres en `commands[].command` ya tienen prefijo (`rb_aleph`), NO se prefija de nuevo.
 2. **Selector** — el admin navega con ↑↓ y ejecuta con Enter.
 3. **Ejecución** — llama `state.executeCommand(selectedCommand)`.
 4. **Visor de respuestas** — muestra `state.commandResponses[]` con scroll.
-5. **Estado deshabilitado** — si `executeCommand === null` (bot real), muestra mensaje informativo: "Command execution only available in mock mode."
+5. **Estado deshabilitado** — si `executeCommand === null` (bot no arrancó), muestra mensaje informativo.
+6. **Modo real** — muestra nota: "Local execution — no messages sent to Telegram."
 
 ```
 ┌─ [5] Commands ──────────────────────────────────┐
@@ -326,7 +365,7 @@ store.setState((s) => ({
 
 | Aspecto | Motivo |
 |---------|--------|
-| Ejecución contra bot real | Riesgo: enviar mensajes reales desde panel admin requiere confirmación UX adicional |
+| Enviar mensajes reales a Telegram desde panel admin | Se usa ejecución local (mock) para ambos modos — no hay side-effects en Telegram |
 | `callbackQuery` / menús inline | Complejidad: requiere estado de navegación de menú; se puede añadir después |
 | Input de texto libre | El mock necesita contexto para `onMessage` handlers; requiere UX adicional |
 | Exportar `MockTelegramBot` públicamente | Se expone solo `executeCommand`; si consumidores necesitan más, se promueve |
@@ -338,13 +377,14 @@ store.setState((s) => ({
 
 1. ✅ `PluginInfo.commands` se llena correctamente al registrar plugins (con y sin mock).
 2. ✅ `MockTelegramBot.simulateCommand()` retorna `SentMessage[]` y emite `command-executed` + `command-response` por el emitter.
-3. ✅ `BootResult.executeCommand` existe en mock mode y es `undefined` con bot real.
+3. ✅ `BootResult.executeCommand` existe tanto en mock mode como con bot real (ejecución local en ambos).
 4. ✅ `BaseRuntimeState.commandResponses` se reduce correctamente desde `command-response` events.
-5. ✅ Dashboard panel `[5] Commands` lista comandos de todos los plugins.
+5. ✅ Dashboard panel `[5] Commands` lista comandos de todos los plugins — con prefijo correcto (sin duplicar).
 6. ✅ Al ejecutar un comando, la respuesta aparece en el visor del panel.
-7. ✅ Si no es mock mode, el panel muestra mensaje informativo y no permite ejecución.
-8. ✅ Full test suite verde + lint limpio.
-9. ✅ No breaking changes — consumidores que no usan las features nuevas no se ven afectados.
+7. ✅ Si `executeCommand === null` (bot no arrancó), el panel muestra mensaje informativo.
+8. ✅ En modo real, `bootBot()` retorna inmediatamente (non-blocking polling) y la dashboard puede renderizar.
+9. ✅ Full test suite verde + lint limpio.
+10. ✅ No breaking changes — consumidores que no usan las features nuevas no se ven afectados.
 
 ---
 
@@ -365,6 +405,8 @@ store.setState((s) => ({
 |--------|-------|------------|
 | `PluginInfo.commands` rompe snapshots serializados | Baja | Campo aditivo; `reduceRuntime` devuelve state sin cambios para campos desconocidos |
 | `simulateCommand` retorna `SentMessage[]` vs anterior `void` | Baja | No-breaking: void consumers ignoran retorno |
-| `BaseRuntimeState` crece con campo solo útil en mock | Baja | Campo es `[]` por defecto; overhead negligible; cualquier UI con command execution lo necesita |
+| `BaseRuntimeState` crece con campo solo útil en UI con commands | Baja | Campo es `[]` por defecto; overhead negligible; cualquier UI con command execution lo necesita |
 | Deadlock si handler async largo bloquea Ink | Baja | `simulateCommand` es async; Ink continúa renderizando mientras await resuelve |
 | `executeCommand` captura referencia al mock — memory leak | Baja | Mock vive tanto como el proceso; cleanup en `emitter.complete()` |
+| Non-blocking `bot.start()` cambia contrato de bootBot | Media | El process se mantiene vivo por grammY polling; `console-app` sigue funcionando porque `bot.start()` mantiene event loop activo |
+| Handlers de plugin con side-effects en modo real + local mock | Baja | `ctx.reply` del mock va a `sentMessages[]` (no a Telegram); estado de plugin es read-only en la mayoría de handlers |
