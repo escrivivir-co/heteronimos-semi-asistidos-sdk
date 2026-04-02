@@ -75,17 +75,22 @@ bun run start          # single run
 The SDK follows a **bot-of-bots** pattern. Each bot is a plugin (`BotPlugin`) that declares its own commands, menus, and message handlers. The core wires them together, prefixing commands with a plugin code to avoid collisions.
 
 ```
-main.ts                         ← entry point
+src/
+├── main.ts                     ← entry point
+├── config.ts                   ← env-var loader (BOT_TOKEN, etc.)
 ├── core/
 │   ├── bot-handler.ts          ← BotPlugin interface + orchestrator
 │   ├── command-handler.ts      ← command registration + Telegram sync
 │   ├── menu-handler.ts         ← inline keyboard menus (declarative)
 │   ├── chat-tracker.ts         ← persistent chat tracking + broadcast
 │   └── logger.ts               ← scoped logger with LOG_LEVEL
-├── bots/
-│   └── rabbit-bot.ts           ← example plugin (pluginCode = "rb")
-└── scripts/
-    └── build-bot-father-settings.ts
+└── bots/
+    └── rabbit-bot.ts           ← example plugin (pluginCode = "rb")
+scripts/
+├── build-bot-father-settings.ts
+└── release.ts
+tests/
+└── *.test.ts
 ```
 
 ### Plugin Flow

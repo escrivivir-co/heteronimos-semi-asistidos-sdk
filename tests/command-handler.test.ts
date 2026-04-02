@@ -5,7 +5,7 @@ import {
   commandsMatch,
   type CommandDefinition,
   type BotCommand,
-} from "../core/command-handler";
+} from "../src/core/command-handler";
 
 // ── toBotFatherFormat ──
 

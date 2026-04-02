@@ -171,7 +171,7 @@ SOLANA_ADDRESS=your-address</div>
   <details>
     <summary>Example — minimal plugin</summary>
     <div class="detail-body">
-<div class="cmd">import { BotPlugin } from "./core/bot-handler";
+<div class="cmd">import { BotPlugin } from "./src/core/bot-handler";
 
 export class MyBot implements BotPlugin {
   name = "my-bot";
@@ -186,7 +186,7 @@ export class MyBot implements BotPlugin {
     }];
   }
 }</div>
-<div class="cmd"><span class="comment"># main.ts</span>
+<div class="cmd"><span class="comment"># src/main.ts</span>
 const plugins = [new MyBot()];
 registerPlugins(bot, plugins, tracker);</div>
     </div>

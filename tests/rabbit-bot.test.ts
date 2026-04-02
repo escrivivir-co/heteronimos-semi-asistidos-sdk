@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { RabbitBot } from "../bots/rabbit-bot";
+import { RabbitBot } from "../src/bots/rabbit-bot";
 
 describe("RabbitBot", () => {
   const bot = new RabbitBot("SOL_TEST_ADDRESS");
