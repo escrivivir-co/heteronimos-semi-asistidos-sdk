@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "bun run main.ts",
-    "dev": "bun --watch run main.ts"
+    "dev": "bun run main.ts"
   },
   "dependencies": {
     "heteronimos-semi-asistidos-sdk": "file:../../",
