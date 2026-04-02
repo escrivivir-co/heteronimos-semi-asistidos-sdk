@@ -20,6 +20,15 @@ A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define b
 - **Run without a BOT_TOKEN (mock mode)** → console-app: answer `y` when prompted, or set `MOCK_MODE=1`; dashboard: goes to mock automatically (no prompt — use `[4] Config` panel to set up)
 - **Contribute to the refactor** → read this README first, then [CONTRIBUTING.md](CONTRIBUTING.md), [BACKLOG.md](BACKLOG.md), and the design docs in [specs/](specs/)
 
+The SDK supports two app archetypes:
+
+| Archetype | When to use | Key SDK entry points |
+|-----------|-------------|---------------------|
+| **Headless / Server** | Running in Docker, CI, a server — no interactive terminal | `bootBot()` — no emitter needed |
+| **Interactive / Admin** | Bot + live TUI or web UI for monitoring | `bootBot()` + `RuntimeEmitter` + `createStore` + `connectEmitterToStore` |
+
+See [`examples/console-app/`](examples/console-app/README.md) for the headless archetype and [`examples/dashboard/`](examples/dashboard/README.md) for the interactive one.
+
 ---
 
 ## Quick Start (Repo)
@@ -128,24 +137,24 @@ src/
     ├── chat-tracker.ts         ← persistent chat tracking + broadcast
     ├── logger.ts               ← scoped logger with LOG_LEVEL
     ├── runtime-emitter.ts      ← RxJS Subject-based event bus (observability)
+    ├── store.ts                ← generic reactive store (Store<T>, createStore)
+    ├── emitter-bridge.ts       ← RuntimeEmitter → Store bridge (BaseRuntimeState)
     ├── startup.ts              ← ensureEnv() — .env detection + copy + token check
     ├── boot.ts                 ← bootBot() — full startup orchestrator
     └── mock-telegram.ts        ← MockTelegramBot for tests + fallback
 examples/
-├── console-app/              ← standalone npm package (file: SDK)
+├── console-app/              ← headless archetype (standalone npm package)
 │   ├── package.json          ← installs SDK via `file:../../`
 │   ├── .env.example          ← template — copy to .env before running
 │   ├── main.ts               ← minimal entrypoint
 │   ├── config.ts             ← optional env vars (SOLANA_ADDRESS)
 │   └── rabbit-bot.ts         ← demo plugin (pluginCode = "rb")
-└── dashboard/                ← standalone npm package (TUI, Ink/React + RxJS)
+└── dashboard/                ← interactive archetype (TUI, Ink/React + RxJS)
     ├── package.json          ← installs SDK + ink + react via `file:../../`
     ├── .env.example          ← template — copy to .env before running
     ├── main.tsx              ← entrypoint: bot + TUI in parallel
     ├── App.tsx               ← root component (header, panel, footer)
-    ├── emitter-bridge.ts     ← RuntimeEmitter → store reducer
-    ├── store.ts              ← mini reactive store
-    ├── state.ts              ← DashboardState + buffer types
+    ├── state.ts              ← DashboardState extends BaseRuntimeState
     ├── theme.ts              ← color palette
     └── components/           ← StatusPanel, LogViewer, ChatList, ConfigPanel
 scripts/
@@ -232,19 +241,6 @@ interface MenuDefinition {
 ```
 
 Each `MenuPage` has an `id`, `text` (supports HTML), and `buttons` (navigation or URL).
-
----
-
-## App Archetypes
-
-The SDK supports two usage patterns depending on whether your bot needs a real-time UI:
-
-| Archetype | When to use | Key SDK entry points |
-|-----------|-------------|---------------------|
-| **Headless / Server** | Running in Docker, CI, a server — no interactive terminal | `bootBot()` — no emitter needed |
-| **Interactive / Admin** | Bot + live TUI or web UI for monitoring | `bootBot()` + `RuntimeEmitter` + `createStore` + `connectEmitterToStore` |
-
-See [`examples/console-app/`](examples/console-app/README.md) for the headless archetype and [`examples/dashboard/`](examples/dashboard/README.md) for the interactive one.
 
 ---
 
