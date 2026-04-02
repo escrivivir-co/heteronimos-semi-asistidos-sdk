@@ -37,3 +37,10 @@ export { bootBot } from "./core/boot.js";
 
 export { Bot } from "grammy";
 export type { Context } from "grammy";
+
+// --- Store + UI bridge ---
+export type { LogEntry, MessageEntry, Store } from "./core/store.js";
+export { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, createStore } from "./core/store.js";
+
+export type { BaseRuntimeState, EmitterBridgeOptions } from "./core/emitter-bridge.js";
+export { getDefaultBaseState, connectEmitterToStore } from "./core/emitter-bridge.js";
