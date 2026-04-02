@@ -11,6 +11,8 @@ export interface PersistedMessages {
   commandResponses: CommandResponseEntry[];
   /** Chat IDs conocidos — complementa los de FileChatStore para cubrir reinicios. */
   chatIds?: number[];
+  /** Nombres/títulos de cada chat — para mostrar en la UI sin perder el nombre al reiniciar. */
+  chatNames?: Record<number, string>;
 }
 
 /** Contrato mínimo de almacenamiento de mensajes. */
@@ -50,10 +52,12 @@ export class FileMessageStore implements MessageStore {
       const messages: MessageEntry[] = Array.isArray(data.messages) ? data.messages : [];
       const commandResponses: CommandResponseEntry[] = Array.isArray(data.commandResponses) ? data.commandResponses : [];
       const chatIds: number[] = Array.isArray(data.chatIds) ? data.chatIds : [];
+      const chatNames: Record<number, string> = (data.chatNames && typeof data.chatNames === "object" && !Array.isArray(data.chatNames)) ? data.chatNames : {};
       return {
         messages: messages.slice(-this.maxMessages),
         commandResponses: commandResponses.slice(-this.maxResponses),
         chatIds,
+        chatNames,
       };
     } catch {
       log.warn(`Could not load messages file at ${this.filePath}, starting fresh.`);
@@ -66,6 +70,8 @@ export class FileMessageStore implements MessageStore {
       const payload: PersistedMessages = {
         messages: data.messages.slice(-this.maxMessages),
         commandResponses: data.commandResponses.slice(-this.maxResponses),
+        chatIds: data.chatIds,
+        chatNames: data.chatNames,
       };
       const tmp = this.filePath + ".tmp";
       fs.writeFileSync(tmp, JSON.stringify(payload), "utf-8");

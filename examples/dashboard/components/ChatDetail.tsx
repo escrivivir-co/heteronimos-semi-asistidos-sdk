@@ -69,7 +69,8 @@ export function ChatDetail({ chatId, state, scrollOffset, onScroll, onBack }: Pr
     <Box flexDirection="column" paddingTop={1} gap={1}>
       {/* Header */}
       <Box gap={2}>
-        <Text bold color={theme.title}>Chat #{chatId}</Text>
+        <Text bold color={theme.title}>{state.chatNames?.[chatId] ?? `Chat #${chatId}`}</Text>
+        {state.chatNames?.[chatId] && <Text color={theme.muted} dimColor>#{chatId}</Text>}
         <Text color={theme.muted}>({total} messages)</Text>
         <Text color={theme.muted} dimColor>  [↑↓/jk] Scroll  [Esc] Back</Text>
       </Box>

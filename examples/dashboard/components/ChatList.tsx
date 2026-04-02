@@ -60,10 +60,14 @@ export function ChatList({ state, cursorIndex, onMove, onSelect }: Props) {
 
       {threads.map(({ chatId, last }, idx) => {
         const selected = idx === clamped;
+        const name = state.chatNames?.[chatId];
         return (
           <Box key={chatId} gap={2}>
             <Text color={selected ? theme.primary : theme.muted}>{selected ? "▶" : " "}</Text>
-            <Text color={theme.primary} bold={selected}>#{chatId}</Text>
+            <Box flexDirection="column">
+              <Text color={theme.primary} bold={selected}>{name ?? `#${chatId}`}</Text>
+              {name && <Text color={theme.muted} dimColor>{chatId}</Text>}
+            </Box>
             {last ? (
               <>
                 <Text color={theme.muted}>{formatTime(last.timestamp)}</Text>

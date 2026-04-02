@@ -14,6 +14,8 @@ export interface BaseRuntimeState {
   plugins: PluginInfo[];
   commandCount: number;
   chatIds: number[];
+  /** Nombres/títulos conocidos de cada chat. Clave: chatId numérico. */
+  chatNames: Record<number, string>;
   logs: LogEntry[];
   messages: MessageEntry[];
   /** Respuestas de comandos ejecutados desde la UI (mock mode). Buffer circular. */
@@ -28,6 +30,7 @@ export function getDefaultBaseState(): BaseRuntimeState {
     plugins: [],
     commandCount: 0,
     chatIds: [],
+    chatNames: {},
     logs: [],
     messages: [],
     commandResponses: [],
@@ -81,6 +84,7 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
           messages: (data.messages as T["messages"]),
           commandResponses: (data.commandResponses as T["commandResponses"]),
           chatIds: [...merged] as T["chatIds"],
+          chatNames: { ...prev.chatNames, ...(data.chatNames ?? {}) } as T["chatNames"],
         };
       });
     };
@@ -98,13 +102,13 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
     if (!messageStore) return;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      messageStore.save({ messages: state.messages, commandResponses: state.commandResponses, chatIds: state.chatIds });
+      messageStore.save({ messages: state.messages, commandResponses: state.commandResponses, chatIds: state.chatIds, chatNames: state.chatNames });
     }, 500);
   }
   function flushSave(state: BaseRuntimeState): void {
     if (!messageStore) return;
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-    messageStore.save({ messages: state.messages, commandResponses: state.commandResponses, chatIds: state.chatIds });
+    messageStore.save({ messages: state.messages, commandResponses: state.commandResponses, chatIds: state.chatIds, chatNames: state.chatNames });
   }
 
   function handleEvent(event: RuntimeEvent) {
@@ -124,13 +128,17 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
         case "status-change":
           return { ...prev, botStatus: event.status };
 
-        case "chat-tracked":
-          if (prev.chatIds.includes(event.chatId)) return prev;
-          {
-            const nextChatState = { ...prev, chatIds: [...prev.chatIds, event.chatId] };
-            scheduleSave(nextChatState);
-            return nextChatState;
-          }
+        case "chat-tracked": {
+          const isNew = !prev.chatIds.includes(event.chatId);
+          if (!isNew && !event.chatTitle) return prev;
+          const chatNames = event.chatTitle
+            ? { ...prev.chatNames, [event.chatId]: event.chatTitle }
+            : prev.chatNames;
+          const chatIds = isNew ? [...prev.chatIds, event.chatId] : prev.chatIds;
+          const nextChatState = { ...prev, chatIds, chatNames };
+          scheduleSave(nextChatState);
+          return nextChatState;
+        }
 
         case "broadcast":
           return prev;

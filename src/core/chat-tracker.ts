@@ -5,6 +5,16 @@ import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 const log = new Logger("chat-tracker");
 
+/** Información básica de un chat de Telegram (subconjunto de la API). */
+export interface ChatInfo {
+  id: number;
+  type: "private" | "group" | "supergroup" | "channel";
+  title?: string;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
 /** Contrato mínimo de almacenamiento de chat IDs */
 export interface ChatStore {
   load(): number[] | Promise<number[]>;
@@ -45,6 +55,7 @@ export class MemoryChatStore implements ChatStore {
  */
 export class ChatTracker {
   private chatIds: Set<number>;
+  private chatNames = new Map<number, string>();
   private store: ChatStore;
   private emitter?: RuntimeEmitter;
 
@@ -59,15 +70,28 @@ export class ChatTracker {
     this.store.save([...this.chatIds]);
   }
 
-  track(chatId: number) {
+  track(chatId: number, title?: string, chatType?: string) {
+    if (title) this.chatNames.set(chatId, title);
     if (!this.chatIds.has(chatId)) {
       this.chatIds.add(chatId);
       this.save();
-      log.debug(`Tracked new chat: ${chatId}`);
+      log.debug(`Tracked new chat: ${chatId}${title ? ` (${title})` : ""}`);
       this.emitter?.emit({
         type: "chat-tracked",
         chatId,
         total: this.chatIds.size,
+        chatTitle: title,
+        chatType,
+        timestamp: new Date().toISOString(),
+      });
+    } else if (title) {
+      // Chat ya conocido pero con nombre nuevo (renombrado, o primera vez que llega)
+      this.emitter?.emit({
+        type: "chat-tracked",
+        chatId,
+        total: this.chatIds.size,
+        chatTitle: title,
+        chatType,
         timestamp: new Date().toISOString(),
       });
     }
@@ -90,6 +114,7 @@ export class ChatTracker {
         type: "chat-tracked",
         chatId,
         total,
+        chatTitle: this.chatNames.get(chatId),
         timestamp: new Date().toISOString(),
       });
     }
@@ -101,7 +126,14 @@ export class ChatTracker {
   register(bot: Bot) {
     bot.use((ctx, next) => {
       if (ctx.chat) {
-        this.track(ctx.chat.id);
+        const chat = ctx.chat;
+        let title: string | undefined;
+        if (chat.type === "private") {
+          title = chat.first_name + ("last_name" in chat && chat.last_name ? " " + chat.last_name : "");
+        } else if ("title" in chat && chat.title) {
+          title = chat.title;
+        }
+        this.track(chat.id, title, chat.type);
       }
       return next();
     });
