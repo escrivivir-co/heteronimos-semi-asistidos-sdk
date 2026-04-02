@@ -28,7 +28,19 @@ estado del bot en tiempo real usando [Ink](https://github.com/vadimdemedes/ink)
 ## Cómo correr
 
 ```bash
-# Desde la raíz del repo. Necesitas .env con BOT_TOKEN.
+# Desde la raíz del repo — construir el SDK primero:
+bun run build:sdk
+
+# Luego, desde este directorio:
+cd examples/dashboard
+bun install
+bun run start
+```
+
+O usando el atajo del raíz:
+
+```bash
+bun run build:sdk && bun run examples:install
 bun run dev:dashboard
 ```
 

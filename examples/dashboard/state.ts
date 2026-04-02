@@ -1,4 +1,4 @@
-import type { PluginInfo } from "../../src/index.js";
+import type { PluginInfo } from "heteronimos-semi-asistidos-sdk";
 
 /** Entrada de log en el buffer de la dashboard */
 export interface LogEntry {

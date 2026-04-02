@@ -6,7 +6,20 @@ arrancar un bot con un plugin real (`RabbitBot`) usando el SDK.
 ## Cómo correr
 
 ```bash
-# Desde la raíz del repo. Necesitas .env con BOT_TOKEN.
+# Desde la raíz del repo — construir el SDK primero:
+bun run build:sdk
+
+# Luego, desde este directorio:
+cd examples/console-app
+bun install
+bun run start        # single run
+bun run dev          # watch mode
+```
+
+O usando los atajos del raíz:
+
+```bash
+bun run build:sdk && bun run examples:install
 bun run dev          # watch mode
 bun run start        # single run
 ```

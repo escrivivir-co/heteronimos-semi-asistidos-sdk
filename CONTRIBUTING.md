@@ -66,10 +66,11 @@ src/
 	├── chat-tracker.ts
 	└── logger.ts
 examples/
-└── console-app/
-	├── main.ts           ← reference app entrypoint
-	├── config.ts         ← env-var loader for the local app
-	└── rabbit-bot.ts     ← example plugin consumer
+├── console-app/          ← standalone package (package.json, installs SDK via file:)
+│   ├── main.ts           ← reference app entrypoint
+│   ├── config.ts         ← env-var loader for the local app
+│   └── rabbit-bot.ts     ← example plugin consumer
+└── dashboard/            ← standalone package (Ink/React TUI + SDK via file:)
 tests/
 scripts/
 specs/                    ← design documents (SDS-00 to SDS-04)
@@ -78,7 +79,7 @@ docs/                     ← GitHub Pages site
 
 ### Creating a Plugin
 
-The main contribution path is adding new bot plugins. Use `src/index.ts` as the public API reference, and see `examples/console-app/rabbit-bot.ts` as a working example plugin.
+The main contribution path is adding new bot plugins. Use `src/index.ts` as the public API reference, and see `examples/console-app/rabbit-bot.ts` as a working example plugin. Note: imports in the examples use the package name (`import type { BotPlugin } from "heteronimos-semi-asistidos-sdk"`) — exactly as an external consumer would.
 
 Each plugin needs:
 - A unique `pluginCode` (2-3 lowercase alphanumeric chars) to avoid command collisions

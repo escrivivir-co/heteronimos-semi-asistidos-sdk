@@ -1,4 +1,4 @@
-import type { RuntimeEmitter, RuntimeEvent } from "../../src/index.js";
+import type { RuntimeEmitter, RuntimeEvent } from "heteronimos-semi-asistidos-sdk";
 import type { Store } from "./store.js";
 import type { DashboardState } from "./state.js";
 import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE } from "./state.js";

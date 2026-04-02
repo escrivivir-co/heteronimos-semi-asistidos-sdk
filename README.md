@@ -85,26 +85,29 @@ If you skip `.env` setup, the SDK will guide you interactively at startup: offer
 ## Run
 
 ```bash
-bun run dev            # watch mode
-bun run dev:verbose    # watch + LOG_LEVEL=debug
-bun run start          # single run
+bun run build:sdk        # build the SDK first (required before examples:install)
+bun run examples:install # link SDK into both example packages
+bun run dev              # watch mode (console-app)
+bun run dev:verbose      # watch + LOG_LEVEL=debug
+bun run start            # single run (console-app)
 ```
 
 ## Scripts
 
 | Script | Description |
 |--------|-------------|
-| `bun run dev` | Watch mode (auto-reload) |
+| `bun run dev` | Watch mode — delegates to `examples/console-app` |
 | `bun run dev:verbose` | Watch + debug logging |
-| `bun run dev:dashboard` | TUI dashboard (Ink/React) |
-| `bun run start` | Run once |
+| `bun run dev:dashboard` | TUI dashboard — delegates to `examples/dashboard` |
+| `bun run start` | Run once (console-app) |
 | `bun run build` | Compile the SDK to `dist/` |
 | `bun run build:sdk` | Emit publishable JS + `.d.ts` for the SDK |
 | `bun run build:example` | Bundle the example app to `dist-example/` |
 | `bun run dist` | Build and run the bundled example output |
+| `bun run examples:install` | `bun install` in both example packages |
 | `bun run lint` | Type-check (tsc --noEmit) |
 | `bun run bot-father-settings` | Generate `bot-father-settings.md` |
-| `bun run test` | Run unit tests |
+| `bun run test` | Build SDK, install examples, run unit tests |
 | `bun run test:report` | Tests + JUnit XML report |
 | `bun run test:coverage` | Tests + coverage report |
 | `bun run release <patch\|minor\|major>` | Bump version, tag, commit |
@@ -129,18 +132,20 @@ src/
     ├── boot.ts                 ← bootBot() — full startup orchestrator
     └── mock-telegram.ts        ← MockTelegramBot for tests + fallback
 examples/
-├── console-app/
-│   ├── main.ts                 ← minimal entrypoint
-│   ├── config.ts               ← optional env vars (SOLANA_ADDRESS)
-│   └── rabbit-bot.ts           ← demo plugin (pluginCode = "rb")
-└── dashboard/                  ← TUI dashboard app (Ink/React + RxJS)
-    ├── main.tsx                ← entrypoint: bot + TUI in parallel
-    ├── App.tsx                 ← root component (header, panel, footer)
-    ├── emitter-bridge.ts       ← RuntimeEmitter → store reducer
-    ├── store.ts                ← mini reactive store
-    ├── state.ts                ← DashboardState + buffer types
-    ├── theme.ts                ← color palette
-    └── components/             ← StatusPanel, LogViewer, ChatList
+├── console-app/              ← standalone npm package (file: SDK)
+│   ├── package.json          ← installs SDK via `file:../../`
+│   ├── main.ts               ← minimal entrypoint
+│   ├── config.ts             ← optional env vars (SOLANA_ADDRESS)
+│   └── rabbit-bot.ts         ← demo plugin (pluginCode = "rb")
+└── dashboard/                ← standalone npm package (TUI, Ink/React + RxJS)
+    ├── package.json          ← installs SDK + ink + react via `file:../../`
+    ├── main.tsx              ← entrypoint: bot + TUI in parallel
+    ├── App.tsx               ← root component (header, panel, footer)
+    ├── emitter-bridge.ts     ← RuntimeEmitter → store reducer
+    ├── store.ts              ← mini reactive store
+    ├── state.ts              ← DashboardState + buffer types
+    ├── theme.ts              ← color palette
+    └── components/           ← StatusPanel, LogViewer, ChatList
 scripts/
 ├── build-bot-father-settings.ts
 └── release.ts

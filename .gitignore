@@ -8,3 +8,5 @@ dist/
 dist-example/
 test-results.xml
 .chats.json
+examples/*/node_modules
+examples/*/bun.lock

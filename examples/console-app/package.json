@@ -1,0 +1,15 @@
+{
+  "name": "example-console-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run main.ts",
+    "dev": "bun --watch run main.ts"
+  },
+  "dependencies": {
+    "heteronimos-semi-asistidos-sdk": "file:../../",
+    "grammy": "^1.11.2",
+    "rxjs": "^7.8.2"
+  }
+}

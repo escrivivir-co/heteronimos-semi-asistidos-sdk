@@ -1,6 +1,6 @@
 import { RabbitBot } from "./rabbit-bot";
 import { SOLANA_ADDRESS } from "./config";
-import { Logger, bootBot } from "../../src/index";
+import { Logger, bootBot } from "heteronimos-semi-asistidos-sdk";
 import * as path from "node:path";
 
 const rootDir = path.join(__dirname, "..", "..");

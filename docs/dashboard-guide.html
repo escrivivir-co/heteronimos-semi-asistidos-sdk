@@ -168,7 +168,7 @@
   <div class="tape tape-tl"></div>
   <h3>Paso 0 · Estructura de carpetas</h3>
   <div style="font-size:0.68rem;margin-bottom:8px;">
-    Crea la carpeta de tu app dentro de <span class="hl-box">examples/</span>. Toda la lógica vive aquí — el SDK está arriba en <span class="hl-box">src/</span>.
+    El dashboard es un paquete npm independiente dentro de <span class="hl-box">examples/dashboard/</span>. Instala el SDK vía <span class="hl-box">file:../../</span> y consume t odo desde el nombre de paquete — exactamente como lo harías desde npm.
   </div>
   <div class="cmd"><span class="prompt">mkdir -p examples/dashboard/components</span></div>
   <div style="font-size:0.66rem;">
@@ -212,10 +212,10 @@
 
   <div class="step-title">1c. Script de desarrollo</div>
   <div style="font-size:0.66rem;margin-bottom:4px;">
-    Añade a <span class="hl-box">package.json</span>:
+    El <span class="hl-box">package.json</span> del ejemplo ya incluye los scripts. Desde la raíz del repo:
   </div>
-  <div class="cmd"><span class="comment">// package.json → scripts</span>
-"dev:dashboard": "bun --watch run ./examples/dashboard/main.tsx"</div>
+  <div class="cmd"><span class="comment">// desde la raíz del repo</span>
+bun run dev:dashboard   <span class="comment"># delega a examples/dashboard</span></div>
 
   <div class="tip">
     <code>--watch</code> recarga la app al guardar. Perfecto para iterar en la UI.
@@ -660,11 +660,14 @@ export function App({ store }: AppProps) {
   <div class="cmd">import React from "react";
 import { render } from "ink";
 import {
-  Bot, RuntimeEmitter, ChatTracker, FileChatStore,
-  registerPlugins, syncCommands, Logger,
-} from "../../src/index.js";
-import { TOKEN } from "../console-app/config.js";   <span class="comment">// lee .env</span>
-import { RabbitBot } from "../console-app/rabbit-bot.js";
+  RuntimeEmitter, Logger, bootBot,
+} from "heteronimos-semi-asistidos-sdk";
+import { SOLANA_ADDRESS } from "./config.js";
+import { RabbitBot } from "./rabbit-bot.js";
+import { createStore } from "./store.js";
+import { getDefaultDashboardState } from "./state.js";
+import { connectEmitterToStore } from "./emitter-bridge.js";
+import { App } from "./App.js";
 import { createStore } from "./store.js";
 import { getDefaultDashboardState } from "./state.js";
 import { connectEmitterToStore } from "./emitter-bridge.js";
