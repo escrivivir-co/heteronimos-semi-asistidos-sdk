@@ -13,14 +13,20 @@ bun run start        # single run
 
 ## Modo Mock (sin BOT_TOKEN válido)
 
-Si Telegram rechaza el token o la red no está disponible, la app detecta el
-error y pregunta:
+Al arrancar, el SDK (`bootBot()`) guía al usuario:
+
+1. Si no existe `.env`, ofrece crearlo copiando `.env.example`.
+2. Si `BOT_TOKEN` está vacío o ausente, ofrece arrancar en modo mock.
+3. Si el token existe pero falla la conexión, también ofrece mock.
 
 ```
-¿Arrancar en modo mock (sin Telegram)? (y/n):
+⚠  No se encontró .env — ¿Crear .env a partir de .env.example? (y/n): y
+✔  .env creado. Edítalo con tu BOT_TOKEN de @BotFather.
+⚠  BOT_TOKEN no está configurado — ¿Arrancar en modo mock? (y/n): y
+[MOCK] Bot mock activo. Comandos registrados: rb_aleph, rb_join...
 ```
 
-Respondiendo `y`, arranca un `MockTelegramBot` en proceso:
+En modo mock:
 - Todos los plugins se registran normalmente.
 - Los comandos se sincronizan contra el mock (sin llamadas de red).
 - No hay polling real — la app queda en estado "mock activo".
@@ -31,7 +37,7 @@ Respondiendo `y`, arranca un `MockTelegramBot` en proceso:
 ```
 examples/console-app/
 ├── main.ts       ← entrypoint: arranque real + fallback mock
-├── config.ts     ← carga BOT_TOKEN y SOLANA_ADDRESS desde .env
+├── config.ts     ← variables opcionales (SOLANA_ADDRESS)
 └── rabbit-bot.ts ← plugin RabbitBot (pluginCode = "rb")
 ```
 

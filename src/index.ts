@@ -29,5 +29,11 @@ export { ChatTracker, FileChatStore, MemoryChatStore } from "./core/chat-tracker
 export type { BotRuntime, PluginInfo, RuntimeEvent } from "./core/runtime-emitter.js";
 export { RuntimeEmitter, reduceRuntime, DEFAULT_BOT_RUNTIME } from "./core/runtime-emitter.js";
 
+export type { StartupResult, EnsureEnvOptions } from "./core/startup.js";
+export { ensureEnv } from "./core/startup.js";
+
+export type { BootBotOptions, BootResult } from "./core/boot.js";
+export { bootBot } from "./core/boot.js";
+
 export { Bot } from "grammy";
 export type { Context } from "grammy";

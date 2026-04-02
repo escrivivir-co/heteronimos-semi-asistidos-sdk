@@ -26,7 +26,7 @@ A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define b
 
 Use this path if you're working inside this repository and want to run the included console example.
 
-Before you run the bot, create a local `.env` file. `BOT_TOKEN` is required and the app will fail fast without it.
+The bot needs a `BOT_TOKEN` to connect to Telegram. If `.env` is missing, the SDK offers to create it from `.env.example` and lets you continue in mock mode.
 
 ```bash
 # Clone
@@ -80,11 +80,9 @@ SOLANA_ADDRESS=your-address
 
 `BOT_TOKEN` is required. `SOLANA_ADDRESS` is optional.
 
-If startup fails with an alert about missing `.env` or `BOT_TOKEN`, come back to this section and complete these steps first.
+If you skip `.env` setup, the SDK will guide you interactively at startup: offer to create `.env` from the template, then offer mock mode if the token is still missing.
 
 ## Run
-
-If `.env` does not exist or `BOT_TOKEN` is empty, startup fails immediately in `examples/console-app/config.ts`.
 
 ```bash
 bun run dev            # watch mode
@@ -126,11 +124,14 @@ src/
     ├── menu-handler.ts         ← inline keyboard menus (declarative)
     ├── chat-tracker.ts         ← persistent chat tracking + broadcast
     ├── logger.ts               ← scoped logger with LOG_LEVEL
-    └── runtime-emitter.ts      ← RxJS Subject-based event bus (observability)
+    ├── runtime-emitter.ts      ← RxJS Subject-based event bus (observability)
+    ├── startup.ts              ← ensureEnv() — .env detection + copy + token check
+    ├── boot.ts                 ← bootBot() — full startup orchestrator
+    └── mock-telegram.ts        ← MockTelegramBot for tests + fallback
 examples/
 ├── console-app/
 │   ├── main.ts                 ← minimal entrypoint
-│   ├── config.ts               ← env-var loader (BOT_TOKEN, etc.)
+│   ├── config.ts               ← optional env vars (SOLANA_ADDRESS)
 │   └── rabbit-bot.ts           ← demo plugin (pluginCode = "rb")
 └── dashboard/                  ← TUI dashboard app (Ink/React + RxJS)
     ├── main.tsx                ← entrypoint: bot + TUI in parallel
