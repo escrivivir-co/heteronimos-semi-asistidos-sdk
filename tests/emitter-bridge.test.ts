@@ -6,6 +6,7 @@ import {
   getDefaultBaseState,
   LOG_BUFFER_SIZE,
   MSG_BUFFER_SIZE,
+  CMD_BUFFER_SIZE,
   type BaseRuntimeState,
 } from "../src/index";
 
@@ -180,6 +181,65 @@ describe("connectEmitterToStore — unsubscribe", () => {
     unsub();
     emitter.emit({ type: "commands-synced", commandCount: 99, timestamp: "t" });
     expect(store.getState().commandCount).toBe(5);
+  });
+});
+
+describe("connectEmitterToStore — command-response buffer", () => {
+  test("commandResponses starts empty", () => {
+    const store = makeStore();
+    expect(store.getState().commandResponses).toEqual([]);
+  });
+
+  test("command-response appended to commandResponses", () => {
+    const emitter = new RuntimeEmitter();
+    const store = makeStore();
+    connectEmitterToStore(emitter, store);
+    emitter.emit({ type: "command-response", command: "tst_ping", text: "pong", chatId: 1, timestamp: "t" });
+    const responses = store.getState().commandResponses;
+    expect(responses).toHaveLength(1);
+    expect(responses[0]).toMatchObject({ command: "tst_ping", text: "pong", chatId: 1 });
+  });
+
+  test("multiple command-response events accumulate in order", () => {
+    const emitter = new RuntimeEmitter();
+    const store = makeStore();
+    connectEmitterToStore(emitter, store);
+    emitter.emit({ type: "command-response", command: "a", text: "reply-a", chatId: 1, timestamp: "t1" });
+    emitter.emit({ type: "command-response", command: "b", text: "reply-b", chatId: 2, timestamp: "t2" });
+    const responses = store.getState().commandResponses;
+    expect(responses).toHaveLength(2);
+    expect(responses[0].command).toBe("a");
+    expect(responses[1].command).toBe("b");
+  });
+
+  test("commandResponses buffer respects default CMD_BUFFER_SIZE", () => {
+    const emitter = new RuntimeEmitter();
+    const store = makeStore();
+    connectEmitterToStore(emitter, store);
+    for (let i = 0; i < CMD_BUFFER_SIZE + 10; i++) {
+      emitter.emit({ type: "command-response", command: "x", text: `t${i}`, chatId: i, timestamp: "t" });
+    }
+    expect(store.getState().commandResponses).toHaveLength(CMD_BUFFER_SIZE);
+  });
+
+  test("commandResponses buffer respects custom cmdBufferSize", () => {
+    const emitter = new RuntimeEmitter();
+    const store = makeStore();
+    connectEmitterToStore(emitter, store, { cmdBufferSize: 3 });
+    for (let i = 0; i < 5; i++) {
+      emitter.emit({ type: "command-response", command: "x", text: `t${i}`, chatId: i, timestamp: "t" });
+    }
+    expect(store.getState().commandResponses).toHaveLength(3);
+    expect(store.getState().commandResponses[2].chatId).toBe(4);
+  });
+
+  test("command-executed does not change state", () => {
+    const emitter = new RuntimeEmitter();
+    const store = makeStore();
+    connectEmitterToStore(emitter, store);
+    const before = store.getState();
+    emitter.emit({ type: "command-executed", command: "tst_ping", chatId: 1, userId: 42, username: "u", timestamp: "t" });
+    expect(store.getState()).toBe(before);
   });
 });
 

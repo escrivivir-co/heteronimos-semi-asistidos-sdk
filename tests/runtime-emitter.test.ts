@@ -97,6 +97,39 @@ describe("RuntimeEmitter — messages$", () => {
   });
 });
 
+describe("RuntimeEmitter — command-executed / command-response events", () => {
+  test("command-executed flows through events$", () => {
+    const emitter = new RuntimeEmitter();
+    const events = collect(emitter.events$);
+
+    emitter.emit({ type: "command-executed", command: "tst_ping", chatId: 1, userId: 42, username: "u", timestamp: "t" });
+
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({ type: "command-executed", command: "tst_ping" });
+  });
+
+  test("command-response flows through events$", () => {
+    const emitter = new RuntimeEmitter();
+    const events = collect(emitter.events$);
+
+    emitter.emit({ type: "command-response", command: "tst_ping", text: "pong", chatId: 1, timestamp: "t" });
+
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({ type: "command-response", text: "pong" });
+  });
+
+  test("both new event types appear in correct order in events$", () => {
+    const emitter = new RuntimeEmitter();
+    const types: string[] = [];
+    emitter.events$.subscribe(e => types.push(e.type));
+
+    emitter.emit({ type: "command-executed", command: "x", chatId: 1, userId: 1, username: "u", timestamp: "t" });
+    emitter.emit({ type: "command-response", command: "x", text: "ok", chatId: 1, timestamp: "t" });
+
+    expect(types).toEqual(["command-executed", "command-response"]);
+  });
+});
+
 describe("RuntimeEmitter — snapshot$", () => {
   test("snapshot$ accumulates state across events", () => {
     const emitter = new RuntimeEmitter();
@@ -212,6 +245,16 @@ describe("reduceRuntime — pure reducer", () => {
       type: "broadcast", chatCount: 3, message: "hello", timestamp: "t",
     });
     expect(afterBroadcast).toBe(state);
+
+    const afterCommandExecuted = reduceRuntime(state, {
+      type: "command-executed", command: "x", chatId: 1, userId: 42, username: "u", timestamp: "t",
+    });
+    expect(afterCommandExecuted).toBe(state);
+
+    const afterCommandResponse = reduceRuntime(state, {
+      type: "command-response", command: "x", text: "reply", chatId: 1, timestamp: "t",
+    });
+    expect(afterCommandResponse).toBe(state);
   });
 
   test("DEFAULT_BOT_RUNTIME is initial state baseline", () => {
