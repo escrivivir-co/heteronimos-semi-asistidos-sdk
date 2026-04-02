@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>heteronimos-semi-asistidos-sdk</title>
+<link rel="stylesheet" href="poster-template/fanzine.css">
+<style>
+  body { max-width: 800px; margin: 0 auto; padding: 12px; }
+  .poster-card {
+    border: 2px solid #111;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .poster-card h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  .poster-card .meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; }
+  .poster-card a.main-link {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: #111;
+    color: #fff;
+    padding: 4px 10px;
+    text-decoration: none;
+    margin-bottom: 10px;
+  }
+  .poster-card a.main-link:hover { background: #444; }
+  .spec-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .spec-list a {
+    font-size: 0.68rem;
+    border: 1px solid #111;
+    padding: 3px 7px;
+    text-decoration: none;
+    color: #111;
+    white-space: nowrap;
+  }
+  .spec-list a:hover { background: #111; color: #fff; }
+  .badge {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    background: #111;
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+  }
+  .divider { border: none; border-top: 2px solid #111; margin: 24px 0; }
+  .index-footer {
+    font-size: 0.65rem;
+    text-align: center;
+    opacity: 0.5;
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header" style="margin-bottom:18px;">
+  <div class="stamp">SDK</div>
+  <h1 style="font-size:1.5rem;">heteronimos<br>semi-asistidos</h1>
+  <div class="sub">Plugin-based Telegram Bot SDK · grammY</div>
+  <div class="sub2">bot-of-bots · commands · menus · broadcast · sync</div>
+  <div class="issue">v0.0.0 · pre-kick-off</div>
+</header>
+
+<!-- ═══ STATUS BAR ═══ -->
+<div class="stats-bar">
+  <div class="stat"><span class="val">0.0.0</span><span class="lbl">Version</span></div>
+  <div class="stat"><span class="val">27</span><span class="lbl">Tests</span></div>
+  <div class="stat"><span class="val">4</span><span class="lbl">Suites</span></div>
+  <div class="stat"><span class="val">0</span><span class="lbl">Failures</span></div>
+  <div class="stat"><span class="val">⚠</span><span class="lbl">Pre-kick-off</span></div>
+</div>
+
+<div class="washi"></div>
+
+<!-- ═══ QUICK START ═══ -->
+<div class="poster-card" style="border-width:3px;">
+  <div class="badge" style="background:#111;font-size:0.65rem;">★ START HERE</div>
+  <div class="tape tape-tr"></div>
+
+  <h2>Quick Start</h2>
+  <div class="meta">Clone → install → set env → run</div>
+
+  <a class="main-link" href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk">☞ GITHUB REPO</a>
+
+  <div class="cmd"><span class="prompt">curl -fsSL https://bun.sh/install | bash</span>
+<span class="prompt">git clone https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk.git</span>
+<span class="prompt">cd heteronimos-semi-asistidos-sdk/Nodejs &amp;&amp; bun install</span></div>
+
+  <div style="font-size:0.68rem;margin-top:8px;">
+    Copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
+    <a href="https://t.me/BotFather" style="color:#111;">@BotFather</a> ·
+    <a href="https://core.telegram.org/bots/tutorial" style="color:#111;">tutorial</a>
+  </div>
+  <div class="cmd"><span class="comment"># .env (keep out of git)</span>
+BOT_TOKEN=your-bot-token
+SOLANA_ADDRESS=your-address</div>
+  <div class="cmd"><span class="prompt">bun run dev</span></div>
+</div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<div class="poster-card tilt-r">
+  <div class="badge">CORE</div>
+  <div class="tape tape-tl"></div>
+
+  <h2>Architecture — Bot-of-Bots</h2>
+  <div class="meta">Each bot is a BotPlugin. The core wires, prefixes, syncs, and broadcasts.</div>
+
+<pre class="diagram">
+ ┌──────────────────────────────────────────────┐
+ │  main.ts                                     │
+ │                                              │
+ │  plugins[] ──→ registerPlugins(bot, plugins) │
+ │                    │                         │
+ │         ┌──────────┼──────────┐              │
+ │         ▼          ▼          ▼              │
+ │    commands    menus     onMessage           │
+ │    (prefixed)  (inline)  (fallback)          │
+ │         │          │          │              │
+ │         └──────────┼──────────┘              │
+ │                    ▼                         │
+ │             syncCommands()                   │
+ │             ┌─ diff local vs Telegram        │
+ │             ├─ prompt on changes             │
+ │             └─ broadcast update              │
+ └──────────────────────────────────────────────┘
+</pre>
+
+  <div style="font-size:0.68rem;margin-top:6px;">
+    <span class="kw-inv">bot-handler</span>
+    <span class="kw-inv">command-handler</span>
+    <span class="kw-inv">menu-handler</span>
+    <span class="kw-inv">chat-tracker</span>
+    <span class="kw-inv">logger</span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══ BOTPLUGIN ═══ -->
+<div class="poster-card">
+  <div class="badge">INTERFACE</div>
+  <div class="tape tape-tl"></div>
+
+  <h2>BotPlugin — Create Your Own Bot</h2>
+  <div class="meta">Implement BotPlugin, register in main.ts, done.</div>
+
+<div class="cmd"><span class="comment"># BotPlugin interface</span>
+{
+  name: string;
+  pluginCode: string;          <span class="comment"># prefix for all commands</span>
+  commands(): CommandDefinition[];
+  menus?(): MenuDefinition[];  <span class="comment"># optional inline keyboards</span>
+  onMessage?(ctx): string;     <span class="comment"># optional fallback handler</span>
+}</div>
+
+  <div style="font-size:0.68rem;margin-top:8px;">
+    Commands are auto-prefixed: <span class="hl-box">pluginCode_command</span><br>
+    e.g. pluginCode <b>"rb"</b> → <code>/rb_aleph</code>, <code>/rb_menu</code>, <code>/rb_join</code>
+  </div>
+
+  <details>
+    <summary>Example — minimal plugin</summary>
+    <div class="detail-body">
+<div class="cmd">import { BotPlugin } from "./core/bot-handler";
+
+export class MyBot implements BotPlugin {
+  name = "my-bot";
+  pluginCode = "mb";
+
+  commands() {
+    return [{
+      command: "hello",
+      description: "Say hello",
+      buildText: (ctx) =&gt;
+        `Hello, ${ctx.from?.first_name}!`,
+    }];
+  }
+}</div>
+<div class="cmd"><span class="comment"># main.ts</span>
+const plugins = [new MyBot()];
+registerPlugins(bot, plugins, tracker);</div>
+    </div>
+  </details>
+</div>
+
+<!-- ═══ MODULES ═══ -->
+<div class="cols">
+  <div class="col">
+    <div class="cutout tilt-l">
+      <div class="tape tape-tr"></div>
+      <h3>Core Modules</h3>
+
+      <div class="card">
+        <div class="card-title">command-handler</div>
+        <div class="card-body">
+          CommandDefinition · handleCommand() generic sequence · registerCommands() · toBotFatherFormat() · syncCommandsWithTelegram() with diff (+/~/-)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">menu-handler</div>
+        <div class="card-body">
+          MenuDefinition · NavButton / UrlButton · registerMenu() auto-wires /command + callback queries · inline keyboard pages
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">chat-tracker</div>
+        <div class="card-body">
+          Persists chat IDs to .chats.json · middleware auto-tracking · broadcast(bot, msg) to all known chats
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">logger</div>
+        <div class="card-body">
+          LOG_LEVEL env (debug|info|warn|error) · scoped [timestamp] [LEVEL] [scope] · child() sub-loggers · colored output
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="cutout tilt-r">
+      <div class="tape tape-tl"></div>
+      <h3>Quick Reference</h3>
+      <table class="tbl">
+        <tr><th>Script</th><th>What</th></tr>
+        <tr><td>bun run dev</td><td>watch mode</td></tr>
+        <tr><td>bun run dev:verbose</td><td>+ LOG_LEVEL=debug</td></tr>
+        <tr><td>bun run start</td><td>single run</td></tr>
+        <tr><td>bun run build</td><td>bundle → dist/</td></tr>
+        <tr><td>bun run lint</td><td>tsc --noEmit</td></tr>
+        <tr><td>bun run bot-father-settings</td><td>generate docs</td></tr>
+        <tr><td>bun run test</td><td>27 unit tests</td></tr>
+        <tr><td>bun run test:report</td><td>JUnit XML</td></tr>
+        <tr><td>bun run test:coverage</td><td>coverage report</td></tr>
+        <tr><td>bun run release &lt;bump&gt;</td><td>version tag</td></tr>
+      </table>
+    </div>
+
+    <div class="cutout tilt-l2" style="margin-top:12px;">
+      <h3>Stack</h3>
+      <div style="font-size:0.7rem;">
+        <span class="kw">Bun</span>
+        <span class="kw">TypeScript</span>
+        <span class="kw">grammY</span>
+        <span class="kw">Telegram Bot API</span>
+        <br><br>
+        <b>License:</b> AIPL — Animus Iocandi Public License<br>
+        <b>Org:</b> <a href="https://escrivivir.co" style="color:#111;">Escrivivir.co</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══ DEMO ═══ -->
+<div class="poster-card tilt-l">
+  <div class="badge">DEMO</div>
+  <div class="tape tape-tr"></div>
+
+  <h2>RabbitBot — Example Plugin</h2>
+  <div class="meta">pluginCode = "rb" · 4 commands · 1 menu (2 pages) · onMessage handler</div>
+
+  <a class="main-link" href="https://t.me/an_aleph_zero_rabit_23_bot">☞ TRY THE BOT</a>
+
+  <div style="font-size:0.68rem;margin-top:6px;">
+    <span class="kw">/rb_aleph</span> next Fibonacci-date event ·
+    <span class="kw">/rb_join</span> join link ·
+    <span class="kw">/rb_quit</span> quit ·
+    <span class="kw">/rb_alephs</span> all events ·
+    <span class="kw">/rb_menu</span> inline keyboard
+  </div>
+  <div style="font-size:0.68rem;margin-top:8px;">
+    Channel: <b>A cyborg-driven chat room</b>
+  </div>
+</div>
+
+<!-- ═══ CONTRIBUTING ═══ -->
+<div class="cutout" style="font-size:0.72rem;">
+  <h3>Contributing</h3>
+  <table class="tbl">
+    <tr><th>Resource</th><td>Link</td></tr>
+    <tr><td>Source</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="color:#111;">github.com/escrivivir-co/heteronimos-semi-asistidos-sdk</a></td></tr>
+    <tr><td>Docs</td><td><a href="https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk" style="color:#111;">escrivivir-co.github.io/heteronimos-semi-asistidos-sdk</a></td></tr>
+    <tr><td>License</td><td>AIPL — Animus Iocandi Public License</td></tr>
+    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  heteronimos-semi-asistidos-sdk · v0.0.0 · 27 tests passing · Escrivivir.co · AIPL
+</div>
+
+</body>
+</html>
