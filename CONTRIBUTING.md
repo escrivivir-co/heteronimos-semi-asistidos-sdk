@@ -60,20 +60,29 @@ bun run test         # run all unit tests
 src/
 ├── index.ts              ← SDK barrel (public API)
 └── core/
-	├── bot-handler.ts    ← BotPlugin interface + orchestrator
-	├── command-handler.ts
-	├── menu-handler.ts
-	├── chat-tracker.ts
-	└── logger.ts
+    ├── bot-handler.ts    ← BotPlugin interface + orchestrator
+    ├── command-handler.ts
+    ├── menu-handler.ts
+    ├── chat-tracker.ts
+    ├── logger.ts
+    ├── runtime-emitter.ts  ← RxJS event bus (observability)
+    ├── store.ts            ← generic reactive Store<T>
+    ├── emitter-bridge.ts   ← RuntimeEmitter → Store bridge
+    ├── startup.ts          ← .env detection + token check
+    ├── boot.ts             ← bootBot() orchestrator
+    └── mock-telegram.ts    ← MockTelegramBot for tests
 examples/
-├── console-app/          ← standalone package (package.json, installs SDK via file:)
+├── console-app/          ← headless archetype (service / Docker / CI)
 │   ├── main.ts           ← reference app entrypoint
-│   ├── config.ts         ← env-var loader for the local app
-│   └── rabbit-bot.ts     ← example plugin consumer
-└── dashboard/            ← standalone package (Ink/React TUI + SDK via file:)
+│   ├── config.ts         ← env-var loader
+│   └── rabbit-bot.ts     ← example plugin
+└── dashboard/            ← interactive archetype (TUI admin panel, Ink/React)
+    ├── main.tsx
+    ├── state.ts          ← DashboardState extends BaseRuntimeState
+    └── components/
 tests/
 scripts/
-specs/                    ← design documents (SDS-00 to SDS-04)
+specs/                    ← design documents (SDS-00 to SDS-10)
 docs/                     ← GitHub Pages site
 ```
 
