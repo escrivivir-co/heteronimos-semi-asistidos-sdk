@@ -4,13 +4,20 @@
 ![status](https://img.shields.io/badge/status-pre--kick--off-orange)
 ![license](https://img.shields.io/badge/license-AIPL-green)
 ![runtime](https://img.shields.io/badge/runtime-Bun-f472b6)
-![tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-bun%20test-brightgreen)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6)
 
 A plugin-based Telegram bot SDK built on [grammY](https://grammy.dev/). Define bots as plugins — commands, menus, message handlers — and compose them into a single runtime.
 
 > **Demo**: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot)
 > **Docs**: [escrivivir-co.github.io/heteronimos-semi-asistidos-sdk](https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk)
+
+## Choose Your Path
+
+- **Use the SDK from another project** → start at **Quick Start (npm Consumer)**
+- **Run the minimal console example** → start at **Quick Start (Repo)**
+- **Run the full TUI dashboard** → see [examples/dashboard/README.md](examples/dashboard/README.md)
+- **Contribute to the refactor** → read this README first, then [CONTRIBUTING.md](CONTRIBUTING.md), [BACKLOG.md](BACKLOG.md), and the design docs in [specs/](specs/)
 
 ---
 
@@ -21,16 +28,15 @@ Use this path if you're working inside this repository and want to run the inclu
 Before you run the bot, create a local `.env` file. `BOT_TOKEN` is required and the app will fail fast without it.
 
 ```bash
-# Install Bun (if you don't have it)
-curl -fsSL https://bun.sh/install | bash
-
 # Clone
 git clone https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk.git
-cd heteronimos-semi-asistidos-sdk/Nodejs
+cd heteronimos-semi-asistidos-sdk
 
 # Install deps
 bun install
 ```
+
+If Bun is not installed yet, follow the platform-specific instructions at [bun.sh](https://bun.sh).
 
 ## Quick Start (npm Consumer)
 
@@ -62,11 +68,9 @@ You still need a valid `BOT_TOKEN` in your runtime environment.
 1. Open [@BotFather](https://t.me/BotFather) in Telegram — [official tutorial](https://core.telegram.org/bots/tutorial)
 2. If you are creating a new bot, use `/newbot` and copy the HTTP API token BotFather returns.
 3. If your bot already exists, use `/mybots`, select the bot, and open the API token section to view or regenerate the token.
-4. Copy `.env.example` to `.env` before running any `bun run dev` or `bun run start` command:
+4. Copy `.env.example` to `.env` before running any `bun run dev` or `bun run start` command.
 
-```bash
-cp .env.example .env
-```
+On Windows, you can duplicate the file from VS Code Explorer or File Explorer. On shells with Unix commands available, `cp .env.example .env` works too.
 
 ```dotenv
 BOT_TOKEN=your-bot-token
@@ -93,6 +97,7 @@ bun run start          # single run
 |--------|-------------|
 | `bun run dev` | Watch mode (auto-reload) |
 | `bun run dev:verbose` | Watch + debug logging |
+| `bun run dev:dashboard` | TUI dashboard (Ink/React) |
 | `bun run start` | Run once |
 | `bun run build` | Compile the SDK to `dist/` |
 | `bun run build:sdk` | Emit publishable JS + `.d.ts` for the SDK |
@@ -119,12 +124,21 @@ src/
     ├── command-handler.ts      ← command registration + Telegram sync
     ├── menu-handler.ts         ← inline keyboard menus (declarative)
     ├── chat-tracker.ts         ← persistent chat tracking + broadcast
-    └── logger.ts               ← scoped logger with LOG_LEVEL
+    ├── logger.ts               ← scoped logger with LOG_LEVEL
+    └── runtime-emitter.ts      ← RxJS Subject-based event bus (observability)
 examples/
-└── console-app/
-    ├── main.ts                 ← example entrypoint
-    ├── config.ts               ← env-var loader (BOT_TOKEN, etc.)
-    └── rabbit-bot.ts           ← demo plugin (pluginCode = "rb")
+├── console-app/
+│   ├── main.ts                 ← minimal entrypoint
+│   ├── config.ts               ← env-var loader (BOT_TOKEN, etc.)
+│   └── rabbit-bot.ts           ← demo plugin (pluginCode = "rb")
+└── dashboard/                  ← TUI dashboard app (Ink/React + RxJS)
+    ├── main.tsx                ← entrypoint: bot + TUI in parallel
+    ├── App.tsx                 ← root component (header, panel, footer)
+    ├── emitter-bridge.ts       ← RuntimeEmitter → store reducer
+    ├── store.ts                ← mini reactive store
+    ├── state.ts                ← DashboardState + buffer types
+    ├── theme.ts                ← color palette
+    └── components/             ← StatusPanel, LogViewer, ChatList
 scripts/
 ├── build-bot-father-settings.ts
 └── release.ts
@@ -251,12 +265,12 @@ Try it: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot) �
 ## Testing
 
 ```bash
-bun run test             # 44 tests across 9 suites
+bun run test             # 101 tests across 11 suites
 bun run test:coverage    # with coverage report
 bun run test:report      # JUnit XML → test-results.xml
 ```
 
-Test suites cover: command-handler, bot-handler, logger, rabbit-bot, chat-tracker, logger options, barrel, phase-b, package.
+Test suites cover: command-handler, bot-handler, logger, rabbit-bot, chat-tracker, logger options, barrel, phase-b, package, runtime-emitter, dashboard.
 
 ## Release
 
@@ -280,6 +294,15 @@ We welcome contributions! The workflow:
 4. Open a PR against `main` — reference the backlog item
 
 Full guide: [CONTRIBUTING.md](CONTRIBUTING.md) · PR template included.
+
+### Session Wrap-up
+
+Before closing a work session or opening a PR:
+
+1. Run `bun run lint`
+2. Run `bun run test`
+3. Update [BACKLOG.md](BACKLOG.md) if a phase, task, or documentation milestone is now complete
+4. Keep [docs/index.html](docs/index.html) aligned with this README and the relevant `.md` files when contributor-facing guidance changes
 
 ## License
 

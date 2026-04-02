@@ -102,27 +102,138 @@
 
 ---
 
-## Sprint 4 — SDK Hardening
+## Sprint 4 — Console Dashboard App (from ui-research + reference-console-app)
 
-| # | Story | Status |
-|---|-------|--------|
-| 49 | **Plugin hot-reload** — add/remove plugins without restart | 💡 |
-| 50 | **Error boundary per plugin** — isolate plugin crashes from core | 🔲 |
-| 51 | **Rate limiter middleware** — per-chat and global rate limiting | 🔲 |
-| 52 | **i18n support** — multi-language replies per chat locale | 💡 |
-| 53 | **Plugin dependency graph** — declare dependencies between plugins | 💡 |
+> Objetivo: nueva app de ejemplo con TUI interactiva basada en Ink/React.
+> Requiere extender el SDK con una capa de observabilidad (eventos + snapshots de runtime).
+> Referencia de arquitectura: `reference-console-app/` (submódulo).
+> Propuesta UI: `docs/ui-research.md`.
+
+### Fase G · SDK: capa de observabilidad del runtime
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 49 | Definir `BotRuntime` interface — snapshot del estado del bot (status, uptime, plugins cargados, comandos registrados) | ✅ | ui-research §3.1 |
+| 50 | Definir `RuntimeEvent` union type — `log`, `message`, `command`, `error`, `status-change` | ✅ | ui-research §3.3 |
+| 51 | Implementar `RuntimeEmitter` — EventEmitter tipado que emite `RuntimeEvent` desde core | ✅ | ref: AppStateStore |
+| 52 | Conectar `Logger` → `RuntimeEmitter` — cada log emite evento `{ type: "log", entry }` | ✅ | SDS-03 P4 |
+| 53 | Conectar `ChatTracker` → `RuntimeEmitter` — emit en track/untrack/broadcast | ✅ | SDS-03 P2 |
+| 54 | Conectar `registerPlugins` / `syncCommands` → `RuntimeEmitter` — emit en registro y sync | ✅ | SDS-03 P5 |
+| 55 | Exportar nuevos tipos desde barrel: `BotRuntime`, `RuntimeEvent`, `RuntimeEmitter` | ✅ | SDS-02 §1 |
+| 56 | Tests: RuntimeEmitter emite eventos correctos, BotRuntime snapshot es coherente | ✅ | — |
+
+### Fase H · Scaffold de la app TUI
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 57 | Crear `examples/dashboard/` con ink 5, react 19 instalados en root devDeps | ✅ | ref: package.json |
+| 58 | Crear entrypoint `examples/dashboard/main.tsx` — monta `<App />` con Ink `render()` | ✅ | ref: replLauncher.tsx |
+| 59 | Crear `examples/dashboard/store.ts` — mini-store reactivo (getState/setState/subscribe, ~30 líneas) | ✅ | ref: state/store.ts |
+| 60 | Crear `examples/dashboard/theme.ts` — paleta mínima (colors, borders, text styles) | ✅ | ref: design-system/ |
+| 61 | Script `dev:dashboard` en root package.json — `bun --watch run ./examples/dashboard/main.tsx` | ✅ | — |
+| 62 | Verificar: build SDK limpio, lint limpio, 56 tests pasan | ✅ | — |
+
+### Fase I · Panel de estado (Overview)
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 63 | Componente `<StatusPanel>` — bot status (online/offline/polling), uptime, versión | ✅ | ui-research §3.1 |
+| 64 | Componente `<PluginList>` — dentro de StatusPanel, lista plugins con pluginCode y nº cmds | ✅ | ui-research §3.1 |
+| 65 | Componente `<StatsBar>` — dentro de StatusPanel, mensajes procesados, chats activos | ✅ | ref: StatusLine.tsx |
+| 66 | Hook `useRuntimeState` — `connectEmitterToStore` en `emitter-bridge.ts` suscribe al store | ✅ | ref: useAppState |
+| 67 | Layout raíz `<App>` — compone header, panel activo y footer | ✅ | ref: FullscreenLayout |
+
+### Fase J · Panel de logs en tiempo real
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 68 | Componente `<LogViewer>` — tail de últimos N logs con colores por nivel | ✅ | ui-research §3.3 |
+| 69 | Buffer circular de logs en `state.ts` (max LOG_BUFFER_SIZE=200) | ✅ | ref: Messages.tsx |
+| 70 | Filtro por nivel — toggle a/d/i/w/e con teclado | ✅ | ref: useInput |
+| 71 | Scroll manual con ↑↓ + indicador de posición | ✅ | ref: ScrollBox |
+
+### Fase K · Panel de chats y mensajes
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 72 | Componente `<ChatList>` — lista de chat IDs activos con último mensaje y timestamp | ✅ | ui-research §3.3 |
+| 73 | Componente `<MessageStream>` — últimos mensajes entrantes (dentro de ChatList) | ✅ | ref: MessageRow.tsx |
+| 74 | Buffer de mensajes en `state.ts` (max MSG_BUFFER_SIZE=100) | ✅ | — |
+
+### Fase L · Navegación entre paneles y keybindings
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 75 | Sistema de tabs — 1/2/3 y Tab/Shift+Tab para cambiar entre Overview · Logs · Chats | ✅ | ref: Tabs.tsx |
+| 76 | Componente `<Header>` — título + indicador de panel activo (dentro de App) | ✅ | ref: LogoV2 |
+| 77 | Componente `<Footer>` — keybindings disponibles (dentro de App) | ✅ | ref: StatusLine.tsx |
+| 78 | Keybinding `q` / Ctrl+C para salir limpio | ✅ | ref: useExitOnCtrlCD |
+
+### Fase M · Integración, polish y docs
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 79 | Integrar dashboard con bot real — arranque conjunto: bot polling + TUI en paralelo | ✅ | — |
+| 80 | Tests de componentes dashboard: smoke | ✅ | — |
+| 81 | README de `examples/dashboard/` — screenshot, cómo correr, arquitectura | ✅ | — |
+| 82 | Actualizar README raíz y docs/index.html con referencia a la nueva app | ✅ | — |
+
+### Fase N · Migración RuntimeEmitter a RxJS (from SDS-06)
+
+> Reemplazar `node:events` por RxJS Subject/Observable.
+> Activar `BotRuntime` como snapshot reactivo vía `scan`.
+> Spec: `specs/06-rxjs-migration.md`
+
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 83 | Añadir `rxjs >=7.8.0` a peerDependencies (optional: true) + devDependencies | ✅ | SDS-06 §Dependencia |
+| 84 | Reescribir `RuntimeEmitter`: Subject interno, `events$`, `logs$`, `messages$`, `snapshot$`, `complete()` | ✅ | SDS-06 §1 |
+| 85 | Implementar `reduceRuntime` reducer puro + `DEFAULT_BOT_RUNTIME` constante | ✅ | SDS-06 §2 |
+| 86 | Mantener API legacy: `emit()`, `on()` (devuelve unsub), `off()` (no-op con deprecation) | ✅ | SDS-06 §1 |
+| 87 | Actualizar barrel `src/index.ts`: exportar `reduceRuntime`, `DEFAULT_BOT_RUNTIME` | ✅ | SDS-06 §3 |
+| 88 | Reescribir `tests/runtime-emitter.test.ts` — tests de Subject, streams, snapshot$, reducer, complete, legacy compat | ✅ | SDS-06 §Tests |
+| 89 | Verificar tests de integración existentes (Logger + emitter, ChatTracker + emitter) pasan sin cambios | ✅ | SDS-06 §Tests |
+| 90 | Actualizar `emitter-bridge.ts` — usar `events$.subscribe()` en vez de `emitter.on()` | ✅ | SDS-06 §5 |
+| 91 | Limpiar `App.tsx` — quitar prop `emitter` de AppProps | ✅ | SDS-06 §5 |
+| 92 | Actualizar `main.tsx` — quitar emitter de `<App>`, añadir `emitter.complete()` en cleanup | ✅ | SDS-06 §5 |
+| 93 | Full test suite verde + lint limpio | ✅ | SDS-06 §Criterios |
 
 ---
 
-## Sprint 5 — New Plugins & Features
+## Sprint 4b — Mock Telegram Fallback (from SDS-07)
+
+> Objetivo: módulo interno `MockTelegramBot` que cubre la superficie mínima de `grammy.Bot`
+> usada por el SDK, reutilizable en unit tests y como fallback interactivo en el example.
+> Spec: `specs/07-mock-telegram.md`
+
+### Fase O · Mock en proceso + tests + fallback
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 110 | Crear `src/core/mock-telegram.ts` — `MockTelegramBot` con api mock, registro de handlers y contexto simulado | 🔲 | SDS-07 §3 |
+| 111 | Crear `tests/mock-telegram.test.ts` — tests unitarios de MockTelegramBot (registro, simulación, api, reset) | 🔲 | SDS-07 §4.2 |
+| 112 | Ampliar `tests/bot-handler.test.ts` — `registerPlugins` sobre mock bot verifica que handlers se registran | 🔲 | SDS-07 §4.2 |
+| 113 | Ampliar `tests/command-handler.test.ts` — `syncCommandsWithTelegram` contra api mock (diff + set) | 🔲 | SDS-07 §4.2 |
+| 114 | Ampliar `tests/chat-tracker.test.ts` — `ChatTracker.register` + `broadcast` sobre mock bot | 🔲 | SDS-07 §4.2 |
+| 115 | Fallback interactivo en `examples/console-app/main.ts` — detectar fallo, prompt CLI, arrancar mock | 🔲 | SDS-07 §5 |
+| 116 | Documentar modo mock en README de `examples/console-app/` | 🔲 | SDS-07 §5.2 |
+| 117 | Full test suite verde con mock bot | 🔲 | SDS-07 §7 |
+
+---
+
+## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
 |---|-------|--------|
-| 54 | **Scheduler plugin** — cron-like scheduled messages | 🔲 |
-| 55 | **Admin plugin** — /admin_broadcast, /admin_stats, /admin_chats | 🔲 |
-| 56 | **Webhook mode** — support webhook alongside polling | 🔲 |
-| 57 | **Analytics middleware** — track command usage, active users | 💡 |
-| 58 | **Database adapter** — abstract persistence beyond .chats.json | 💡 |
+| 94 | **Error boundary per plugin** — isolate plugin crashes from core | 🔲 |
+| 95 | **Rate limiter middleware** — per-chat and global rate limiting | 🔲 |
+| 96 | **Plugin hot-reload** — add/remove plugins without restart | 💡 |
+| 97 | **i18n support** — multi-language replies per chat locale | 💡 |
+| 98 | **Plugin dependency graph** — declare dependencies between plugins | 💡 |
+
+---
+
+## Sprint 6 — New Plugins & Features
+
+| # | Story | Status |
+|---|-------|--------|
+| 99 | **Scheduler plugin** — cron-like scheduled messages | 🔲 |
+| 100 | **Admin plugin** — /admin_broadcast, /admin_stats, /admin_chats | 🔲 |
+| 101 | **Webhook mode** — support webhook alongside polling | 🔲 |
+| 102 | **Analytics middleware** — track command usage, active users | 💡 |
+| 103 | **Database adapter** — abstract persistence beyond .chats.json | 💡 |
 
 ---
 
@@ -130,13 +241,13 @@
 
 | # | Story | Status |
 |---|-------|--------|
-| 59 | **npm/JSR publish** — publish SDK as a package | 💡 |
-| 60 | **Plugin marketplace** — registry/catalog of community plugins | 💡 |
-| 61 | **Web dashboard** — real-time bot monitoring UI | 💡 |
-| 62 | **Multi-bot instance** — run multiple Bot tokens in one process | 💡 |
-| 63 | **E2E tests** — integration tests against Telegram test server | 💡 |
-| 64 | **Better example console app** — richer TUI/dashboard example backed by `reference-console-app` research | 💡 |
+| 104 | **npm/JSR publish** — publish SDK as a package | 💡 |
+| 105 | **Plugin marketplace** — registry/catalog of community plugins | 💡 |
+| 106 | **Web dashboard** — real-time bot monitoring UI (web, no terminal) | 💡 |
+| 107 | **Multi-bot instance** — run multiple Bot tokens in one process | 💡 |
+| 108 | **E2E tests** — integration tests against Telegram test server | 💡 |
+| 109 | **Advanced TUI** — vim input, virtual lists, fullscreen layout (absorber más del submódulo) | 💡 |
 
 ---
 
-*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 next*
+*Last updated: 2026-04-02 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) Fases G–N ✅ · Sprint 4b (mock-telegram) next · Sprint 2 (CI) pending*

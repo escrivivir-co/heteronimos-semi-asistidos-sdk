@@ -74,8 +74,8 @@
 <!-- ═══ STATUS BAR ═══ -->
 <div class="stats-bar">
   <div class="stat"><span class="val">0.0.0</span><span class="lbl">Version</span></div>
-  <div class="stat"><span class="val">27</span><span class="lbl">Tests</span></div>
-  <div class="stat"><span class="val">4</span><span class="lbl">Suites</span></div>
+  <div class="stat"><span class="val">79</span><span class="lbl">Tests</span></div>
+  <div class="stat"><span class="val">10</span><span class="lbl">Suites</span></div>
   <div class="stat"><span class="val">0</span><span class="lbl">Failures</span></div>
   <div class="stat"><span class="val">⚠</span><span class="lbl">Pre-kick-off</span></div>
 </div>
@@ -88,13 +88,15 @@
   <div class="tape tape-tr"></div>
 
   <h2>Quick Start</h2>
-  <div class="meta">Clone → install → set env → run</div>
+  <div class="meta">Clone → install → set env → validate → run</div>
 
   <a class="main-link" href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk">☞ GITHUB REPO</a>
+  <a class="main-link" href="dashboard-guide.html" style="background:#444;margin-left:6px;">☞ TUI DASHBOARD GUIDE</a>
 
-  <div class="cmd"><span class="prompt">curl -fsSL https://bun.sh/install | bash</span>
+  <div class="cmd"><span class="comment"># install Bun first if needed → bun.sh</span>
 <span class="prompt">git clone https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk.git</span>
-<span class="prompt">cd heteronimos-semi-asistidos-sdk/Nodejs &amp;&amp; bun install</span></div>
+<span class="prompt">cd heteronimos-semi-asistidos-sdk &amp;&amp; bun install</span>
+<span class="prompt">bun run lint &amp;&amp; bun run test</span></div>
 
   <div style="font-size:0.68rem;margin-top:8px;">
     <b>Required before any run command:</b> copy <span class="hl-box">.env.example</span> to <span class="hl-box">.env</span> and add your bot token from
@@ -115,6 +117,9 @@ BOT_TOKEN=your-bot-token
 SOLANA_ADDRESS=your-address</div>
   <div class="cmd"><span class="comment"># only after .env exists</span>
 <span class="prompt">bun run dev</span></div>
+  <div style="font-size:0.68rem;margin-top:8px;">
+    This repo has three entry paths: use the SDK as a package, run the in-repo reference app in <span class="hl-box">examples/console-app/</span>, build a <a href="dashboard-guide.html" style="color:#111;font-weight:bold;">TUI dashboard</a> in <span class="hl-box">examples/dashboard/</span>, or contribute to the refactor through <span class="hl-box">README.md</span> + <span class="hl-box">CONTRIBUTING.md</span> + <span class="hl-box">specs/</span>.
+  </div>
 </div>
 
 <!-- ═══ ARCHITECTURE ═══ -->
@@ -254,7 +259,7 @@ registerPlugins(bot, plugins, tracker);</div>
         <tr><td>bun run build</td><td>bundle → dist/</td></tr>
         <tr><td>bun run lint</td><td>tsc --noEmit</td></tr>
         <tr><td>bun run bot-father-settings</td><td>generate docs</td></tr>
-        <tr><td>bun run test</td><td>27 unit tests</td></tr>
+        <tr><td>bun run test</td><td>79 tests across 10 suites</td></tr>
         <tr><td>bun run test:report</td><td>JUnit XML</td></tr>
         <tr><td>bun run test:coverage</td><td>coverage report</td></tr>
         <tr><td>bun run release &lt;bump&gt;</td><td>version tag</td></tr>
@@ -308,24 +313,30 @@ registerPlugins(bot, plugins, tracker);</div>
   <h3>Contributing</h3>
 
   <div style="margin-bottom:8px;">
-    <b>1.</b> Check <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/BACKLOG.md" style="color:#111;font-weight:bold;">BACKLOG.md</a> for open tasks (🔲)<br>
+    <b>1.</b> Check <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:#111;font-weight:bold;">BACKLOG.md</a> for open tasks (🔲)<br>
     <b>2.</b> Fork → branch from <span class="hl-box">main</span> → <code>feat/</code> <code>fix/</code> <code>docs/</code><br>
     <b>3.</b> Implement → <code>bun run lint</code> → <code>bun run test</code><br>
-    <b>4.</b> Open a PR against <span class="hl-box">main</span> — reference the backlog item #
+    <b>4.</b> Update docs + backlog when a contributor-facing phase closes<br>
+    <b>5.</b> Open a PR against <span class="hl-box">main</span> — reference the backlog item #
+  </div>
+
+  <div style="margin-bottom:8px;border:1px solid #111;padding:6px 8px;background:#f6f1e8;">
+    <b>Session handoff:</b> finish with <code>bun run lint</code> and <code>bun run test</code>, update <code>BACKLOG.md</code> if a phase is done, and keep GH Pages aligned with <code>README.md</code> and related specs/docs.
   </div>
 
   <table class="tbl">
     <tr><th>Resource</th><td>Link</td></tr>
     <tr><td>Source</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk" style="color:#111;">github.com/escrivivir-co/heteronimos-semi-asistidos-sdk</a></td></tr>
     <tr><td>Docs</td><td><a href="https://escrivivir-co.github.io/heteronimos-semi-asistidos-sdk" style="color:#111;">escrivivir-co.github.io/heteronimos-semi-asistidos-sdk</a></td></tr>
-    <tr><td>Backlog</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/BACKLOG.md" style="color:#111;">BACKLOG.md</a></td></tr>
-    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/Nodejs/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
+    <tr><td>Backlog</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/BACKLOG.md" style="color:#111;">BACKLOG.md</a></td></tr>
+    <tr><td>Guide</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/CONTRIBUTING.md" style="color:#111;">CONTRIBUTING.md</a></td></tr>
+    <tr><td>Specs</td><td><a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/specs" style="color:#111;">specs/</a></td></tr>
     <tr><td>License</td><td>AIPL — Animus Iocandi Public License</td></tr>
   </table>
 </div>
 
 <div class="footer">
-  heteronimos-semi-asistidos-sdk · v0.0.0 · 27 tests passing · Escrivivir.co · AIPL
+  heteronimos-semi-asistidos-sdk · v0.0.0 · 79 tests passing · Escrivivir.co · AIPL
 </div>
 
 </body>

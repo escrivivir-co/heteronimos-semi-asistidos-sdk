@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build a TUI Dashboard App — heteronimos-semi-asistidos-sdk</title>
+<link rel="stylesheet" href="poster-template/fanzine.css">
+<style>
+  body { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .file-tag {
+    display: inline-block;
+    background: #000;
+    color: #fff;
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .concept-box {
+    font-size: 0.68rem;
+    padding: 8px 12px 8px 30px;
+    margin: 8px 0;
+    position: relative;
+    border-left: 4px solid #000;
+    background: #f6f1e8;
+  }
+  .concept-box::before { content: '◆'; position: absolute; left: 10px; top: 8px; font-size: 0.72rem; }
+  .flow-arrow { text-align: center; font-size: 1.2rem; margin: 4px 0; opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<div class="nav-back">
+  <a href="index.html">◀ VOLVER AL INDEX</a> · GUIDE · TUI DASHBOARD APP
+</div>
+
+<!-- ════════════ HEADER ════════════ -->
+<header class="header">
+  <div class="stamp">GUIDE</div>
+  <h1 style="font-size:2rem;">Build a TUI<br>Dashboard App</h1>
+  <div class="sub">Terminal UI para monitorear tu bot en tiempo real</div>
+  <div class="sub2">React + Ink + RxJS · paso a paso desde cero</div>
+  <div class="issue">heteronimos-semi-asistidos-sdk · v0.0.0</div>
+</header>
+
+<div class="washi"></div>
+
+<!-- ════════════ WHAT YOU'LL BUILD ════════════ -->
+<div class="callout tilt-l">
+  de zero a dashboard en 8 pasos — sin repetición — cada archivo una sola vez
+</div>
+
+<div class="cutout">
+  <div class="tape tape-tr"></div>
+  <h3>☞ Lo que vas a construir</h3>
+  <div style="font-size:0.72rem;margin-bottom:10px;">
+    Una app de terminal interactiva que conecta al SDK mediante streams RxJS y muestra en tiempo real:
+  </div>
+<pre class="diagram">
+ ┌─ heteronimos-semi-asistidos-sdk ── dashboard ─────────────────┐
+ │                                                                │
+ │  ┌──────────────────────────────────────────────────────────┐  │
+ │  │  [Overview]  [Logs]  [Chats]                      [q]   │  │
+ │  ├──────────────────────────────────────────────────────────┤  │
+ │  │                                                          │  │
+ │  │  Bot Status                                              │  │
+ │  │  ● RUNNING          uptime: 12m 34s                      │  │
+ │  │                                                          │  │
+ │  │  Stats                                                   │  │
+ │  │  chats: 3    commands: 7    plugins: 1                   │  │
+ │  │                                                          │  │
+ │  │  Plugins                                                 │  │
+ │  │  [rb] RabbitBot (4 cmds)                                 │  │
+ │  │                                                          │  │
+ │  ├──────────────────────────────────────────────────────────┤  │
+ │  │  [1] Overview  [2] Logs  [3] Chats  [Tab] Cycle  [q]    │  │
+ │  └──────────────────────────────────────────────────────────┘  │
+ │                                                                │
+ └────────────────────────────────────────────────────────────────┘
+</pre>
+  <div style="font-size:0.68rem;">
+    <b>3 paneles:</b> Overview (estado del bot + stats), Logs (tail en vivo con filtros), Chats (chats activos + mensajes recientes).
+    Navegas entre ellos con <span class="hl-box">1</span> <span class="hl-box">2</span> <span class="hl-box">3</span> o <span class="hl-box">Tab</span>.
+  </div>
+</div>
+
+<!-- ════════════ CONCEPTS BLOCK ════════════ -->
+<div class="cutout tilt-r">
+  <div class="tape tape-tl"></div>
+  <h3>☞ Conceptos clave antes de empezar</h3>
+
+  <div class="concept-box">
+    <b>React en la terminal.</b>
+    <a href="https://github.com/vadimdemedes/ink" style="color:#000;">Ink</a> usa React como motor de layout pero renderiza en la terminal en vez del navegador.
+    Componentes con JSX, hooks (<code>useState</code>, <code>useEffect</code>), props — mismo modelo mental.
+    Ink aporta Box (flexbox), Text (estilos ANSI) y useInput (keybindings).
+  </div>
+
+  <div class="concept-box">
+    <b>RxJS como bus de eventos.</b>
+    El SDK expone un <code>RuntimeEmitter</code> con un <code>Subject&lt;RuntimeEvent&gt;</code> interno.
+    Cada acción del bot (log, mensaje, plugin cargado, comando sincronizado) produce un evento en el stream.
+    Puedes suscribirte a <code>events$</code> (todo), <code>logs$</code> (solo logs), <code>messages$</code> (solo mensajes) o <code>snapshot$</code> (estado acumulado del bot).
+  </div>
+
+  <div class="concept-box">
+    <b>Store reactivo &rarr; re-render.</b>
+    Un mini-store de ~30 líneas (getState/setState/subscribe) conecta los eventos RxJS con React.
+    Cada evento muta el estado del store. React se re-renderiza al suscribirse con <code>useEffect</code>.
+  </div>
+
+  <div class="concept-box">
+    <b>El SDK no impone la UI.</b>
+    <code>RuntimeEmitter</code>, las interfaces y los tipos son tu contrato.
+    Puedes hacer una dashboard Ink, una web, o solo scripts headless que consuman <code>events$</code>.
+  </div>
+</div>
+
+<!-- ════════════ ARCHITECTURE ════════════ -->
+<div class="cutout">
+  <div class="tape tape-tl"></div>
+  <div class="tape tape-br"></div>
+  <h3>☞ Arquitectura de la app</h3>
+<pre class="diagram">
+ SDK (core)                        Tu App (dashboard)
+ ──────────────                    ───────────────────
+
+ Logger ──────┐
+ ChatTracker ─┤                    ┌──────────────┐
+ bot-handler ─┼─→ RuntimeEmitter ─→│ emitter─bridge │
+              │   events$/logs$/  │ (switch/case)  │
+              │   messages$/      └───────┬────────┘
+              │   snapshot$               │
+              │                    ┌──────▼──────┐
+              │                    │    Store     │
+              │                    │ (state + sub)│
+              │                    └──────┬──────┘
+              │                           │ subscribe()
+              │                    ┌──────▼──────┐
+              │                    │   &lt;App /&gt;    │
+              │                    │  React/Ink   │
+              │                    └─────────────┘
+</pre>
+  <div style="font-size:0.66rem;">
+    El flujo es <b>unidireccional</b>: SDK emite → bridge reduce → store muta → React re-renderiza.
+  </div>
+</div>
+
+<div class="washi"></div>
+
+<!-- ════════════ PREREQUISITES ════════════ -->
+<div class="cutout tilt-l">
+  <div class="tape tape-tr"></div>
+  <h3>☞ Prerrequisitos</h3>
+  <table class="tbl">
+    <tr><th>Herramienta</th><th>Versión</th><th>Por qué</th></tr>
+    <tr><td>Bun</td><td>&ge;1.3</td><td>Runtime + package manager + test runner</td></tr>
+    <tr><td>TypeScript</td><td>&ge;5.0</td><td>Tipos + JSX en tsconfig</td></tr>
+    <tr><td>Token de Telegram</td><td>—</td><td>Necesitas un bot token de @BotFather</td></tr>
+  </table>
+  <div style="font-size:0.66rem;margin-top:6px;">
+    El SDK ya incluye Ink, React, y RxJS como devDependencies. Si estás en el repo, solo <span class="hl-box">bun install</span>.
+  </div>
+</div>
+
+<!-- ════════════ STEP 0 ════════════ -->
+<div class="cutout tilt-r2">
+  <div class="tape tape-tl"></div>
+  <h3>Paso 0 · Estructura de carpetas</h3>
+  <div style="font-size:0.68rem;margin-bottom:8px;">
+    Crea la carpeta de tu app dentro de <span class="hl-box">examples/</span>. Toda la lógica vive aquí — el SDK está arriba en <span class="hl-box">src/</span>.
+  </div>
+  <div class="cmd"><span class="prompt">mkdir -p examples/dashboard/components</span></div>
+  <div style="font-size:0.66rem;">
+    Resultado final:
+  </div>
+  <div class="cmd">examples/dashboard/
+├── main.tsx           <span class="comment"># entrypoint — crea bot, emitter, store, monta App</span>
+├── App.tsx            <span class="comment"># layout raíz con navegación por tabs</span>
+├── store.ts           <span class="comment"># mini-store reactivo genérico (~30 líneas)</span>
+├── state.ts           <span class="comment"># DashboardState type + defaults + buffers</span>
+├── theme.ts           <span class="comment"># paleta de colores (objeto plano)</span>
+├── emitter-bridge.ts  <span class="comment"># conecta RuntimeEmitter → Store</span>
+└── components/
+    ├── StatusPanel.tsx <span class="comment"># panel de estado del bot</span>
+    ├── LogViewer.tsx   <span class="comment"># logs en vivo con filtros</span>
+    └── ChatList.tsx    <span class="comment"># chats activos + mensajes</span></div>
+</div>
+
+<!-- ════════════ STEP 1 ════════════ -->
+<div class="cutout">
+  <div class="tape tape-tr"></div>
+  <div class="tape tape-bl"></div>
+  <h3>Paso 1 · Dependencias + tsconfig</h3>
+
+  <div class="step-title">1a. Instalar devDependencies</div>
+  <div class="cmd"><span class="prompt">bun add -d ink@5 react@19 @types/react@19 rxjs</span></div>
+  <div style="font-size:0.66rem;">
+    <code>ink</code> es el renderer React para terminal. <code>rxjs</code> es el bus de eventos que expone el SDK.
+    Ambos son <b>peerDependencies</b> del SDK.
+  </div>
+
+  <div class="step-title">1b. Habilitar JSX en tsconfig.json</div>
+  <div style="font-size:0.66rem;margin-bottom:4px;">
+    Asegúrate de que tu <span class="hl-box">tsconfig.json</span> incluye:
+  </div>
+  <div class="cmd"><span class="comment">// tsconfig.json (compilerOptions)</span>
+{
+  "jsx": "react-jsx",
+  "jsxImportSource": "react"
+}</div>
+
+  <div class="step-title">1c. Script de desarrollo</div>
+  <div style="font-size:0.66rem;margin-bottom:4px;">
+    Añade a <span class="hl-box">package.json</span>:
+  </div>
+  <div class="cmd"><span class="comment">// package.json → scripts</span>
+"dev:dashboard": "bun --watch run ./examples/dashboard/main.tsx"</div>
+
+  <div class="tip">
+    <code>--watch</code> recarga la app al guardar. Perfecto para iterar en la UI.
+  </div>
+</div>
+
+<!-- ════════════ STEP 2 ════════════ -->
+<div class="cutout tilt-l">
+  <div class="tape tape-tl"></div>
+  <h3>Paso 2 · La API del SDK que vas a usar</h3>
+  <div style="font-size:0.68rem;margin-bottom:8px;">
+    El SDK exporta todo desde un barrel (<span class="hl-box">src/index.ts</span>). Estas son las piezas que necesitas:
+  </div>
+
+  <table class="tbl">
+    <tr><th>Export</th><th>Tipo</th><th>Para qué</th></tr>
+    <tr><td><code>RuntimeEmitter</code></td><td>class</td><td>Bus central de eventos — creas una instancia y la pasas al Logger, ChatTracker, bot-handler</td></tr>
+    <tr><td><code>RuntimeEvent</code></td><td>type union</td><td>7 tipos de evento: log, message, status-change, chat-tracked, broadcast, commands-synced, plugins-registered</td></tr>
+    <tr><td><code>BotRuntime</code></td><td>interface</td><td>Snapshot acumulado (status, startedAt, plugins, commandCount, chatCount)</td></tr>
+    <tr><td><code>reduceRuntime</code></td><td>function</td><td>Reducer puro: <code>(BotRuntime, RuntimeEvent) → BotRuntime</code>. Usado por snapshot$ internamente</td></tr>
+    <tr><td><code>DEFAULT_BOT_RUNTIME</code></td><td>const</td><td>Estado inicial del snapshot</td></tr>
+    <tr><td><code>Bot</code></td><td>class (grammY)</td><td>Re-export del bot de Telegram</td></tr>
+    <tr><td><code>Logger</code></td><td>class</td><td>Acepta <code>emitter</code> en sus options — cada log.info() emite un evento</td></tr>
+    <tr><td><code>ChatTracker</code></td><td>class</td><td>Acepta <code>emitter</code> en su constructor — trackear chats emite eventos</td></tr>
+    <tr><td><code>registerPlugins</code></td><td>function</td><td>Acepta <code>emitter</code> opcional — emite plugins-registered y message</td></tr>
+    <tr><td><code>syncCommands</code></td><td>function</td><td>Acepta <code>emitter</code> opcional — emite commands-synced</td></tr>
+  </table>
+
+  <div class="concept-box">
+    <b>Patrón clave:</b> creás un <code>RuntimeEmitter</code> y lo pasás a cada componente core.
+    Ellos emiten; tu dashboard consume.
+  </div>
+
+  <details>
+    <summary>RuntimeEmitter — API completa</summary>
+    <div class="detail-body">
+<div class="cmd"><span class="comment">// Crear</span>
+const emitter = new RuntimeEmitter();
+
+<span class="comment">// Observables (RxJS)</span>
+emitter.events$     <span class="comment">// Observable&lt;RuntimeEvent&gt; — todo</span>
+emitter.logs$       <span class="comment">// Observable&lt;{type:"log", level, scope, message, timestamp}&gt;</span>
+emitter.messages$   <span class="comment">// Observable&lt;{type:"message", chatId, text, ...}&gt;</span>
+emitter.snapshot$   <span class="comment">// Observable&lt;BotRuntime&gt; — estado acumulado (scan + shareReplay)</span>
+
+<span class="comment">// Emitir (lo hacen los componentes core, no tú normalmente)</span>
+emitter.emit({ type: "status-change", status: "running", timestamp: new Date().toISOString() });
+
+<span class="comment">// Suscripción legacy (callback)</span>
+const unsub = emitter.on(event =&gt; console.log(event));
+unsub(); <span class="comment">// desubscribir</span>
+
+<span class="comment">// Shutdown</span>
+emitter.complete(); <span class="comment">// completa todos los streams</span></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>RuntimeEvent — los 7 tipos</summary>
+    <div class="detail-body">
+<div class="cmd"><span class="comment">// Cada variante del union type:</span>
+{ type: "log",               level, scope, message, timestamp }
+{ type: "message",           chatId, userId?, username?, text, timestamp }
+{ type: "status-change",     status: "starting"|"running"|"stopped"|"error", timestamp }
+{ type: "chat-tracked",      chatId, total, timestamp }
+{ type: "broadcast",         chatCount, message, timestamp }
+{ type: "commands-synced",   commandCount, timestamp }
+{ type: "plugins-registered", plugins: PluginInfo[], timestamp }</div>
+    </div>
+  </details>
+</div>
+
+<!-- ════════════ STEP 3 ════════════ -->
+<div class="cutout tilt-r">
+  <div class="tape tape-tr"></div>
+  <h3>Paso 3 · Estado + Store</h3>
+  <div style="font-size:0.68rem;margin-bottom:6px;">
+    Definí primero qué datos necesita tu UI, luego el mecanismo para mutarlos.
+  </div>
+
+  <div class="step-title">3a. <span class="file-tag">state.ts</span> — Modelo de datos de la UI</div>
+  <div class="cmd">import type { PluginInfo } from "../../src/index.js";
+
+<span class="comment">// Tipos para los buffers</span>
+export interface LogEntry {
+  level: "debug" | "info" | "warn" | "error";
+  scope: string;
+  message: string;
+  timestamp: string;
+}
+
+export interface MessageEntry {
+  chatId: number;
+  username?: string;
+  text: string;
+  timestamp: string;
+}
+
+<span class="comment">// Estado completo de la dashboard</span>
+export interface DashboardState {
+  botStatus: "starting" | "running" | "stopped" | "error";
+  startedAt: Date | null;
+  plugins: PluginInfo[];
+  commandCount: number;
+  chatIds: number[];
+  logs: LogEntry[];       <span class="comment">// buffer circular</span>
+  messages: MessageEntry[]; <span class="comment">// buffer circular</span>
+}
+
+export const LOG_BUFFER_SIZE = 200;
+export const MSG_BUFFER_SIZE = 100;
+
+export function getDefaultDashboardState(): DashboardState {
+  return {
+    botStatus: "starting",
+    startedAt: null,
+    plugins: [],
+    commandCount: 0,
+    chatIds: [],
+    logs: [],
+    messages: [],
+  };
+}</div>
+
+  <div class="tip">
+    <b>Buffer circular:</b> se implementa con <code>[...prev, nuevo].slice(-MAX_SIZE)</code>. Así el array nunca crece indefinidamente.
+  </div>
+
+  <div class="step-title">3b. <span class="file-tag">store.ts</span> — Mini-store reactivo</div>
+  <div class="cmd">type Listener = () =&gt; void;
+
+export interface Store&lt;T&gt; {
+  getState(): T;
+  setState(updater: (prev: T) =&gt; T): void;
+  subscribe(listener: Listener): () =&gt; void;  <span class="comment">// retorna unsub</span>
+}
+
+export function createStore&lt;T&gt;(initial: T): Store&lt;T&gt; {
+  let state = initial;
+  const listeners = new Set&lt;Listener&gt;();
+
+  return {
+    getState: () =&gt; state,
+    setState: (updater) =&gt; {
+      state = updater(state);
+      for (const l of listeners) l();  <span class="comment">// notifica a todos</span>
+    },
+    subscribe: (listener) =&gt; {
+      listeners.add(listener);
+      return () =&gt; listeners.delete(listener);
+    },
+  };
+}</div>
+
+  <div class="concept-box">
+    30 líneas. Sin dependencias. Genérico sobre <code>T</code>.
+    Cada <code>setState</code> notifica a todos los listeners — React se re-renderiza.
+    Mismo patrón que Zustand simplificado.
+  </div>
+</div>
+
+<!-- ════════════ STEP 4 ════════════ -->
+<div class="cutout">
+  <div class="tape tape-tl"></div>
+  <div class="tape tape-br"></div>
+  <h3>Paso 4 · Emitter Bridge — conectar SDK → Store</h3>
+  <div style="font-size:0.68rem;margin-bottom:6px;">
+    Este archivo es la pieza más importante: transforma cada evento del SDK en una mutación de estado.
+  </div>
+
+  <div class="step-title"><span class="file-tag">emitter-bridge.ts</span></div>
+  <div class="cmd">import type { RuntimeEmitter, RuntimeEvent } from "../../src/index.js";
+import type { Store } from "./store.js";
+import type { DashboardState } from "./state.js";
+import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE } from "./state.js";
+
+export function connectEmitterToStore(
+  emitter: RuntimeEmitter,
+  store: Store&lt;DashboardState&gt;
+): () =&gt; void {
+
+  function handleEvent(event: RuntimeEvent) {
+    store.setState((prev) =&gt; {
+      switch (event.type) {
+        case "plugins-registered":
+          return {
+            ...prev,
+            plugins: event.plugins,
+            botStatus: "running",
+            startedAt: prev.startedAt ?? new Date(event.timestamp),
+          };
+
+        case "commands-synced":
+          return { ...prev, commandCount: event.commandCount };
+
+        case "status-change":
+          return { ...prev, botStatus: event.status };
+
+        case "chat-tracked":
+          if (prev.chatIds.includes(event.chatId)) return prev;
+          return { ...prev, chatIds: [...prev.chatIds, event.chatId] };
+
+        case "broadcast":
+          return prev; <span class="comment">// informativo — aparece en logs</span>
+
+        case "log": {
+          const entry = {
+            level: event.level, scope: event.scope,
+            message: event.message, timestamp: event.timestamp,
+          };
+          const logs = [...prev.logs, entry].slice(-LOG_BUFFER_SIZE);
+          return { ...prev, logs };
+        }
+
+        case "message": {
+          const entry = {
+            chatId: event.chatId, username: event.username,
+            text: event.text, timestamp: event.timestamp,
+          };
+          const messages = [...prev.messages, entry].slice(-MSG_BUFFER_SIZE);
+          return { ...prev, messages };
+        }
+
+        default:
+          return prev;
+      }
+    });
+  }
+
+  <span class="comment">// Suscripción RxJS — usa events$ en vez del legacy .on()</span>
+  const sub = emitter.events$.subscribe(handleEvent);
+  return () =&gt; sub.unsubscribe();
+}</div>
+
+  <div class="warn">
+    El <code>switch</code> es exhaustivo — cubre los 7 tipos de <code>RuntimeEvent</code>. El <code>default</code> maneja futuros tipos sin romper.
+  </div>
+
+  <details>
+    <summary>¿Por qué no usar snapshot$ directamente?</summary>
+    <div class="detail-body" style="font-size:0.66rem;">
+      <code>snapshot$</code> acumula solo datos del <code>BotRuntime</code> (status, plugins, commandCount, chatCount).
+      Pero la dashboard necesita también los <b>buffers de logs y mensajes</b>, que no son parte del snapshot del SDK.
+      El bridge combina ambos: datos snapshot + datos de UI (buffers circulares, lista de chatIds...) en un <code>DashboardState</code> unificado.
+      <br><br>
+      Alternativa futura: suscribirte a <code>snapshot$</code>, <code>logs$</code> y <code>messages$</code> por separado, cada uno actualizando su slice del store.
+    </div>
+  </details>
+</div>
+
+<!-- ════════════ STEP 5 ════════════ -->
+<div class="cutout tilt-l">
+  <div class="tape tape-tr"></div>
+  <h3>Paso 5 · Theme + componentes de UI</h3>
+  <div style="font-size:0.68rem;margin-bottom:6px;">
+    Ink usa props como <code>color</code> en <code>&lt;Text&gt;</code> para colores ANSI. Centralizamos la paleta.
+  </div>
+
+  <div class="step-title">5a. <span class="file-tag">theme.ts</span></div>
+  <div class="cmd">export const theme = {
+  primary:  "cyan",       <span class="comment">// valores activos</span>
+  title:    "blueBright",  <span class="comment">// títulos de panel</span>
+  success:  "green",       <span class="comment">// ● RUNNING</span>
+  warning:  "yellow",      <span class="comment">// ● STARTING</span>
+  error:    "red",         <span class="comment">// ● ERROR</span>
+  muted:    "gray",        <span class="comment">// texto secundario</span>
+  debug:    "gray",
+  border:   "gray",        <span class="comment">// bordes de Box</span>
+} as const;</div>
+  <div class="tip">
+    Objeto plano, sin dependencias. Cambia la paleta aquí y toda la app se actualiza.
+  </div>
+
+  <div class="step-title">5b. <span class="file-tag">components/StatusPanel.tsx</span></div>
+  <div class="cmd">import React from "react";
+import { Box, Text } from "ink";
+import { theme } from "../theme.js";
+import type { DashboardState } from "../state.js";
+
+interface Props { state: DashboardState; }
+
+function formatUptime(startedAt: Date | null): string {
+  if (!startedAt) return "—";
+  const secs = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+  if (secs &lt; 60) return `${secs}s`;
+  if (secs &lt; 3600) return `${Math.floor(secs / 60)}m ${secs % 60}s`;
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  return `${h}h ${m}m`;
+}
+
+const STATUS_COLOR = {
+  starting: theme.warning,
+  running:  theme.success,
+  stopped:  theme.muted,
+  error:    theme.error,
+};
+
+export function StatusPanel({ state }: Props) {
+  return (
+    &lt;Box flexDirection="column" gap={1} paddingTop={1}&gt;
+      &lt;Box flexDirection="column"&gt;
+        &lt;Text bold color={theme.title}&gt;Bot Status&lt;/Text&gt;
+        &lt;Box gap={2}&gt;
+          &lt;Text color={STATUS_COLOR[state.botStatus]}&gt;
+            ● {state.botStatus.toUpperCase()}
+          &lt;/Text&gt;
+          &lt;Text color={theme.muted}&gt;uptime: &lt;/Text&gt;
+          &lt;Text color={theme.primary}&gt;{formatUptime(state.startedAt)}&lt;/Text&gt;
+        &lt;/Box&gt;
+      &lt;/Box&gt;
+
+      &lt;Box flexDirection="column"&gt;
+        &lt;Text bold color={theme.title}&gt;Stats&lt;/Text&gt;
+        &lt;Box gap={3}&gt;
+          &lt;Text color={theme.muted}&gt;chats: &lt;Text color={theme.primary}&gt;{state.chatIds.length}&lt;/Text&gt;&lt;/Text&gt;
+          &lt;Text color={theme.muted}&gt;commands: &lt;Text color={theme.primary}&gt;{state.commandCount}&lt;/Text&gt;&lt;/Text&gt;
+          &lt;Text color={theme.muted}&gt;plugins: &lt;Text color={theme.primary}&gt;{state.plugins.length}&lt;/Text&gt;&lt;/Text&gt;
+        &lt;/Box&gt;
+      &lt;/Box&gt;
+
+      {state.plugins.map((p) =&gt; (
+        &lt;Box key={p.pluginCode} gap={2}&gt;
+          &lt;Text color={theme.primary}&gt;[{p.pluginCode}]&lt;/Text&gt;
+          &lt;Text&gt;{p.name}&lt;/Text&gt;
+          &lt;Text color={theme.muted}&gt;({p.commandCount} cmds)&lt;/Text&gt;
+        &lt;/Box&gt;
+      ))}
+    &lt;/Box&gt;
+  );
+}</div>
+
+  <div class="concept-box">
+    <b>Patrón de componente:</b> recibe <code>state</code> via props, renderiza con <code>&lt;Box&gt;</code> (flexbox) y <code>&lt;Text&gt;</code> (styled output).
+    Sin lógica de suscripción — eso lo hace <code>&lt;App&gt;</code>.
+  </div>
+
+  <details>
+    <summary>LogViewer y ChatList — mismo patrón</summary>
+    <div class="detail-body" style="font-size:0.66rem;">
+      <b>LogViewer</b> muestra <code>state.logs</code> con colores por nivel + filtros por tecla (a/d/i/w/e) + scroll manual (↑↓).<br>
+      <b>ChatList</b> muestra <code>state.chatIds</code> + <code>state.messages</code> (últimos N).<br><br>
+      Ambos reciben <code>{ state: DashboardState }</code> y renderizan. El código completo está en
+      <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/tree/main/examples/dashboard/components" style="color:#000;font-weight:bold;">examples/dashboard/components/</a>.
+    </div>
+  </details>
+</div>
+
+<!-- ════════════ STEP 6 ════════════ -->
+<div class="cutout tilt-r2">
+  <div class="tape tape-tl"></div>
+  <h3>Paso 6 · App.tsx — Layout raíz + navegación</h3>
+  <div style="font-size:0.68rem;margin-bottom:6px;">
+    Este componente compone header, panel activo y footer. Es el único que se suscribe al store.
+  </div>
+
+  <div class="step-title"><span class="file-tag">App.tsx</span></div>
+  <div class="cmd">import React from "react";
+import { Box, Text, useInput, useApp } from "ink";
+import { theme } from "./theme.js";
+import type { DashboardState } from "./state.js";
+import type { Store } from "./store.js";
+import { StatusPanel } from "./components/StatusPanel.js";
+import { LogViewer } from "./components/LogViewer.js";
+import { ChatList } from "./components/ChatList.js";
+
+const PANELS = ["Overview", "Logs", "Chats"] as const;
+type Panel = (typeof PANELS)[number];
+
+interface AppProps {
+  store: Store&lt;DashboardState&gt;;
+}
+
+export function App({ store }: AppProps) {
+  const { exit } = useApp();
+  const [activePanel, setActivePanel] = React.useState&lt;Panel&gt;("Overview");
+  const [, forceUpdate] = React.useReducer(n =&gt; n + 1, 0);
+
+  <span class="comment">// Suscribirse al store → re-render cuando cambie el estado</span>
+  React.useEffect(() =&gt; {
+    return store.subscribe(forceUpdate);
+  }, [store]);
+
+  useInput((input, key) =&gt; {
+    if (input === "q" || (key.ctrl &amp;&amp; input === "c")) { exit(); return; }
+    if (input === "1") setActivePanel("Overview");
+    if (input === "2") setActivePanel("Logs");
+    if (input === "3") setActivePanel("Chats");
+    if (key.tab) {
+      const idx = PANELS.indexOf(activePanel);
+      setActivePanel(PANELS[(idx + 1) % PANELS.length]);
+    }
+  });
+
+  const state = store.getState();
+
+  return (
+    &lt;Box flexDirection="column" height="100%"&gt;
+      &lt;Box borderStyle="single" borderColor={theme.border} paddingX={1}&gt;
+        &lt;Text bold color={theme.primary}&gt;mi-dashboard &lt;/Text&gt;
+        {PANELS.map((p) =&gt; (
+          &lt;React.Fragment key={p}&gt;
+            &lt;Text color={activePanel === p ? theme.primary : theme.muted}
+                  bold={activePanel === p}&gt;[{p}]&lt;/Text&gt;
+            &lt;Text&gt; &lt;/Text&gt;
+          &lt;/React.Fragment&gt;
+        ))}
+      &lt;/Box&gt;
+
+      &lt;Box flexGrow={1} paddingX={1}&gt;
+        {activePanel === "Overview" &amp;&amp; &lt;StatusPanel state={state} /&gt;}
+        {activePanel === "Logs"     &amp;&amp; &lt;LogViewer state={state} /&gt;}
+        {activePanel === "Chats"    &amp;&amp; &lt;ChatList state={state} /&gt;}
+      &lt;/Box&gt;
+
+      &lt;Box borderStyle="single" borderColor={theme.border} paddingX={1}&gt;
+        &lt;Text color={theme.muted}&gt;
+          [1] Overview  [2] Logs  [3] Chats  [Tab] Cycle  [q] Quit
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/Box&gt;
+  );
+}</div>
+
+  <div class="concept-box">
+    <b>El truco de re-render:</b> <code>useReducer(n =&gt; n + 1, 0)</code> crea un <code>forceUpdate</code> que Ink invoca cada vez que el store cambia.
+    <code>store.subscribe(forceUpdate)</code> conecta las dos piezas.
+    El <code>useEffect</code> devuelve unsub → cleanup automático.
+  </div>
+</div>
+
+<!-- ════════════ STEP 7 ════════════ -->
+<div class="cutout">
+  <div class="tape tape-tr"></div>
+  <div class="tape tape-bl"></div>
+  <h3>Paso 7 · main.tsx — Entrypoint</h3>
+  <div style="font-size:0.68rem;margin-bottom:6px;">
+    Aquí se conecta todo: creas emitter, lo pasas al SDK, montas la UI, arrancas el bot.
+  </div>
+
+  <div class="step-title"><span class="file-tag">main.tsx</span></div>
+  <div class="cmd">import React from "react";
+import { render } from "ink";
+import {
+  Bot, RuntimeEmitter, ChatTracker, FileChatStore,
+  registerPlugins, syncCommands, Logger,
+} from "../../src/index.js";
+import { TOKEN } from "../console-app/config.js";   <span class="comment">// lee .env</span>
+import { RabbitBot } from "../console-app/rabbit-bot.js";
+import { createStore } from "./store.js";
+import { getDefaultDashboardState } from "./state.js";
+import { connectEmitterToStore } from "./emitter-bridge.js";
+import { App } from "./App.js";
+
+<span class="comment">// 1. Crear el emitter (bus central)</span>
+const emitter = new RuntimeEmitter();
+
+<span class="comment">// 2. Logger con emitter → los logs fluyen al stream</span>
+const log = new Logger("dashboard", { emitter });
+
+<span class="comment">// 3. Store + bridge</span>
+const store = createStore(getDefaultDashboardState());
+connectEmitterToStore(emitter, store);
+
+<span class="comment">// 4. Bot de Telegram + plugins</span>
+const bot = new Bot(TOKEN);
+const tracker = new ChatTracker(new FileChatStore(".chats.json"), emitter);
+const plugins = [new RabbitBot()];
+registerPlugins(bot, plugins, tracker, emitter);
+
+<span class="comment">// 5. Montar React/Ink</span>
+const { unmount } = render(&lt;App store={store} /&gt;);
+
+<span class="comment">// 6. Cleanup</span>
+function shutdown() {
+  emitter.complete();  <span class="comment">// cierra todos los streams</span>
+  unmount();           <span class="comment">// desmonta Ink</span>
+}
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
+<span class="comment">// 7. Arrancar bot</span>
+async function main() {
+  try {
+    await syncCommands(bot, plugins, tracker, { autoConfirm: true }, emitter);
+    log.info("Bot started — polling...");
+    emitter.emit({
+      type: "status-change", status: "running",
+      timestamp: new Date().toISOString(),
+    });
+    await bot.start();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    log.error(`Bot error: ${msg}`);
+    emitter.emit({
+      type: "status-change", status: "error",
+      timestamp: new Date().toISOString(),
+    });
+    shutdown();
+    process.exitCode = 1;
+  }
+}
+
+main();</div>
+
+  <div class="warn">
+    <b>Orden importante:</b> 1) emitter → 2) store + bridge → 3) bot setup (registra plugins) → 4) render UI → 5) start bot.
+    Si montás la UI después de registerPlugins, el evento <code>plugins-registered</code> llega al store antes del render — y <code>snapshot$</code> lo cachea con <code>shareReplay</code>.
+  </div>
+</div>
+
+<!-- ════════════ STEP 8 ════════════ -->
+<div class="cutout tilt-l">
+  <div class="tape tape-tl"></div>
+  <h3>Paso 8 · Correr y verificar</h3>
+
+  <div class="step-title">8a. Asegurar .env</div>
+  <div class="cmd"><span class="comment"># .env</span>
+BOT_TOKEN=tu-token-de-botfather
+SOLANA_ADDRESS=direccion-opcional</div>
+
+  <div class="step-title">8b. Ejecutar</div>
+  <div class="cmd"><span class="prompt">bun run dev:dashboard</span></div>
+  <div style="font-size:0.66rem;margin-top:4px;">
+    Deberías ver la TUI con estado ● STARTING, que cambia a ● RUNNING cuando el bot conecta a Telegram.
+  </div>
+
+  <div class="step-title">8c. Interactuar</div>
+  <table class="tbl">
+    <tr><th>Tecla</th><th>Acción</th></tr>
+    <tr><td><span class="hl-box">1</span></td><td>Panel Overview</td></tr>
+    <tr><td><span class="hl-box">2</span></td><td>Panel Logs</td></tr>
+    <tr><td><span class="hl-box">3</span></td><td>Panel Chats</td></tr>
+    <tr><td><span class="hl-box">Tab</span></td><td>Rotar paneles</td></tr>
+    <tr><td><span class="hl-box">q</span> / <span class="hl-box">Ctrl+C</span></td><td>Salir (shutdown limpio)</td></tr>
+  </table>
+  <div style="font-size:0.66rem;margin-top:4px;">
+    En el panel Logs: <span class="hl-box">a</span>=all, <span class="hl-box">d</span>=debug, <span class="hl-box">i</span>=info, <span class="hl-box">w</span>=warn, <span class="hl-box">e</span>=error, <span class="hl-box">↑↓</span>=scroll.
+  </div>
+
+  <div class="step-title">8d. Verificar que no rompiste nada</div>
+  <div class="cmd"><span class="prompt">bun run lint && bun run test</span></div>
+</div>
+
+<div class="washi"></div>
+
+<!-- ════════════ EXTENDING ════════════ -->
+<div class="cutout tilt-r">
+  <div class="tape tape-tl"></div>
+  <div class="tape tape-br"></div>
+  <h3>☞ Extender la dashboard</h3>
+  <div style="font-size:0.68rem;margin-bottom:8px;">
+    Ideas para seguir iterando:
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div style="font-size:0.68rem;">
+        <b>Nuevo panel</b><br>
+        1. Crear <code>components/MiPanel.tsx</code><br>
+        2. Añadir entrada en <code>PANELS</code> array de App.tsx<br>
+        3. Añadir el <code>&amp;&amp;</code> conditional render<br>
+        4. Los datos ya están en <code>state</code>
+      </div>
+    </div>
+    <div class="col">
+      <div style="font-size:0.68rem;">
+        <b>Nuevo tipo de evento</b><br>
+        1. Extender <code>RuntimeEvent</code> union en el SDK<br>
+        2. Añadir el <code>case</code> en emitter-bridge.ts<br>
+        3. Añadir campos en <code>DashboardState</code><br>
+        4. Renderizar en el componente
+      </div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Usar streams RxJS directamente en un componente</summary>
+    <div class="detail-body">
+<div class="cmd"><span class="comment">// Ejemplo: hook custom que consume logs$ directamente</span>
+import { useEffect, useState } from "react";
+import type { RuntimeEmitter } from "../../src/index.js";
+
+export function useLogCount(emitter: RuntimeEmitter) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() =&gt; {
+    const sub = emitter.logs$.subscribe(() =&gt; {
+      setCount(c =&gt; c + 1);
+    });
+    return () =&gt; sub.unsubscribe();
+  }, [emitter]);
+
+  return count;
+}</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Consumir snapshot$ sin el bridge</summary>
+    <div class="detail-body">
+<div class="cmd"><span class="comment">// Si solo necesitas los datos del BotRuntime:</span>
+import { useEffect, useState } from "react";
+import type { RuntimeEmitter, BotRuntime, DEFAULT_BOT_RUNTIME } from "../../src/index.js";
+
+export function useBotRuntime(emitter: RuntimeEmitter) {
+  const [runtime, setRuntime] = useState&lt;BotRuntime&gt;(DEFAULT_BOT_RUNTIME);
+
+  useEffect(() =&gt; {
+    const sub = emitter.snapshot$.subscribe(setRuntime);
+    return () =&gt; sub.unsubscribe();
+  }, [emitter]);
+
+  return runtime;
+}
+
+<span class="comment">// snapshot$ usa shareReplay(1) — si te suscribís tarde,</span>
+<span class="comment">// igual recibís el último valor acumulado.</span></div>
+    </div>
+  </details>
+</div>
+
+<!-- ════════════ CHEAT SHEET ════════════ -->
+<div class="cutout" style="text-align:center;">
+  <h3>Cheat Sheet — Ink / React en Terminal</h3>
+  <table class="tbl">
+    <tr><th>Ink</th><th>Web equiv.</th><th>Uso</th></tr>
+    <tr><td><code>&lt;Box&gt;</code></td><td><code>&lt;div&gt;</code> con flexbox</td><td>Layout: flexDirection, gap, padding, border</td></tr>
+    <tr><td><code>&lt;Text&gt;</code></td><td><code>&lt;span&gt;</code></td><td>Color, bold, dimColor, italic, underline</td></tr>
+    <tr><td><code>useInput()</code></td><td><code>addEventListener("keydown")</code></td><td>Captura teclas: input string + key object</td></tr>
+    <tr><td><code>useApp().exit()</code></td><td><code>window.close()</code></td><td>Sale del proceso Ink limpiamente</td></tr>
+    <tr><td><code>render(&lt;App/&gt;)</code></td><td><code>createRoot().render()</code></td><td>Monta la app — devuelve { unmount }</td></tr>
+  </table>
+</div>
+
+<!-- ════════════ KEYWORDS ════════════ -->
+<div class="cutout" style="text-align:center;">
+  <h3>Keywords</h3>
+  <span class="kw">ink</span>
+  <span class="kw">react</span>
+  <span class="kw-inv">rxjs</span>
+  <span class="kw">tui</span>
+  <span class="kw-inv">terminal-ui</span>
+  <span class="kw">dashboard</span>
+  <span class="kw-inv">runtime-emitter</span>
+  <span class="kw">observable</span>
+  <span class="kw-inv">subject</span>
+  <span class="kw">bun</span>
+  <span class="kw-inv">grammy</span>
+  <span class="kw">telegram</span>
+</div>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer class="footer">
+  heteronimos-semi-asistidos-sdk · Build a TUI Dashboard App · Guide · v0.0.0 · Escrivivir.co · AIPL
+</footer>
+
+</body>
+</html>
