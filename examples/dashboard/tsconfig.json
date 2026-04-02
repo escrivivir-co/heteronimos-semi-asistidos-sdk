@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "types": ["bun-types"],
     "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "paths": {
+      "heteronimos-semi-asistidos-sdk": ["../../src/index.ts"]
+    }
   },
   "include": ["."]
 }

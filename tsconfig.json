@@ -31,7 +31,9 @@
     "types": ["bun-types"],                              /* Specify type package names to be included without being referenced in a source file. */
     "rootDir": ".",                                    /* Specify the root folder within your source files. */
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
-    // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
+    "paths": {
+      "heteronimos-semi-asistidos-sdk": ["./src/index.ts"]
+    },                                                   /* Redirect SDK self-references to src (TypeScript only; Bun runtime uses dist/) */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     // "types": [],                                      /* Specify type package names to be included without being referenced in a source file. */
