@@ -30,7 +30,7 @@ describe("connectEmitterToStore — plugins-registered", () => {
 
     emitter.emit({
       type: "plugins-registered",
-      plugins: [{ name: "test", pluginCode: "t", commandCount: 2 }],
+      plugins: [{ name: "test", pluginCode: "t", commandCount: 2, commands: [] }],
       timestamp: "2026-01-01T00:00:00.000Z",
     });
 

@@ -25,8 +25,6 @@ export interface BotRuntime {
   plugins: PluginInfo[];
   commandCount: number;
   chatCount: number;
-  validChatCount: number;
-  staleChatCount: number;
 }
 
 // --- Unión de eventos emitidos por el SDK ---
@@ -35,15 +33,12 @@ export type RuntimeEvent =
   | { type: "log"; level: "debug" | "info" | "warn" | "error"; scope: string; message: string; timestamp: string }
   | { type: "message"; chatId: number; userId?: number; username?: string; text: string; timestamp: string }
   | { type: "status-change"; status: BotRuntime["status"]; timestamp: string }
-  | { type: "chat-tracked"; chatId: number; total: number; chatTitle?: string; chatType?: string; timestamp: string }
+  | { type: "chat-tracked"; chatId: number; total: number; timestamp: string }
   | { type: "broadcast"; chatCount: number; message: string; timestamp: string }
   | { type: "commands-synced"; commandCount: number; timestamp: string }
-  | { type: "commands-scope-synced"; scope: string; count: number; timestamp: string }
   | { type: "plugins-registered"; plugins: PluginInfo[]; timestamp: string }
   | { type: "command-executed"; command: string; chatId: number; userId: number; username: string; timestamp: string }
-  | { type: "command-response"; command: string; text: string; chatId: number; timestamp: string }
-  | { type: "chats-validated"; valid: number; stale: number; timestamp: string }
-  | { type: "chat-member-changed"; chatId: number; chatType: string; chatTitle?: string; newStatus: string; timestamp: string };
+  | { type: "command-response"; command: string; text: string; chatId: number; timestamp: string };
 
 // --- Reducer puro para BotRuntime ---
 
@@ -53,8 +48,6 @@ export const DEFAULT_BOT_RUNTIME: BotRuntime = {
   plugins: [],
   commandCount: 0,
   chatCount: 0,
-  validChatCount: 0,
-  staleChatCount: 0,
 };
 
 export function reduceRuntime(state: BotRuntime, event: RuntimeEvent): BotRuntime {
@@ -70,14 +63,8 @@ export function reduceRuntime(state: BotRuntime, event: RuntimeEvent): BotRuntim
       };
     case "commands-synced":
       return { ...state, commandCount: event.commandCount };
-    case "commands-scope-synced":
-      return { ...state, commandCount: event.count };
     case "chat-tracked":
       return { ...state, chatCount: event.total };
-    case "chats-validated":
-      return { ...state, validChatCount: event.valid, staleChatCount: event.stale };
-    case "chat-member-changed":
-      return state;
     default:
       return state;
   }

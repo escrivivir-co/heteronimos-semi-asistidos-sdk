@@ -114,7 +114,7 @@ describe("connectEmitterToStore — plugins-registered", () => {
 
     emitter.emit({
       type: "plugins-registered",
-      plugins: [{ name: "MyPlugin", pluginCode: "mp", commandCount: 2 }],
+      plugins: [{ name: "MyPlugin", pluginCode: "mp", commandCount: 2, commands: [] }],
       timestamp: "2026-01-01T00:00:00.000Z",
     });
 
@@ -132,14 +132,14 @@ describe("connectEmitterToStore — plugins-registered", () => {
 
     emitter.emit({
       type: "plugins-registered",
-      plugins: [{ name: "A", pluginCode: "a", commandCount: 1 }],
+      plugins: [{ name: "A", pluginCode: "a", commandCount: 1, commands: [] }],
       timestamp: "2026-01-01T00:00:00.000Z",
     });
     const first = store.getState().startedAt;
 
     emitter.emit({
       type: "plugins-registered",
-      plugins: [{ name: "B", pluginCode: "b", commandCount: 1 }],
+      plugins: [{ name: "B", pluginCode: "b", commandCount: 1, commands: [] }],
       timestamp: "2026-01-02T00:00:00.000Z",
     });
     expect(store.getState().startedAt).toBe(first);

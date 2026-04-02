@@ -129,13 +129,8 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
           return { ...prev, botStatus: event.status };
 
         case "chat-tracked": {
-          const isNew = !prev.chatIds.includes(event.chatId);
-          if (!isNew && !event.chatTitle) return prev;
-          const chatNames = event.chatTitle
-            ? { ...prev.chatNames, [event.chatId]: event.chatTitle }
-            : prev.chatNames;
-          const chatIds = isNew ? [...prev.chatIds, event.chatId] : prev.chatIds;
-          const nextChatState = { ...prev, chatIds, chatNames };
+          if (prev.chatIds.includes(event.chatId)) return prev;
+          const nextChatState = { ...prev, chatIds: [...prev.chatIds, event.chatId] };
           scheduleSave(nextChatState);
           return nextChatState;
         }
@@ -162,7 +157,11 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
             timestamp: event.timestamp,
           };
           const messages = [...prev.messages, entry].slice(-maxMsgs) as T["messages"];
-          const nextMsgState = { ...prev, messages };
+          // Si no tenemos nombre para este chat aún, usar el username del remitente.
+          const chatNames = event.username && !prev.chatNames[event.chatId]
+            ? { ...prev.chatNames, [event.chatId]: event.username }
+            : prev.chatNames;
+          const nextMsgState = { ...prev, messages, chatNames };
           scheduleSave(nextMsgState);
           return nextMsgState;
         }

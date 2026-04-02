@@ -80,18 +80,6 @@ export class ChatTracker {
         type: "chat-tracked",
         chatId,
         total: this.chatIds.size,
-        chatTitle: title,
-        chatType,
-        timestamp: new Date().toISOString(),
-      });
-    } else if (title) {
-      // Chat ya conocido pero con nombre nuevo (renombrado, o primera vez que llega)
-      this.emitter?.emit({
-        type: "chat-tracked",
-        chatId,
-        total: this.chatIds.size,
-        chatTitle: title,
-        chatType,
         timestamp: new Date().toISOString(),
       });
     }
@@ -114,7 +102,6 @@ export class ChatTracker {
         type: "chat-tracked",
         chatId,
         total,
-        chatTitle: this.chatNames.get(chatId),
         timestamp: new Date().toISOString(),
       });
     }

@@ -453,6 +453,108 @@
 
 ---
 
+## Sprint 4i — Chat Detail View (pestaña Chats mejorada)
+
+| # | Story | Status | Spec ref |
+|---|-------|--------|----------|
+| 221 | Tipos `ChatMessage` + `ChatThread` en `src/core/store.ts` | 🔲 | SDS-13 §4.1 |
+| 222 | Selectores `selectChatThreads` + `selectChatMessages` en `src/core/chat-selectors.ts` | 🔲 | SDS-13 §4.2 |
+| 223 | Exportar tipos y selectores desde `src/index.ts` | 🔲 | SDS-13 §4.3 |
+| 224 | Refactorizar `ChatList.tsx` — vista lista con cursor ↑↓ y preview | ✅ | SDS-13 §4.4 |
+| 225 | Crear `ChatDetail.tsx` — timeline de mensajes user/bot con scroll | ✅ | SDS-13 §4.5 |
+| 226 | Crear `ChatPanel.tsx` wrapper — orquesta lista ↔ detalle (Enter/Esc) | ✅ | SDS-13 §4.6 |
+| 227 | Tests de selectores `chat-selectors.test.ts` | 🔲 | SDS-13 §4.7 |
+
+---
+
+## Sprint 4j — Message Persistence (historial entre reinicios)
+
+| # | Story | Status | Spec ref |
+|---|-------|--------|----------|
+| 228 | `MessageStore` interface + `FileMessageStore` + `MemoryMessageStore` en `src/core/message-store.ts` | ✅ | SDS-14 §4.1 |
+| 229 | Integrar `MessageStore` en `connectEmitterToStore` — carga al conectar, save debounced | ✅ | SDS-14 §4.2 |
+| 230 | Ampliar `BootBotOptions` con `messageStorePath` + cableado en `bootBot` | ✅ | SDS-14 §4.3 |
+| 231 | Exportar tipos y clases desde `src/index.ts` | ✅ | SDS-14 §4.4 |
+| 232 | Dashboard: activar persistencia en `main.tsx` + `.gitignore` | ✅ | SDS-14 §4.5 |
+| 233 | Tests `message-store.test.ts` + ampliar `emitter-bridge.test.ts` | ✅ | SDS-14 §4.6 |
+
+---
+
+## Sprint 4k — Group Command Sync & Chat Validation (from SDS-15)
+
+> Objetivo: que los comandos del bot aparezcan en el menú `/` de grupos (no solo en DMs),
+> validar chats persistidos al arrancar y enriquecer `.chats.json` con metadatos (tipo, título,
+> estado del bot). Exponer todo en la dashboard con acciones de re-sync y re-validate.
+> Spec: `specs/15-group-command-sync.md`
+
+### Fase AI · SDK: multi-scope command sync
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 234 | Ampliar `SyncOptions` — nuevo campo `scopes[]` con default `["default", "all_group_chats"]` | 🔲 | SDS-15 §3.6 |
+| 235 | Refactorizar `syncCommandsWithTelegram` — iterar scopes, `getMyCommands`/`setMyCommands` por scope | 🔲 | SDS-15 §3.1 |
+| 236 | Nuevo `RuntimeEvent`: `commands-scope-synced` — emitido por cada scope sincronizado | 🔲 | SDS-15 §3.5 |
+| 237 | Ampliar `MockTelegramBot.api` — `getMyCommands({ scope })` y `setMyCommands(cmds, { scope })` con storage por scope | 🔲 | SDS-15 §4.1 |
+| 238 | Tests: `command-handler.test.ts` — multi-scope sync, verifica ambas llamadas, diff por scope | 🔲 | SDS-15 §7 |
+| 239 | Tests: `mock-telegram.test.ts` — scope-aware get/setMyCommands | 🔲 | SDS-15 §7 |
+
+### Fase AJ · SDK: ChatInfo + ChatStore v2 + migración
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 240 | Definir `ChatInfo` interface en `src/core/chat-tracker.ts` | 🔲 | SDS-15 §3.2 |
+| 241 | Definir `ChatStoreV2` interface — `load(): ChatInfo[]`, `save(chats: ChatInfo[])` | 🔲 | SDS-15 §3.7 |
+| 242 | Ampliar `FileChatStore` — auto-migración v1 (`number[]`) → v2 (`ChatInfo[]`) al leer | 🔲 | SDS-15 §3.7 |
+| 243 | Refactorizar `ChatTracker` — usar `ChatStoreV2` internamente, `trackWithInfo()`, `markStale()`, `getAllInfo()` | 🔲 | SDS-15 §3.7 |
+| 244 | Mantener backward compat: `ChatTracker.getAll()` sigue devolviendo `number[]` | 🔲 | SDS-15 §3.7 |
+| 245 | Tests: `chat-tracker.test.ts` — ChatInfo persistence, auto-migración v1→v2, getAll todavía funciona | 🔲 | SDS-15 §7 |
+
+### Fase AK · SDK: validación de chats al arranque
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 246 | Implementar `validateChats(bot, chatInfos)` → `{ valid, stale }` usando `bot.api.getChat` | 🔲 | SDS-15 §3.3 |
+| 247 | Nuevo `RuntimeEvent`: `chats-validated` — emitido tras validación con contadores valid/stale | 🔲 | SDS-15 §3.5 |
+| 248 | Ampliar `MockTelegramBot.api` — mock `getChat(chatId)` configurable (éxito/fallo por chat) | 🔲 | SDS-15 §4.1 |
+| 249 | Ampliar `BootBotOptions` — `validateChatsOnBoot?: boolean` | 🔲 | SDS-15 §3.10 |
+| 250 | Integrar `validateChats` en `bootBot()` — llamar tras registerPlugins si opción activa | 🔲 | SDS-15 §3.10 |
+| 251 | Añadir warning `getMe()` → `can_read_all_group_messages` = false → log.warn sobre Privacy Mode | 🔲 | SDS-15 §9 |
+| 252 | Tests: `chat-tracker.test.ts` — validateChats con mock (chats accesibles y no accesibles) | 🔲 | SDS-15 §7 |
+
+### Fase AL · SDK: tracking reactivo con my_chat_member
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 253 | Implementar `ChatTracker.registerMemberUpdates(bot)` — escucha `my_chat_member`, llama `trackWithInfo`/`markStale` | 🔲 | SDS-15 §3.4 |
+| 254 | Nuevo `RuntimeEvent`: `chat-member-changed` — emitido cuando el bot entra/sale de un chat | 🔲 | SDS-15 §3.5 |
+| 255 | Integrar `registerMemberUpdates` en `bootBot()` — siempre activo en modo real | 🔲 | SDS-15 §3.10 |
+| 256 | Tests: `chat-tracker.test.ts` — registerMemberUpdates con mock (added, kicked, left) | 🔲 | SDS-15 §7 |
+
+### Fase AM · SDK: state + bridge + barrel
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 257 | Ampliar `BaseRuntimeState` — `chatInfos: ChatInfo[]`, `validChatCount`, `staleChatCount` | 🔲 | SDS-15 §3.8 |
+| 258 | Ampliar `emitter-bridge.ts` — reducers para `chats-validated`, `chat-member-changed`, `commands-scope-synced` | 🔲 | SDS-15 §3.9 |
+| 259 | Exportar desde barrel: `ChatInfo`, `ChatStoreV2`, `validateChats`, nuevos RuntimeEvent types | 🔲 | SDS-15 §4.1 |
+| 260 | Tests: `emitter-bridge.test.ts` — reducers nuevos | 🔲 | SDS-15 §7 |
+| 261 | Tests: `runtime-emitter.test.ts` — nuevos eventos en streams | 🔲 | SDS-15 §7 |
+| 262 | Tests: `barrel.test.ts` — nuevos exports existen | 🔲 | SDS-15 §7 |
+
+### Fase AN · Dashboard: panel Chats enriquecido
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 263 | Ampliar `DashboardState` — hereda `chatInfos`, `validChatCount`, `staleChatCount` | 🔲 | SDS-15 §4.2 |
+| 264 | Refactorizar `ChatList.tsx` — mostrar tipo, título, username, indicador visual valid/stale | 🔲 | SDS-15 §3.11 |
+| 265 | Keybinding `r` en panel Chats — dispara re-validación (solo modo Telegram real) | 🔲 | SDS-15 §3.11 |
+| 266 | Keybinding `s` en panel Chats — dispara re-sync de comandos a todos los scopes | 🔲 | SDS-15 §3.11 |
+| 267 | Actualizar `main.tsx` — pasar `validateChatsOnBoot: true` a `bootBot()` | 🔲 | SDS-15 §4.2 |
+
+### Fase AO · Docs + integración final
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 268 | Full test suite verde + tests nuevos cubren cada feature | 🔲 | SDS-15 §6 |
+| 269 | Actualizar `bot-father-settings.md` — nota sobre grupo scope | 🔲 | SDS-15 §9 |
+| 270 | Actualizar `docs/dashboard-guide.html` — panel Chats enriquecido | 🔲 | SDS-15 §6 |
+| 271 | Actualizar `README.md` raíz — mencionar soporte de grupos | 🔲 | SDS-15 §6 |
+
+---
+
 ## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
@@ -490,4 +592,4 @@
 
 ---
 
-*Last updated: 2026-04-03 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4g Fases AA-AC + AD (dark mode) ✅ · Sprint 4h (mock command execution) ✅ · Sprint 4h-fix (command execution hotfixes) ✅ · next: poster-template README 🔲 · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-03 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4g Fases AA-AC + AD (dark mode) ✅ · Sprint 4h (mock command execution) ✅ · Sprint 4h-fix (command execution hotfixes) ✅ · Sprint 4i (chat detail view) 🔲 · Sprint 4j (message persistence) 🔲 · next: Sprint 4i 🔲 · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*

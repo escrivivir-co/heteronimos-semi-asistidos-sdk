@@ -14,7 +14,6 @@
  */
 
 import type { BotCommand } from "./command-handler.js";
-import type { ChatInfo } from "./chat-tracker.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 // ---------------------------------------------------------------------------
@@ -26,11 +25,6 @@ export interface MockBotOptions {
   initialCommands?: BotCommand[];
   /** RuntimeEmitter para emitir command-executed y command-response. Opcional. */
   emitter?: RuntimeEmitter;
-  /**
-   * Mapa de chatId a ChatInfo parcial para que getChat devuelva datos mock.
-   * Si el chatId no está en el mapa getChat lanza un error genérico.
-   */
-  mockChats?: Map<number, Partial<ChatInfo>>;
 }
 
 export interface SimulateOpts {
@@ -87,49 +81,25 @@ export class MockTelegramBot {
   private commandHandlers = new Map<string, (ctx: object) => Promise<void>>();
   private callbackHandlers = new Map<string, (ctx: object) => Promise<void>>();
   private messageHandlers: Array<(ctx: object) => Promise<void>> = [];
-  /** Per-scope command storage. Key is BotCommandScope.type string. */
-  private commandsByScope = new Map<string, BotCommand[]>();
+  private storedCommands: BotCommand[];
   private sentMessages: SentMessage[] = [];
   private emitter?: RuntimeEmitter;
-  private mockChats: Map<number, Partial<ChatInfo>>;
 
   readonly api: {
-    getMyCommands(params?: { scope?: { type: string } }): Promise<BotCommand[]>;
-    setMyCommands(commands: BotCommand[], params?: { scope?: { type: string } }): Promise<void>;
+    getMyCommands(): Promise<BotCommand[]>;
+    setMyCommands(commands: BotCommand[]): Promise<void>;
     sendMessage(chatId: number, text: string, options?: unknown): Promise<void>;
-    getChat(chatId: number): Promise<Partial<ChatInfo>>;
   };
 
   constructor(options?: MockBotOptions) {
-    const initial = options?.initialCommands ?? [];
-    // Inicializar todos los scopes conocidos con los mismos comandos iniciales.
-    for (const scope of ["default", "all_group_chats", "all_chat_administrators", "all_private_chats"]) {
-      this.commandsByScope.set(scope, [...initial]);
-    }
+    this.storedCommands = [...(options?.initialCommands ?? [])];
     this.emitter = options?.emitter;
-    this.mockChats = options?.mockChats ?? new Map();
 
     this.api = {
-      getMyCommands: async (params) => {
-        const key = params?.scope?.type ?? "default";
-        return [...(this.commandsByScope.get(key) ?? [])];
-      },
-      setMyCommands: async (commands, params) => {
-        const key = params?.scope?.type ?? "default";
-        this.commandsByScope.set(key, [...commands]);
-      },
+      getMyCommands: async () => [...this.storedCommands],
+      setMyCommands: async (commands) => { this.storedCommands = [...commands]; },
       sendMessage: async (chatId, text) => { this.sentMessages.push({ chatId, text }); },
-      getChat: async (chatId) => {
-        const data = this.mockChats.get(chatId);
-        if (!data) throw new Error(`MockTelegramBot: no mock data for chatId ${chatId}`);
-        return data;
-      },
     };
-  }
-
-  /** Returns all stored commands for a given scope (default: "default"). */
-  getStoredCommands(scope = "default"): BotCommand[] {
-    return [...(this.commandsByScope.get(scope) ?? [])];
   }
 
   // --- Registro (interfaz compatible con grammy.Bot) ---
@@ -249,6 +219,6 @@ export class MockTelegramBot {
     this.callbackHandlers.clear();
     this.messageHandlers = [];
     this.sentMessages = [];
-    this.commandsByScope.clear();
+    this.storedCommands = [];
   }
 }
