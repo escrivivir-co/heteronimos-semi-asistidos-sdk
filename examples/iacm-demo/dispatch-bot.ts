@@ -99,15 +99,15 @@ export class DispatchBot extends IacmBotPlugin<DispatchVars> {
         priority: 9,
       },
 
-      // /dp_accept
+      // /dp_accept — priority 80 overrides IACM command categories (priority 70)
       {
         id: "cmd-accept",
         pattern: /^\/\w+_accept$/i,
         resolver: "dispatch.send.accept",
-        priority: 9,
+        priority: 80,
       },
 
-      // /dp_reject <razón>
+      // /dp_reject <razón> — priority 80 overrides IACM command categories
       {
         id: "cmd-reject",
         pattern: /^\/\w+_reject\s+(.+)/i,
@@ -118,10 +118,10 @@ export class DispatchBot extends IacmBotPlugin<DispatchVars> {
           stars,
           originalInput: ctx.text,
         }),
-        priority: 9,
+        priority: 80,
       },
 
-      // /dp_defer <razón>
+      // /dp_defer <razón> — priority 80 overrides IACM command categories
       {
         id: "cmd-defer",
         pattern: /^\/\w+_defer\s+(.+)/i,
@@ -132,7 +132,7 @@ export class DispatchBot extends IacmBotPlugin<DispatchVars> {
           stars,
           originalInput: ctx.text,
         }),
-        priority: 9,
+        priority: 80,
       },
 
       // /dp_demo <city>

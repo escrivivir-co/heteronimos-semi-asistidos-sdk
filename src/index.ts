@@ -141,3 +141,7 @@ export { iacmProtocolHandler, PROTOCOL_HELP } from "./core/iacm-protocol-handler
 
 export type { IacmBotVars } from "./core/iacm-bot-plugin.js";
 export { IacmBotPlugin } from "./core/iacm-bot-plugin.js";
+
+// --- AIML JSON Loader (SDS-16 addendum / SDS-18 §9.5) ---
+export type { JsonCategoryDef, JsonResolverDef } from "./core/aiml-json-loader.js";
+export { loadJsonCategories } from "./core/aiml-json-loader.js";
