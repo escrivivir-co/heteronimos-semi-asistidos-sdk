@@ -76,3 +76,68 @@ export type {
 export { UNMATCHED_INTENT } from "./core/aiml-types.js";
 export { IntentEngine } from "./core/intent-engine.js";
 export { AimlBotPlugin } from "./core/aiml-bot-plugin.js";
+
+// --- IACM Protocol (SDS-17) ---
+export type {
+  IacmMessage,
+  IacmMessageType,
+  IacmMeta,
+  IacmDataMap,
+  AnyIacmMessage,
+  IacmSessionVars,
+  IacmRequestData,
+  IacmReportData,
+  IacmQuestionData,
+  IacmAnswerData,
+  IacmProposalData,
+  IacmAcknowledgeData,
+  IacmAcceptData,
+  IacmRejectData,
+  IacmDeferData,
+  IacmFyiData,
+  IacmUrgentData,
+  IacmPriority,
+} from "./core/iacm-types.js";
+export { IACM_VERSION } from "./core/iacm-types.js";
+
+export type { BuildOptions } from "./core/iacm-templates.js";
+export {
+  generateMessageId,
+  iacmTimestamp,
+  buildIacmMessage,
+  buildRequest,
+  buildReport,
+  buildQuestion,
+  buildAnswer,
+  buildProposal,
+  buildAcknowledge,
+  buildAccept,
+  buildReject,
+  buildDefer,
+  buildFyi,
+  buildUrgent,
+  formatIacmForChat,
+  toIacmYaml,
+} from "./core/iacm-templates.js";
+
+export type { ParseResult as IacmParseResult } from "./core/iacm-parser.js";
+export {
+  detectsIacmMessage,
+  extractIacmType,
+  extractIacmAgents,
+  parseIacmMessage,
+  validateIacmMessage,
+} from "./core/iacm-parser.js";
+
+export type { IacmIntent } from "./core/iacm-categories.js";
+export {
+  IACM_INTENTS,
+  getIacmChatCategories,
+  getIacmCommandCategories,
+  getAllIacmCategories,
+} from "./core/iacm-categories.js";
+
+export { iacmProtocolHandler, PROTOCOL_HELP } from "./core/iacm-protocol-handlers.js";
+
+export type { IacmBotVars } from "./core/iacm-bot-plugin.js";
+export { IacmBotPlugin } from "./core/iacm-bot-plugin.js";

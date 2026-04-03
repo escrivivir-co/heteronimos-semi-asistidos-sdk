@@ -36,12 +36,7 @@ export abstract class AimlBotPlugin<TVars extends SessionVars = SessionVars>
   abstract name: string;
   abstract pluginCode: string;
 
-  protected engine: IntentEngine<TVars>;
-
   constructor(options?: IntentEngineOptions) {
-    // Engine se inicializa en el primer acceso para permitir que las subclases
-    // sobreescriban categories() y defaultVars() antes de la construcción.
-    // Usamos lazy init vía getter privado.
     this._engineOptions = options;
   }
 
