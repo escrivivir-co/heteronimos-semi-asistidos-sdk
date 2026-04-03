@@ -297,6 +297,39 @@ registerPlugins(bot, plugins, tracker);</div>
   </div>
 </div>
 
+<!-- ═══ GROUPS & PRIVACY MODE ═══ -->
+<div class="poster-card">
+  <div class="badge">GROUPS</div>
+  <div class="tape tape-tl"></div>
+
+  <h2>Groups & Privacy Mode</h2>
+  <div class="meta">Para que el bot reciba todos los mensajes en grupos, desactiva Privacy Mode en BotFather</div>
+
+  <div style="font-size:0.68rem;margin-top:8px;">
+    Por defecto, Telegram bots tienen <b>Privacy Mode activado</b> — en grupos solo reciben:
+  </div>
+  <ul style="font-size:0.68rem;margin:4px 0 8px 18px;padding:0;">
+    <li>Mensajes que empiezan con <code>/</code> (comandos)</li>
+    <li>Respuestas a mensajes del propio bot</li>
+    <li>Mensajes que @mencionan al bot por su username</li>
+  </ul>
+  <div style="font-size:0.68rem;">
+    Si necesitas que el bot reciba <b>todos los mensajes</b> del grupo (para handlers <code>onMessage</code>):
+  </div>
+  <div class="cmd"><span class="prompt">@BotFather → /setprivacy → selecciona tu bot → Disable</span></div>
+  <div style="font-size:0.68rem;margin-top:6px;border:1px solid var(--border-soft);padding:6px 8px;background:var(--bg-warm);">
+    <b>Importante:</b> Después de cambiar este ajuste, <b>elimina y vuelve a añadir</b> el bot a cada grupo para que el cambio surta efecto.
+  </div>
+  <div style="font-size:0.68rem;margin-top:8px;">
+    <b>Menú <code>/</code> en grupos:</b> El SDK registra los comandos con scopes <span class="hl-box">default</span> y <span class="hl-box">all_group_chats</span> automáticamente, para que el menú de comandos aparezca tanto en chats privados como en grupos y supergrupos.
+  </div>
+  <div style="font-size:0.68rem;margin-top:6px;">
+    <b>Webhooks residuales:</b> Al arrancar, el SDK verifica si hay un webhook activo y lo elimina automáticamente para garantizar que el long-polling funcione correctamente.
+  </div>
+</div>
+
+<hr class="divider">
+
 <!-- ═══ PROMPTS & AGENTES ═══ -->
 <div class="poster-card">
   <div class="badge">AI</div>
