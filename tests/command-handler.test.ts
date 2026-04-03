@@ -192,15 +192,14 @@ describe("syncCommandsWithTelegram — multi-scope", () => {
     expect(groupCmds).toEqual([{ command: "start", description: "Start" }]);
   });
 
-  test("always writes to all scopes even when default already matches", async () => {
+  test("no-op when all scopes already match", async () => {
     const synced = [{ command: "start", description: "Start" }];
     const bot = new MockTelegramBot();
-    // Pre-load both scopes — still returns true because multi-scope always writes
     await bot.api.setMyCommands(synced, { scope: { type: "default" } });
     await bot.api.setMyCommands(synced, { scope: { type: "all_group_chats" } });
 
     const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
-    expect(updated).toBe(true);
+    expect(updated).toBe(false);
 
     const groupCmds = await bot.api.getMyCommands({ scope: { type: "all_group_chats" } });
     expect(groupCmds).toEqual(synced);

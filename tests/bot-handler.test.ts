@@ -188,6 +188,27 @@ describe("syncCommands — tracked group chats", () => {
     expect(await bot.api.getMyCommands({ scope: { type: "chat", chat_id: 42 } })).toEqual([]);
   });
 
+  test("does not broadcast when tracked scopes are already in sync", async () => {
+    const bot = new MockTelegramBot();
+    (bot.api as any).getChat = async (chatId: number) => ({
+      id: chatId,
+      type: chatId < 0 ? "group" : "private",
+      title: chatId < 0 ? "Tracked Group" : undefined,
+    });
+
+    const synced = [{ command: "rb_aleph", description: "aleph desc" }];
+    await bot.api.setMyCommands(synced, { scope: { type: "default" } });
+    await bot.api.setMyCommands(synced, { scope: { type: "all_group_chats" } });
+    await bot.api.setMyCommands(synced, { scope: { type: "chat", chat_id: -12345 } });
+
+    const tracker = new ChatTracker(new MemoryChatStore());
+    tracker.track(-12345, "Tracked Group", "group");
+
+    await syncCommands(bot as any, [makePlugin("rb", ["aleph"])], tracker, { autoConfirm: true });
+
+    expect(bot.getSentMessages()).toEqual([]);
+  });
+
   test("syncs chat-specific scope when the bot joins a new group after startup", async () => {
     const bot = new MockTelegramBot();
 
