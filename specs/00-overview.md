@@ -82,7 +82,21 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | [SDS-17](17-iacm-protocol.md) | IACM Protocol Integration — tipos, builders, parser, plugin |
 | [SDS-18](18-iacm-demo-app.md) | IACM Demo App — boilerplate de referencia con 2 bots, 11 message types, 3 approaches |
 
-## 5. Restricciones
+## 5. Sistema de prompts
+
+Los prompts de IA son artefactos de primera clase del proyecto, alojados en `.github/prompts/`. Cada prompt genera un **agente especializado** que adopta un rol para explorar y contribuir a la codebase:
+
+| Prompt | Foco |
+|--------|------|
+| `hacker-devops` | Revisión general: puertas de entrada, DRY, offboarding |
+| `arquitecto-sdk` | Capas, acoplamiento, barrel coherence, extensibilidad |
+| `qa-tester` | Cobertura de tests, criterios de aceptación, mocks |
+| `plugin-developer` | Ciclo de vida BotPlugin → AimlBotPlugin → IacmBotPlugin |
+| `dashboard-builder` | TUI Ink, store reactivo, emitter bridge, UI Bridge Layer |
+
+Documentación completa: [SDS-10](10-prompts-agents.md) · Página: `docs/prompts-agents.html`.
+
+## 6. Restricciones
 
 - No convertir a monorepo en esta iteración.
 - Mantener Bun para dev/test, pero emitir JS ESM + `.d.ts` estándar.

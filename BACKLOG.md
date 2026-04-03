@@ -338,17 +338,17 @@
 ### Fase Y · Agentes expertos especializados
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 171 | Crear `.github/prompts/arquitecto-sdk.prompt.md` — rol arquitecto, foco SDS-00/02/03 | 🔲 | SDS-10 §5 |
-| 172 | Crear `.github/prompts/qa-tester.prompt.md` — rol QA, foco tests/ y criterios de aceptación | 🔲 | SDS-10 §5 |
-| 173 | Crear `.github/prompts/plugin-developer.prompt.md` — rol dev de plugins, foco BotPlugin API | 🔲 | SDS-10 §5 |
-| 174 | Crear `.github/prompts/dashboard-builder.prompt.md` — rol TUI builder, foco SDS-05/06/09 | 🔲 | SDS-10 §5 |
-| 175 | Actualizar `docs/prompts-agents.html` — cards completas para cada agente experto (reemplazar placeholders) | 🔲 | SDS-10 §3.2 |
+| 171 | Crear `.github/prompts/arquitecto-sdk.prompt.md` — rol arquitecto, foco SDS-00/02/03 | ✅ | SDS-10 §5 |
+| 172 | Crear `.github/prompts/qa-tester.prompt.md` — rol QA, foco tests/ y criterios de aceptación | ✅ | SDS-10 §5 |
+| 173 | Crear `.github/prompts/plugin-developer.prompt.md` — rol dev de plugins, foco BotPlugin API | ✅ | SDS-10 §5 |
+| 174 | Crear `.github/prompts/dashboard-builder.prompt.md` — rol TUI builder, foco SDS-05/06/09 | ✅ | SDS-10 §5 |
+| 175 | Actualizar `docs/prompts-agents.html` — cards completas para cada agente experto (reemplazar placeholders) | ✅ | SDS-10 §3.2 |
 
 ### Fase Z · Docs + criterios de aceptación
 | # | Task | Status | Ref |
 |---|------|--------|-----|
-| 176 | Verificar todos los criterios SDS-10 §6 — página navegable, lore explicado, links a GitHub | 🔲 | SDS-10 §6 |
-| 177 | Actualizar `specs/00-overview.md` — mencionar sistema de prompts como artefacto del repo | 🔲 | SDS-10 §7 |
+| 176 | Verificar todos los criterios SDS-10 §6 — página navegable, lore explicado, links a GitHub | ✅ | SDS-10 §6 |
+| 177 | Actualizar `specs/00-overview.md` — mencionar sistema de prompts como artefacto del repo | ✅ | SDS-10 §7 |
 
 ---
 
@@ -696,4 +696,4 @@
 
 ---
 
-*Last updated: 2026-04-04 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b (mock) ✅ · Sprint 4c (ConfigPanel) ✅ · Sprint 4d (paquetes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fase X (prompts-agents) ✅ · Sprint 4g (dark mode) ✅ · Sprint 4h + fix (mock cmd exec) ✅ · Sprint 4i (chat detail) ✅ · Sprint 4j (message persistence) ✅ · Sprint 4k (multi-scope sync + help + error resilience) ✅ · Sprint 5a (AIML intent engine) ✅ · Sprint 5b (IACM protocol) ✅ · Sprint 5d (IACM demo app) ✅ — 456 tests / 9 suites / 0 fail (excl. pre-existing) · next: Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-04 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b (mock) ✅ · Sprint 4c (ConfigPanel) ✅ · Sprint 4d (paquetes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f (prompts-agents) ✅ · Sprint 4g (dark mode) ✅ · Sprint 4h + fix (mock cmd exec) ✅ · Sprint 4i (chat detail) ✅ · Sprint 4j (message persistence) ✅ · Sprint 4k (multi-scope sync + help + error resilience) ✅ · Sprint 5a (AIML intent engine) ✅ · Sprint 5b (IACM protocol) ✅ · Sprint 5d (IACM demo app) ✅ — 456 tests · next: Sprint 2 (CI) 🔲*
