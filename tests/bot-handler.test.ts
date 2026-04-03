@@ -117,8 +117,14 @@ describe("registerPlugins — mock bot", () => {
     expect(bot.getSentMessages()[0]?.text).toBe("Hi!");
   });
 
-  test("message plugins swallow reply failures so polling can continue", async () => {
+  test("plain messages emit runtime event without auto reply", async () => {
     const bot = new MessageTestBot();
+    const emitter = new RuntimeEmitter();
+    const events: Array<{ type: string; chatId: number; text: string; userId?: number; username?: string }> = [];
+    emitter.events$.subscribe((event) => {
+      if (event.type === "message") events.push(event);
+    });
+
     const plugin: BotPlugin = {
       name: "echo-bot",
       pluginCode: "ec",
@@ -126,16 +132,23 @@ describe("registerPlugins — mock bot", () => {
       onMessage: async () => "Hi!",
     };
 
-    registerPlugins(bot as any, [plugin]);
+    registerPlugins(bot as any, [plugin], undefined, emitter);
 
     await expect(bot.simulateMessage({
       from: { id: 42, first_name: "Aleph" },
       chat: { id: -12345, type: "group", title: "Tracked Group" },
       message: { text: "hello", entities: undefined },
-      reply: async () => {
-        throw { error_code: 403, description: "Forbidden: bot was kicked from the group chat" };
-      },
+      reply: async () => undefined,
     })).resolves.toBeUndefined();
+
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      type: "message",
+      chatId: -12345,
+      userId: 42,
+      username: "Aleph",
+      text: "hello",
+    });
   });
 });
 

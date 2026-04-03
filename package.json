@@ -16,9 +16,10 @@
   ],
   "scripts": {
     "start": "cd examples/console-app && bun run start",
-    "dev": "cd examples/console-app && bun run dev",
-    "dev:verbose": "cd examples/console-app && LOG_LEVEL=debug bun run dev",
-    "dev:dashboard": "cd examples/dashboard && bun run dev",
+    "dev": "bun run build:sdk && cd examples/console-app && bun run dev",
+    "dev:verbose": "bun run build:sdk && cd examples/console-app && LOG_LEVEL=debug bun run dev",
+    "dev:dashboard": "bun run build:sdk && cd examples/dashboard && bun run dev",
+    "dev:dashboard:verbose": "bun run build:sdk && cd examples/dashboard && bun run dev:verbose",
     "dist": "bun run build:example && bun run ./dist-example/main.js",
     "build": "bun run build:sdk",
     "build:sdk": "rm -rf ./dist && tsc -p tsconfig.build.json",

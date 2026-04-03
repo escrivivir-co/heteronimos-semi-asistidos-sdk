@@ -175,10 +175,10 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     }
   }
 
-  // Handler de mensajes: emite siempre al dashboard; opcionalmente delega a plugins onMessage.
+  // Handler de mensajes: emite siempre al dashboard y actualiza estado,
+  // pero no responde automaticamente a texto libre.
   // También cubre channel_post (canales de Telegram) que grammY NO enruta por "message".
   // Se ignoran mensajes de comando para evitar doble respuesta.
-  const messagePlugins = plugins.filter(p => p.onMessage);
 
   // Mensajes en grupos / DMs (update type: message)
   bot.on("message", async (ctx) => {
@@ -197,24 +197,6 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
       text,
       timestamp: new Date().toISOString(),
     });
-    plog.debug(`[message] delegating to ${messagePlugins.length} onMessage plugin(s)`);
-    for (const plugin of messagePlugins) {
-      let reply: string;
-      try {
-        reply = await plugin.onMessage!(ctx);
-      } catch (error) {
-        plog.error(`[message] plugin ${plugin.name} failed to build reply in chat ${ctx.chat?.id ?? "?"}: ${describeTelegramError(error)}`);
-        continue;
-      }
-
-      plog.debug(`[message] plugin replied: ${reply.slice(0, 80)}...`);
-
-      try {
-        await ctx.reply(reply);
-      } catch (error) {
-        plog.warn(`[message] failed to send plugin ${plugin.name} reply in chat ${ctx.chat?.id ?? "?"}: ${describeTelegramError(error)}`);
-      }
-    }
   });
 
   // Mensajes en canales (update type: channel_post — distinto de message en grammY)
@@ -253,7 +235,7 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
   });
   if (!options?.quiet) {
     plog.info("Registered commands:\n" + toBotFatherFormat(allCommands));
-    plog.debug(`Handlers registered: message=true, channel_post=true, messagePlugins=${messagePlugins.length}`);
+    plog.debug("Handlers registered: message=true, channel_post=true");
   }
 }
 
