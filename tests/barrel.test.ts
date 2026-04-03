@@ -41,5 +41,9 @@ describe("SDK barrel", () => {
     expect(SDK.connectEmitterToStore).toBeDefined();
     // Mock utilities
     expect(SDK.MockTelegramBot).toBeDefined();
+    // AIML Intent Engine (SDS-16)
+    expect(SDK.UNMATCHED_INTENT).toBeDefined();
+    expect(SDK.IntentEngine).toBeDefined();
+    expect(SDK.AimlBotPlugin).toBeDefined();
   });
 });

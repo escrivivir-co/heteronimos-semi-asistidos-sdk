@@ -55,3 +55,24 @@ export { MockTelegramBot } from "./core/mock-telegram.js";
 // --- Message persistence ---
 export type { MessageStore, PersistedMessages } from "./core/message-store.js";
 export { FileMessageStore, MemoryMessageStore } from "./core/message-store.js";
+
+// --- AIML Intent Engine (SDS-16) ---
+export type {
+  IntentResult,
+  IntentHandler,
+  IntentFn,
+  IntentResolver,
+  AimlCategory,
+  AimlPattern,
+  PatternFn,
+  PatternMatch,
+  ConditionClause,
+  SessionVars,
+  MessageContext,
+  ConversationState,
+  ConversationTurn,
+  IntentEngineOptions,
+} from "./core/aiml-types.js";
+export { UNMATCHED_INTENT } from "./core/aiml-types.js";
+export { IntentEngine } from "./core/intent-engine.js";
+export { AimlBotPlugin } from "./core/aiml-bot-plugin.js";

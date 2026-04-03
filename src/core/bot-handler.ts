@@ -197,6 +197,18 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
       text,
       timestamp: new Date().toISOString(),
     });
+
+    // Dispatch to plugins with onMessage handler (e.g. AimlBotPlugin subclasses)
+    for (const plugin of plugins) {
+      if (!plugin.onMessage) continue;
+      try {
+        const reply = await plugin.onMessage(ctx);
+        if (reply) await ctx.reply(reply);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        plog.warn(`[message] plugin ${plugin.name} onMessage error: ${msg}`);
+      }
+    }
   });
 
   // Mensajes en canales (update type: channel_post — distinto de message en grammY)
