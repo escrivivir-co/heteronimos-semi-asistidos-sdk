@@ -39,6 +39,8 @@ export interface BootBotOptions {
   nonInteractive?: boolean;
   /** Options for syncCommandsWithTelegram. Default: { autoConfirm: false } */
   syncOptions?: SyncOptions;
+  /** Name of the env var that holds the bot token. Default: "BOT_TOKEN" */
+  tokenVar?: string;
 }
 
 export interface BootResult {
@@ -65,7 +67,7 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   const syncOpts: SyncOptions = opts.syncOptions ?? { autoConfirm: nonInteractive };
 
   // --- Paso 1: ensureEnv (detecta .env, ofrece copiar, lee token) ---
-  const env = await ensureEnv({ envDir: opts.envDir, nonInteractive });
+  const env = await ensureEnv({ envDir: opts.envDir, nonInteractive, tokenVar: opts.tokenVar });
 
   if (env.mock) {
     const mockBot = await startMock(opts, log, syncOpts);

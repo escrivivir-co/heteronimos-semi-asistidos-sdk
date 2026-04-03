@@ -523,7 +523,143 @@
 
 ---
 
-## Sprint 5 — SDK Hardening
+## Sprint 5a — AIML Intent Engine (from SDS-16)
+
+> Objetivo: pipeline de extracción de intención basado en semántica AIML.
+> Stage 1 classifica input → IntentResult. Stage 2 handlers → respuesta.
+> AIML NO es un dispensador de texto: es una máquina de filtrar y encauzar intención.
+> Spec: `specs/16-aiml-bot-plugin.md`
+
+### Fase AJ · SDK: tipos AIML + intent engine
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 257 | Crear `src/core/aiml-types.ts` — `IntentResult`, `IntentResolver`, `IntentFn`, `IntentHandler`, `AimlPattern`, `AimlCategory`, `ConditionClause`, `SessionVars`, `MessageContext`, `ConversationState`, `IntentEngineOptions`, `UNMATCHED_INTENT` | 🔲 | SDS-16 §3.1 |
+| 258 | Crear `src/core/intent-engine.ts` — `IntentEngine<TVars>`: classify(), getState(), setVar(), setTopic(), resetChat(), addCategories(), recordResponse() | 🔲 | SDS-16 §3.2 |
+| 259 | Pattern compilation: wildcards `*`, `_`, `#`, `^` en strings → RegExp internamente | 🔲 | SDS-16 §3.6 |
+| 260 | IntentResolver expansion: string → IntentResult, literal pass-through, IntentFn → execute | 🔲 | SDS-16 §3.2 |
+| 261 | Algoritmo de classify(): topic filter → priority sort → that eval → pattern eval → conditions (refina intent) → sideEffect → redirect (re-classify) | 🔲 | SDS-16 §3.2 |
+| 262 | Tests: `tests/aiml-types.test.ts` — pattern compilation, wildcard captures, PatternFn, IntentResult shape, UNMATCHED_INTENT | 🔲 | SDS-16 §6 |
+| 263 | Tests: `tests/intent-engine.test.ts` — classify, prioridad, conditions refina intent, topic, that, redirect re-classify, sideEffect, fallbackIntent, history, IntentResolver shorthand | 🔲 | SDS-16 §6 |
+
+### Fase AK · SDK: clase base AimlBotPlugin + handler pipeline
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 264 | Crear `src/core/aiml-bot-plugin.ts` — `AimlBotPlugin<TVars>` abstract class: pipeline classify → handlers → recordResponse, categories(), handlers(), defaultVars(), fallbackResponse(), /reset command | 🔲 | SDS-16 §3.3 |
+| 265 | Ampliar `src/index.ts` — exportar `IntentResult`, `IntentEngine`, `AimlBotPlugin`, `IntentHandler`, `UNMATCHED_INTENT`, `AimlCategory`, `AimlPattern`, `IntentResolver`, `MessageContext` | 🔲 | SDS-16 §3.5 |
+| 266 | Tests: `tests/aiml-bot-plugin.test.ts` — pipeline completo, handler chain (first non-undefined wins), fallbackResponse, reset command, commands() concatena, registerPlugins acepta | 🔲 | SDS-16 §6 |
+| 267 | Tests: ampliar `tests/barrel.test.ts` — nuevos exports intent engine existen | 🔲 | SDS-16 §6 |
+| 268 | `bun run build:sdk` — verificar `dist/` incluye aiml-types, intent-engine, aiml-bot-plugin | 🔲 | SDS-16 §4 |
+| 269 | Full test suite verde | 🔲 | SDS-16 §5 |
+
+---
+
+## Sprint 5b — IACM Protocol Integration (from SDS-17)
+
+> Objetivo: incorporar el protocolo IACM como álgebra de transiciones que consume
+> los IntentResults extraídos por el motor AIML. Categories producen intents `iacm.*`;
+> protocol handlers ejecutan transiciones de estado; respuestas se generan downstream.
+> Dependencia: Sprint 5a (SDS-16).
+> Spec: `specs/17-iacm-protocol.md`
+
+### Fase AL · Protocolo & docs
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 270 | Mover `templates/IACM_FORMAT_SPECIFICATION.md` → `protocols/IACM_FORMAT_SPECIFICATION.md` | 🔲 | SDS-17 §3.1 |
+| 271 | Crear `docs/protocols.html` — página GH Pages con link DRY al .md del repo + resumen ejecutivo | 🔲 | SDS-17 §3.2 |
+| 272 | Actualizar `docs/index.html` — card "Protocols" con link a `protocols.html` | 🔲 | SDS-17 §3.2 |
+
+### Fase AM · SDK: tipos IACM + builders
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 273 | Crear `src/core/iacm-types.ts` — `IacmMessageType`, `IacmMeta`, `IacmMessage<T>`, `AnyIacmMessage`, `IacmDataMap`, 11 data interfaces, `IacmSessionVars` | 🔲 | SDS-17 §3.3 |
+| 274 | Crear `src/core/iacm-templates.ts` — `buildIacmMessage`, 11 builders específicos, `generateMessageId`, `formatIacmForChat`, `toIacmYaml` | 🔲 | SDS-17 §3.4 |
+| 275 | Crear `src/core/iacm-parser.ts` — `parseIacmMessage` (strict/lenient), `validateIacmMessage`, `detectsIacmMessage` | 🔲 | SDS-17 §3.5 |
+| 276 | Tests: `tests/iacm-types.test.ts` — discriminación genérica, acceso a data, session vars | 🔲 | SDS-17 §6 |
+| 277 | Tests: `tests/iacm-templates.test.ts` — builders, messageId, timestamp, formatForChat, toYaml | 🔲 | SDS-17 §6 |
+| 278 | Tests: `tests/iacm-parser.test.ts` — parse strict/lenient, validate, detect, round-trip | 🔲 | SDS-17 §6 |
+
+### Fase AN · SDK: categories IACM + protocol handlers + plugin base
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 279 | Crear `src/core/iacm-categories.ts` — categorías AIML que producen IntentResult `iacm.*` (NO texto): patterns de recepción + patterns de comandos salientes + `IACM_INTENTS` const | 🔲 | SDS-17 §3.6 |
+| 280 | Crear `src/core/iacm-protocol-handlers.ts` — `iacmProtocolHandler()`: consume intents `iacm.*` → state machine → transiciones + respuesta formateada | 🔲 | SDS-17 §3.7 |
+| 281 | Crear `src/core/iacm-bot-plugin.ts` — `IacmBotPlugin<TVars>`: extiende AimlBotPlugin, categories() IACM, handlers() con protocol handler primero, 8 comandos IACM, menú /iacm, protocolSummary, conversationStatus | 🔲 | SDS-17 §3.8 |
+| 282 | Ampliar `src/index.ts` — exportar types, builders, parser, `IACM_INTENTS`, `iacmProtocolHandler`, categories y plugin IACM | 🔲 | SDS-17 §3.11 |
+| 283 | Tests: `tests/iacm-categories.test.ts` — patterns → IntentResult `iacm.*`, entities extraídas, sideEffects actualizan vars | 🔲 | SDS-17 §6 |
+| 284 | Tests: `tests/iacm-protocol-handlers.test.ts` — REQUEST→ACK+state, QUESTION→response, URGENT→escalate, PROPOSAL→awaiting, send→format, unknown→undefined | 🔲 | SDS-17 §6 |
+| 285 | Tests: `tests/iacm-bot-plugin.test.ts` — full pipeline, commands, menus, extends categories+handlers, domain handler after protocol, registerPlugins | 🔲 | SDS-17 §6 |
+| 286 | Tests: ampliar `tests/barrel.test.ts` — nuevos exports IACM + protocol handler existen | 🔲 | SDS-17 §6 |
+| 287 | `bun run build:sdk` — verificar `dist/` incluye todos los nuevos módulos | 🔲 | SDS-17 §4 |
+| 288 | Full test suite verde | 🔲 | SDS-17 §5 |
+
+---
+
+## Sprint 5d — IACM Demo App (from SDS-18)
+
+> Objetivo: construir `examples/iacm-demo/` — aplicación de referencia con 2 bots (MeteoBot + DispatchBot)
+> que ejercita los 11 tipos de mensaje IACM con APIs públicas reales.
+> Sirve como boilerplate para developers + validación end-to-end del pipeline SDS-16/SDS-17.
+> Dependencia: Sprint 5a (SDS-16) + Sprint 5b (SDS-17).
+> Spec: `specs/18-iacm-demo-app.md`
+
+### Fase AO · Scaffold & servicios
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 289 | Crear `examples/iacm-demo/package.json` + `tsconfig.json` — deps SDK (file:../../), grammy, rxjs | 🔲 | SDS-18 §4.1 |
+| 290 | Crear `examples/iacm-demo/.env.example` — BOT_TOKEN_METEO, BOT_TOKEN_DISPATCH, agent names, defaults | 🔲 | SDS-18 §4.3 |
+| 291 | Crear `examples/iacm-demo/config.ts` — env vars, agent names, city/tz defaults | 🔲 | SDS-18 §4.3 |
+| 292 | Crear `examples/iacm-demo/services/weather-api.ts` — client wttr.in (fetchWeather, checkWeatherApi) | 🔲 | SDS-18 §4.4 |
+| 293 | Crear `examples/iacm-demo/services/time-api.ts` — client worldtimeapi (fetchTime) | 🔲 | SDS-18 §4.5 |
+
+### Fase AP · MeteoBot (Approach 1: TypeScript class)
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 294 | Crear `examples/iacm-demo/meteo-bot.ts` — MeteoBot extends IacmBotPlugin: MeteoVars, categories (cmd-weather, cmd-apistatus, cmd-alert, cmd-propose, cmd-question) | 🔲 | SDS-18 §5.1 |
+| 295 | MeteoBot handlers: REQUEST→REPORT (fetch weather), QUESTION→ANSWER (fetch time), FYI, URGENT, PROPOSAL | 🔲 | SDS-18 §5.1 |
+| 296 | MeteoBot commands() + menus() — 5 comandos + menú 3 páginas | 🔲 | SDS-18 §5.1 |
+
+### Fase AQ · DispatchBot (Approach 1: TypeScript class)
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 297 | Crear `examples/iacm-demo/dispatch-bot.ts` — DispatchBot extends IacmBotPlugin: DispatchVars, categories (weather-req, time-q, accept, reject, defer, demo) | 🔲 | SDS-18 §6.1 |
+| 298 | DispatchBot handlers: send REQUEST/QUESTION, receive REPORT/ANSWER/PROPOSAL/URGENT, send ACCEPT/REJECT/DEFER, demo flow | 🔲 | SDS-18 §6.1 |
+| 299 | DispatchBot commands() + menus() — 6 comandos + menú 3 páginas | 🔲 | SDS-18 §6.1 |
+
+### Fase AR · Approach 2 & 3 (JSON + arrow functions)
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 300 | Crear `examples/iacm-demo/categories/meteo-categories.json` — JSON declarativo con regex, entityMapping | 🔲 | SDS-18 §7.1 |
+| 301 | Crear `examples/iacm-demo/categories/dispatch-categories.json` — JSON declarativo | 🔲 | SDS-18 §7.1 |
+| 302 | Crear `examples/iacm-demo/handlers/weather-handler.ts` — arrow function standalone (REQUEST→REPORT) | 🔲 | SDS-18 §8.1 |
+| 303 | Crear `examples/iacm-demo/handlers/time-handler.ts` — arrow function standalone (QUESTION→ANSWER) | 🔲 | SDS-18 §8.2 |
+| 304 | Crear `examples/iacm-demo/handlers/protocol-handler.ts` — custom protocol overrides | 🔲 | SDS-18 §8 |
+
+### Fase AS · Entrypoint + SDK gaps
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 305 | Crear `examples/iacm-demo/main.ts` — bootBot × 2 bots | 🔲 | SDS-18 §4.2 |
+| 306 | SDK fix: self-message filter en AimlBotPlugin.onMessage (skip ctx.from.id === ctx.me.id) | 🔲 | SDS-18 §9.1 |
+| 307 | SDK fix: `abstract agentName: string` en IacmBotPlugin | 🔲 | SDS-18 §9.2 |
+| 308 | SDK fix: filtro `to_agent` en iacmProtocolHandler | 🔲 | SDS-18 §9.3 |
+| 309 | SDK: definir formato canónico de `formatIacmForChat()` alineado con patterns IACM | 🔲 | SDS-18 §9.4 |
+| 310 | SDK: crear `src/core/aiml-json-loader.ts` — `loadJsonCategories()` | 🔲 | SDS-18 §9.5 |
+| 311 | SDK: añadir `tokenEnvVar` param a bootBot options | 🔲 | SDS-18 §9.6 |
+
+### Fase AT · Docs & tests
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 312 | Crear `examples/iacm-demo/README.md` — quick-start, prerequisitos, 3 approaches | 🔲 | SDS-18 §4.1 |
+| 313 | Crear `examples/iacm-demo/flows/README.md` — diagramas de todos los flujos IACM | 🔲 | SDS-18 §4.1 |
+| 314 | Tests: `meteo-bot.test.ts` — categories, handlers con mock APIs | 🔲 | SDS-18 §12 |
+| 315 | Tests: `dispatch-bot.test.ts` — categories, handlers, accept/reject/defer | 🔲 | SDS-18 §12 |
+| 316 | Tests: `weather-api.test.ts` + `time-api.test.ts` — mock responses | 🔲 | SDS-18 §12 |
+| 317 | Tests: `json-loader.test.ts` — loadJsonCategories regex/wildcard/entity | 🔲 | SDS-18 §12 |
+| 318 | Tests: `integration.test.ts` — full flows REQUEST→REPORT, QUESTION→ANSWER, PROPOSAL→decision con 2 bots mock | 🔲 | SDS-18 §12 |
+| 319 | Full test suite verde + build ok | 🔲 | SDS-18 §11 |
+
+---
+
+## Sprint 5c — SDK Hardening
 
 | # | Story | Status |
 |---|-------|--------|

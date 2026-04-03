@@ -56,6 +56,8 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | `LogEntry`, `MessageEntry`, `CommandResponseEntry`, buffer constants | |
 | `MockTelegramBot`, `SentMessage`, `SimulateOpts` | |
 | `PluginCommandInfo`, `CMD_BUFFER_SIZE` | |
+| `AimlBotPlugin`, `ConversationEngine`, tipos AIML | |
+| `IacmBotPlugin`, builders, parser, tipos IACM | |
 
 ## 4. Entregables de esta especificación
 
@@ -73,6 +75,12 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | [SDS-10](10-prompts-agents.md) | Prompts & Agentes Expertos — sistema de prompts + página GH Pages |
 | [SDS-11](11-dark-mode.md) | Light/Dark Mode Toggle para GH Pages |
 | [SDS-12](12-mock-command-execution.md) | Mock Command Execution from Dashboard |
+| [SDS-13](13-chat-detail-view.md) | Chat Detail View para pestaña Chats |
+| [SDS-14](14-message-persistence.md) | Persistencia de mensajes entre reinicios |
+| [SDS-15](15-group-command-sync.md) | Multi-Scope Command Sync (Groups) |
+| [SDS-16](16-aiml-bot-plugin.md) | AIML Bot Plugin Pack — motor conversacional + clase base |
+| [SDS-17](17-iacm-protocol.md) | IACM Protocol Integration — tipos, builders, parser, plugin |
+| [SDS-18](18-iacm-demo-app.md) | IACM Demo App — boilerplate de referencia con 2 bots, 11 message types, 3 approaches |
 
 ## 5. Restricciones
 

@@ -131,7 +131,7 @@ export type IntentHandler<TVars extends SessionVars = SessionVars> = (
   intent: IntentResult,
   vars: TVars,
   ctx: MessageContext,
-) => string | Promise<string> | undefined | Promise<undefined>;
+) => string | Promise<string | undefined> | undefined;
 
 // ─── Session & context ────────────────────────────────────────────────────────
 

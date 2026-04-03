@@ -42,6 +42,18 @@ export const IACM_INTENTS = {
   RECEIVED_ACCEPT:     "iacm.accept.received",
   RECEIVED_REJECT:     "iacm.reject.received",
   RECEIVED_DEFER:      "iacm.defer.received",
+  // Aliases: spec-style names (${TYPE}_RECEIVED)
+  REQUEST_RECEIVED:    "iacm.request.received",
+  QUESTION_RECEIVED:   "iacm.question.received",
+  REPORT_RECEIVED:     "iacm.report.received",
+  PROPOSAL_RECEIVED:   "iacm.proposal.received",
+  FYI_RECEIVED:        "iacm.fyi.received",
+  URGENT_RECEIVED:     "iacm.urgent.received",
+  ACK_RECEIVED:        "iacm.acknowledge.received",
+  ANSWER_RECEIVED:     "iacm.answer.received",
+  ACCEPT_RECEIVED:     "iacm.accept.received",
+  REJECT_RECEIVED:     "iacm.reject.received",
+  DEFER_RECEIVED:      "iacm.defer.received",
   // meta
   STATUS:          "iacm.status",
   HELP:            "iacm.protocol.help",
