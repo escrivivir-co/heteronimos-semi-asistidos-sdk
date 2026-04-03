@@ -1,13 +1,22 @@
 import { Bot, Context } from "grammy";
-import { CommandDefinition, registerCommands, toBotFatherFormat, syncCommandsWithTelegram, SyncOptions } from "./command-handler.js";
+import { BotCommand, BotCommandScope, CommandDefinition, registerCommands, toBotCommands, toBotFatherFormat, syncCommandsWithTelegram, SyncOptions } from "./command-handler.js";
 import { MenuDefinition, registerMenu } from "./menu-handler.js";
 import { Logger } from "./logger.js";
 import { ChatTracker } from "./chat-tracker.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
+import { describeTelegramError } from "./telegram-error.js";
 
 // Logger por defecto SIN emitter (usado por collectPluginFatherSettings, etc.).
 // registerPlugins() crea un hijo con emitter si se le pasa.
 const log = new Logger("bot-handler");
+
+interface LiveGroupScopeSyncState {
+  commands: BotCommand[];
+  enabled: boolean;
+  syncedChatIds: Set<string>;
+}
+
+const liveGroupScopeSyncByBot = new WeakMap<Bot, LiveGroupScopeSyncState>();
 
 /**
  * Interfaz que todo sub-bot / plugin debe implementar.
@@ -41,7 +50,98 @@ function prefixMenus(pluginCode: string, menus: MenuDefinition[]): MenuDefinitio
   return menus.map(m => ({ ...m, command: `${pluginCode}_${m.command}` }));
 }
 
-export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, emitter?: RuntimeEmitter) {
+async function resolveTrackedGroupChatScopes(bot: Bot, tracker?: ChatTracker): Promise<BotCommandScope[]> {
+  if (!tracker) return [];
+
+  const scopes: BotCommandScope[] = [];
+  for (const chatId of tracker.getAll()) {
+    if (chatId >= 0) continue;
+
+    try {
+      const chat = await (bot.api as any).getChat(chatId);
+      if (chat?.type === "group" || chat?.type === "supergroup") {
+        scopes.push({ type: "chat", chat_id: chatId });
+      }
+    } catch {
+      // Ignore stale or inaccessible chats.
+    }
+  }
+
+  return scopes;
+}
+
+function dedupeScopes(scopes: BotCommandScope[]): BotCommandScope[] {
+  const seen = new Set<string>();
+  const deduped: BotCommandScope[] = [];
+
+  for (const scope of scopes) {
+    const key = scope.type === "chat"
+      ? `${scope.type}:${scope.chat_id}`
+      : scope.type;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(scope);
+  }
+
+  return deduped;
+}
+
+function seedLiveGroupScopeSync(state: LiveGroupScopeSyncState, scopes: BotCommandScope[]): void {
+  for (const scope of scopes) {
+    if (scope.type === "chat") {
+      state.syncedChatIds.add(String(scope.chat_id));
+    }
+  }
+}
+
+function attachLiveGroupScopeSync(
+  bot: Bot,
+  commands: CommandDefinition[],
+  scopes: BotCommandScope[],
+  options?: SyncOptions,
+): void {
+  let state = liveGroupScopeSyncByBot.get(bot);
+
+  if (!state) {
+    state = {
+      commands: toBotCommands(commands),
+      enabled: !options?.scopes,
+      syncedChatIds: new Set<string>(),
+    };
+    liveGroupScopeSyncByBot.set(bot, state);
+    const liveState = state;
+
+    const syncTrackedGroupScope = async (ctx: Context) => {
+      if (!liveState.enabled || liveState.commands.length === 0) return;
+
+      const chat = ctx.chat;
+      if (!chat || (chat.type !== "group" && chat.type !== "supergroup")) return;
+
+      const chatKey = String(chat.id);
+      if (liveState.syncedChatIds.has(chatKey)) return;
+
+      try {
+        await (bot.api as any).setMyCommands(liveState.commands, {
+          scope: { type: "chat", chat_id: chat.id },
+        });
+        liveState.syncedChatIds.add(chatKey);
+        log.info(`Commands synced for tracked group chat: ${chat.id}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        log.warn(`Could not sync commands for tracked group chat ${chat.id}: ${message}`);
+      }
+    };
+
+    bot.on("my_chat_member", syncTrackedGroupScope);
+    bot.on("chat_member", syncTrackedGroupScope);
+  }
+
+  state.commands = toBotCommands(commands);
+  state.enabled = !options?.scopes;
+  seedLiveGroupScopeSync(state, scopes);
+}
+
+export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, emitter?: RuntimeEmitter, options?: { quiet?: boolean }) {
   // Crear logger con emitter para que los logs lleguen al dashboard
   const plog = emitter ? new Logger("bot-handler", { emitter }) : log;
   const allCommands: CommandDefinition[] = [];
@@ -99,9 +199,21 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     });
     plog.debug(`[message] delegating to ${messagePlugins.length} onMessage plugin(s)`);
     for (const plugin of messagePlugins) {
-      const reply = await plugin.onMessage!(ctx);
+      let reply: string;
+      try {
+        reply = await plugin.onMessage!(ctx);
+      } catch (error) {
+        plog.error(`[message] plugin ${plugin.name} failed to build reply in chat ${ctx.chat?.id ?? "?"}: ${describeTelegramError(error)}`);
+        continue;
+      }
+
       plog.debug(`[message] plugin replied: ${reply.slice(0, 80)}...`);
-      await ctx.reply(reply);
+
+      try {
+        await ctx.reply(reply);
+      } catch (error) {
+        plog.warn(`[message] failed to send plugin ${plugin.name} reply in chat ${ctx.chat?.id ?? "?"}: ${describeTelegramError(error)}`);
+      }
     }
   });
 
@@ -139,8 +251,10 @@ export function registerPlugins(bot: Bot, plugins: BotPlugin[], tracker?: ChatTr
     plugins: pluginInfos,
     timestamp: new Date().toISOString(),
   });
-  plog.info("Registered commands:\n" + toBotFatherFormat(allCommands));
-  plog.debug(`Handlers registered: message=true, channel_post=true, messagePlugins=${messagePlugins.length}`);
+  if (!options?.quiet) {
+    plog.info("Registered commands:\n" + toBotFatherFormat(allCommands));
+    plog.debug(`Handlers registered: message=true, channel_post=true, messagePlugins=${messagePlugins.length}`);
+  }
 }
 
 /**
@@ -169,7 +283,18 @@ export function collectPluginFatherSettings(plugins: BotPlugin[]): { commands: C
  */
 export async function syncCommands(bot: Bot, plugins: BotPlugin[], tracker?: ChatTracker, options?: SyncOptions, emitter?: RuntimeEmitter) {
   const { commands } = collectPluginFatherSettings(plugins);
-  const updated = await syncCommandsWithTelegram(bot, commands, options);
+  const trackedChatScopes = options?.scopes ? [] : await resolveTrackedGroupChatScopes(bot, tracker);
+  const syncOptions: SyncOptions = {
+    ...options,
+    scopes: dedupeScopes(options?.scopes ?? [
+      { type: "default" },
+      { type: "all_group_chats" },
+      ...trackedChatScopes,
+    ]),
+  };
+
+  const updated = await syncCommandsWithTelegram(bot, commands, syncOptions);
+  attachLiveGroupScopeSync(bot, commands, syncOptions.scopes ?? [], options);
   emitter?.emit({
     type: "commands-synced",
     commandCount: commands.length,

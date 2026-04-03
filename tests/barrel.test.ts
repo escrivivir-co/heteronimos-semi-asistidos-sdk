@@ -23,6 +23,8 @@ describe("SDK barrel", () => {
     expect(SDK.registerPlugins).toBeDefined();
     expect(SDK.syncCommands).toBeDefined();
     expect(SDK.collectPluginFatherSettings).toBeDefined();
+    expect(SDK.collectPluginHelpEntries).toBeDefined();
+    expect(SDK.buildPluginHelpText).toBeDefined();
     expect(SDK.registerCommands).toBeDefined();
     expect(SDK.handleCommand).toBeDefined();
     expect(SDK.toBotFatherFormat).toBeDefined();

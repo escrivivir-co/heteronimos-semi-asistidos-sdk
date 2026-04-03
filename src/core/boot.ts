@@ -18,6 +18,7 @@ import type { SyncOptions } from "./command-handler.js";
 import { ChatTracker, FileChatStore } from "./chat-tracker.js";
 import { Logger, confirm } from "./logger.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
+import { describeTelegramError } from "./telegram-error.js";
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -36,7 +37,7 @@ export interface BootBotOptions {
   logger?: Logger;
   /** Skip interactive prompts; go to mock directly on failure. Default: false */
   nonInteractive?: boolean;
-  /** Options for syncCommandsWithTelegram. Default: { autoConfirm: true } */
+  /** Options for syncCommandsWithTelegram. Default: { autoConfirm: false } */
   syncOptions?: SyncOptions;
 }
 
@@ -60,7 +61,8 @@ export interface BootResult {
 export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   const log = opts.logger ?? new Logger("boot");
   const { emitter, nonInteractive = false } = opts;
-  const syncOpts: SyncOptions = opts.syncOptions ?? { autoConfirm: true };
+  // nonInteractive → autoConfirm (dashboard no tiene readline para prompts)
+  const syncOpts: SyncOptions = opts.syncOptions ?? { autoConfirm: nonInteractive };
 
   // --- Paso 1: ensureEnv (detecta .env, ofrece copiar, lee token) ---
   const env = await ensureEnv({ envDir: opts.envDir, nonInteractive });
@@ -78,6 +80,24 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   // --- Paso 2: arrancar bot real ---
   try {
     const bot = new Bot(env.token);
+    bot.catch((error) => {
+      const chatId = error.ctx?.chat?.id ?? "?";
+      log.error(`Unhandled bot error in chat ${chatId}: ${describeTelegramError(error.error)}`);
+    });
+
+    // --- Diagnóstico de arranque ---
+    // Eliminar webhook previo (si existe) — sin esto, long-polling no recibe updates.
+    const me = await bot.api.getMe();
+    log.info(`Bot identity: @${me.username} (id=${me.id})`);
+    const whInfo = await bot.api.getWebhookInfo();
+    if (whInfo.url) {
+      log.warn(`Active webhook found: ${whInfo.url} — deleting to enable polling`);
+      await bot.api.deleteWebhook();
+      log.info("Webhook deleted OK");
+    } else {
+      log.debug("No webhook set — polling should work");
+    }
+
     const store = new FileChatStore(opts.chatStorePath);
     const tracker = new ChatTracker(store, emitter);
 
@@ -92,14 +112,16 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
     // duplicar plugins-registered y middleware de tracking.
     // El emitter del constructor se usa solo para command-* events.
     const localMock = new MockTelegramBot({ emitter });
-    registerPlugins(localMock as any, opts.plugins);
+    registerPlugins(localMock as any, opts.plugins, undefined, undefined, { quiet: true });
 
     log.info("Bot started — polling...");
     emitStatus(emitter, "running");
 
     // Polling en background — bootBot retorna inmediatamente.
     // El event loop se mantiene vivo por el polling HTTP de grammY.
-    bot.start().catch((err: unknown) => {
+    bot.start({
+      allowed_updates: ["message", "channel_post", "callback_query", "my_chat_member", "chat_member"],
+    }).catch((err: unknown) => {
       const errMsg = err instanceof Error ? err.message : String(err);
       log.error(`Polling error: ${errMsg}`);
       emitStatus(emitter, "error");

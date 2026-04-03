@@ -1,7 +1,10 @@
 export type { BotPlugin } from "./core/bot-handler.js";
 export { registerPlugins, syncCommands, collectPluginFatherSettings } from "./core/bot-handler.js";
 
-export type { CommandDefinition, BotCommand, SyncOptions } from "./core/command-handler.js";
+export type { PluginHelpEntry, BuildPluginHelpTextOptions } from "./core/plugin-help.js";
+export { collectPluginHelpEntries, buildPluginHelpText } from "./core/plugin-help.js";
+
+export type { CommandDefinition, BotCommand, SyncOptions, BotCommandScope } from "./core/command-handler.js";
 export {
   registerCommands,
   handleCommand,

@@ -138,6 +138,28 @@ describe("MockTelegramBot — simulateMessage", () => {
   });
 });
 
+describe("MockTelegramBot — simulateMyChatMember", () => {
+  test("invokes on() my_chat_member handlers", async () => {
+    const bot = new MockTelegramBot();
+    let seenChatId = 0;
+    let seenChatType = "";
+
+    bot.on("my_chat_member", async (ctx: any) => {
+      seenChatId = ctx.chat.id;
+      seenChatType = ctx.chat.type;
+    });
+
+    await bot.simulateMyChatMember({
+      chatId: -1001,
+      chatType: "supergroup",
+      chatTitle: "Ops",
+    });
+
+    expect(seenChatId).toBe(-1001);
+    expect(seenChatType).toBe("supergroup");
+  });
+});
+
 // ---------------------------------------------------------------------------
 // simulateCommand
 // ---------------------------------------------------------------------------
@@ -206,6 +228,62 @@ describe("MockTelegramBot — api.getMyCommands / setMyCommands", () => {
     const cmds = await bot.api.getMyCommands();
     cmds.push({ command: "b", description: "B" });
     expect(await bot.api.getMyCommands()).toHaveLength(1);
+  });
+
+  test("scope-aware: setMyCommands with scope stores per scope", async () => {
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands([{ command: "a", description: "A" }], { scope: { type: "default" } });
+    await bot.api.setMyCommands([{ command: "b", description: "B" }], { scope: { type: "all_group_chats" } });
+
+    const def   = await bot.api.getMyCommands({ scope: { type: "default" } });
+    const group = await bot.api.getMyCommands({ scope: { type: "all_group_chats" } });
+
+    expect(def).toEqual([{ command: "a", description: "A" }]);
+    expect(group).toEqual([{ command: "b", description: "B" }]);
+  });
+
+  test("scope-aware: scopes are independent — updating one does not affect the other", async () => {
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands([{ command: "start", description: "Start" }], { scope: { type: "default" } });
+    await bot.api.setMyCommands([{ command: "help", description: "Help" }], { scope: { type: "all_group_chats" } });
+
+    // Update only default scope
+    await bot.api.setMyCommands([{ command: "updated", description: "Updated" }], { scope: { type: "default" } });
+
+    const def   = await bot.api.getMyCommands({ scope: { type: "default" } });
+    const group = await bot.api.getMyCommands({ scope: { type: "all_group_chats" } });
+
+    expect(def).toEqual([{ command: "updated", description: "Updated" }]);
+    expect(group).toEqual([{ command: "help", description: "Help" }]);
+  });
+
+  test("scope-aware: chat scopes are keyed by chat_id", async () => {
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands([{ command: "a", description: "A" }], { scope: { type: "chat", chat_id: -1 } });
+    await bot.api.setMyCommands([{ command: "b", description: "B" }], { scope: { type: "chat", chat_id: -2 } });
+
+    const chatOne = await bot.api.getMyCommands({ scope: { type: "chat", chat_id: -1 } });
+    const chatTwo = await bot.api.getMyCommands({ scope: { type: "chat", chat_id: -2 } });
+
+    expect(chatOne).toEqual([{ command: "a", description: "A" }]);
+    expect(chatTwo).toEqual([{ command: "b", description: "B" }]);
+  });
+
+  test("scope-aware: getMyCommands without scope defaults to 'default' key", async () => {
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands([{ command: "x", description: "X" }], { scope: { type: "default" } });
+    // Call without scope arg — should return default scope
+    const cmds = await bot.api.getMyCommands();
+    expect(cmds).toEqual([{ command: "x", description: "X" }]);
+  });
+
+  test("reset clears all scopes", async () => {
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands([{ command: "a", description: "A" }], { scope: { type: "default" } });
+    await bot.api.setMyCommands([{ command: "b", description: "B" }], { scope: { type: "all_group_chats" } });
+    bot.reset();
+    expect(await bot.api.getMyCommands({ scope: { type: "default" } })).toEqual([]);
+    expect(await bot.api.getMyCommands({ scope: { type: "all_group_chats" } })).toEqual([]);
   });
 });
 
@@ -314,14 +392,18 @@ describe("syncCommandsWithTelegram con MockTelegramBot", () => {
     expect(stored.map((c) => c.command)).toContain("hello");
   });
 
-  test("no-op cuando comandos ya coinciden", async () => {
-    const bot = new MockTelegramBot({
-      initialCommands: [
-        { command: "hello", description: "Say hello" },
-        { command: "bye",   description: "Say bye" },
-      ],
+  test("no-op cuando comandos ya coinciden (single scope)", async () => {
+    const synced = [
+      { command: "hello", description: "Say hello" },
+      { command: "bye",   description: "Say bye" },
+    ];
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands(synced, { scope: { type: "default" } });
+    // Single scope — truly a no-op when already in sync
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, {
+      autoConfirm: true,
+      scopes: [{ type: "default" }],
     });
-    const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
     expect(updated).toBe(false);
   });
 });

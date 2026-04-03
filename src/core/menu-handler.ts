@@ -1,4 +1,8 @@
 import { Bot, InlineKeyboard } from "grammy";
+import { Logger } from "./logger.js";
+import { describeTelegramError } from "./telegram-error.js";
+
+const log = new Logger("menu-handler");
 
 /** Botón que navega a otra página del menú */
 export interface NavButton {
@@ -58,10 +62,14 @@ export function registerMenu(bot: Bot, menu: MenuDefinition) {
   bot.command(menu.command, async (ctx) => {
     const entry = pageMap.get(menu.entryPage);
     if (!entry) return;
-    await ctx.reply(entry.text, {
-      parse_mode: "HTML",
-      reply_markup: buildKeyboard(entry, prefix),
-    });
+    try {
+      await ctx.reply(entry.text, {
+        parse_mode: "HTML",
+        reply_markup: buildKeyboard(entry, prefix),
+      });
+    } catch (error) {
+      log.warn(`Failed to open menu ${menu.command} in chat ${ctx.chat?.id ?? "?"}: ${describeTelegramError(error)}`);
+    }
   });
 
   // Registra callbacks de navegación para cada página
@@ -71,10 +79,14 @@ export function registerMenu(bot: Bot, menu: MenuDefinition) {
       const target = pageMap.get(btn.goTo);
       if (!target) continue;
       bot.callbackQuery(`${prefix}:${btn.goTo}`, async (ctx) => {
-        await ctx.editMessageText(target.text, {
-          parse_mode: "HTML",
-          reply_markup: buildKeyboard(target, prefix),
-        });
+        try {
+          await ctx.editMessageText(target.text, {
+            parse_mode: "HTML",
+            reply_markup: buildKeyboard(target, prefix),
+          });
+        } catch (error) {
+          log.warn(`Failed to update menu ${menu.command}/${target.id}: ${describeTelegramError(error)}`);
+        }
       });
     }
   }
