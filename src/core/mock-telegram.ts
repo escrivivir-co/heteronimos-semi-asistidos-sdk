@@ -29,6 +29,8 @@ export interface MockBotOptions {
 
 export interface SimulateOpts {
   chatId?: number;
+  chatType?: "private" | "group" | "supergroup" | "channel";
+  chatTitle?: string;
   userId?: number;
   username?: string;
 }
@@ -51,17 +53,33 @@ export const MOCK_FIXTURES = {
 // ---------------------------------------------------------------------------
 
 function createMockContext(opts: {
+  updateType?: "message" | "my_chat_member" | "chat_member";
   text: string;
   chatId: number;
+  chatType?: "private" | "group" | "supergroup" | "channel";
+  chatTitle?: string;
   userId: number;
   username: string;
   commandMatch?: string;
   sentMessages: SentMessage[];
 }): object {
+  const chatType = opts.chatType ?? (opts.chatId < 0 ? "group" : "private");
+  const chat = chatType === "private"
+    ? { id: opts.chatId, type: "private", first_name: opts.username }
+    : { id: opts.chatId, type: chatType, title: opts.chatTitle ?? `${chatType}:${opts.chatId}` };
+
   return {
     from: { id: opts.userId, first_name: opts.username },
-    chat: { id: opts.chatId },
-    message: { text: opts.text, entities: undefined },
+    chat,
+    ...(opts.updateType === "message" || !opts.updateType
+      ? { message: { text: opts.text, entities: undefined } }
+      : {}),
+    ...(opts.updateType === "my_chat_member"
+      ? { myChatMember: { old_chat_member: { status: "left" }, new_chat_member: { status: "member" } } }
+      : {}),
+    ...(opts.updateType === "chat_member"
+      ? { chatMember: { old_chat_member: { status: "left" }, new_chat_member: { status: "member" } } }
+      : {}),
     match: opts.commandMatch ?? "",        // grammY CommandContext.match
     reply: async (text: string, _options?: unknown) => {
       opts.sentMessages.push({ chatId: opts.chatId, text });
@@ -80,24 +98,40 @@ export class MockTelegramBot {
   private middlewares: Array<(ctx: object, next: () => Promise<void>) => Promise<void>> = [];
   private commandHandlers = new Map<string, (ctx: object) => Promise<void>>();
   private callbackHandlers = new Map<string, (ctx: object) => Promise<void>>();
-  private messageHandlers: Array<(ctx: object) => Promise<void>> = [];
-  private storedCommands: BotCommand[];
+  private eventHandlers = new Map<string, Array<(ctx: object) => Promise<void>>>();
+  /** Commands stored per scope. Key includes scope.type and scope identifiers. */
+  private commandsByScope = new Map<string, BotCommand[]>();
   private sentMessages: SentMessage[] = [];
   private emitter?: RuntimeEmitter;
 
   readonly api: {
-    getMyCommands(): Promise<BotCommand[]>;
-    setMyCommands(commands: BotCommand[]): Promise<void>;
+    getMyCommands(opts?: { scope?: { type: string; chat_id?: number | string } }): Promise<BotCommand[]>;
+    setMyCommands(commands: BotCommand[], opts?: { scope?: { type: string; chat_id?: number | string } }): Promise<void>;
     sendMessage(chatId: number, text: string, options?: unknown): Promise<void>;
   };
 
   constructor(options?: MockBotOptions) {
-    this.storedCommands = [...(options?.initialCommands ?? [])];
     this.emitter = options?.emitter;
+    // Load initialCommands into the default scope
+    if (options?.initialCommands?.length) {
+      this.commandsByScope.set("default", [...options.initialCommands]);
+    }
+
+    const scopeKey = (scope?: { type: string; chat_id?: number | string }) => {
+      if (!scope) return "default";
+      if (scope.type === "chat") return `chat:${scope.chat_id}`;
+      return scope.type;
+    };
 
     this.api = {
-      getMyCommands: async () => [...this.storedCommands],
-      setMyCommands: async (commands) => { this.storedCommands = [...commands]; },
+      getMyCommands: async (opts?) => {
+        const key = scopeKey(opts?.scope);
+        return [...(this.commandsByScope.get(key) ?? [])];
+      },
+      setMyCommands: async (commands, opts?) => {
+        const key = scopeKey(opts?.scope);
+        this.commandsByScope.set(key, [...commands]);
+      },
       sendMessage: async (chatId, text) => { this.sentMessages.push({ chatId, text }); },
     };
   }
@@ -108,9 +142,10 @@ export class MockTelegramBot {
     this.middlewares.push(middleware);
   }
 
-  on(_event: string, handler: (ctx: object) => Promise<void>): void {
-    // El SDK solo usa bot.on("message", handler)
-    this.messageHandlers.push(handler);
+  on(event: string, handler: (ctx: object) => Promise<void>): void {
+    const handlers = this.eventHandlers.get(event) ?? [];
+    handlers.push(handler);
+    this.eventHandlers.set(event, handlers);
   }
 
   command(name: string, handler: (ctx: object) => Promise<void>): void {
@@ -138,14 +173,32 @@ export class MockTelegramBot {
    */
   async simulateMessage(text: string, opts?: SimulateOpts): Promise<void> {
     const ctx = createMockContext({
+      updateType: "message",
       text,
       chatId:   opts?.chatId   ?? MOCK_FIXTURES.chatId,
+      chatType: opts?.chatType,
+      chatTitle: opts?.chatTitle,
       userId:   opts?.userId   ?? MOCK_FIXTURES.userId,
       username: opts?.username ?? MOCK_FIXTURES.username,
       sentMessages: this.sentMessages,
     });
     for (const mw of this.middlewares) await mw(ctx, async () => {});
-    for (const handler of this.messageHandlers) await handler(ctx);
+    for (const handler of this.eventHandlers.get("message") ?? []) await handler(ctx);
+  }
+
+  async simulateMyChatMember(opts?: SimulateOpts): Promise<void> {
+    const ctx = createMockContext({
+      updateType: "my_chat_member",
+      text: "",
+      chatId: opts?.chatId ?? MOCK_FIXTURES.chatId,
+      chatType: opts?.chatType,
+      chatTitle: opts?.chatTitle,
+      userId: opts?.userId ?? MOCK_FIXTURES.userId,
+      username: opts?.username ?? MOCK_FIXTURES.username,
+      sentMessages: this.sentMessages,
+    });
+    for (const mw of this.middlewares) await mw(ctx, async () => {});
+    for (const handler of this.eventHandlers.get("my_chat_member") ?? []) await handler(ctx);
   }
 
   /**
@@ -175,9 +228,12 @@ export class MockTelegramBot {
     });
 
     const ctx = createMockContext({
+      updateType: "message",
       text:         `/${name}`,
       commandMatch: "",
       chatId,
+      chatType: opts?.chatType,
+      chatTitle: opts?.chatTitle,
       userId,
       username,
       sentMessages: this.sentMessages,
@@ -217,8 +273,8 @@ export class MockTelegramBot {
     this.middlewares = [];
     this.commandHandlers.clear();
     this.callbackHandlers.clear();
-    this.messageHandlers = [];
+    this.eventHandlers.clear();
     this.sentMessages = [];
-    this.storedCommands = [];
+    this.commandsByScope.clear();
   }
 }

@@ -5,6 +5,16 @@ import type { RuntimeEmitter } from "./runtime-emitter.js";
 
 const log = new Logger("chat-tracker");
 
+/** Información básica de un chat de Telegram (subconjunto de la API). */
+export interface ChatInfo {
+  id: number;
+  type: "private" | "group" | "supergroup" | "channel";
+  title?: string;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
 /** Contrato mínimo de almacenamiento de chat IDs */
 export interface ChatStore {
   load(): number[] | Promise<number[]>;
@@ -45,12 +55,15 @@ export class MemoryChatStore implements ChatStore {
  */
 export class ChatTracker {
   private chatIds: Set<number>;
+  private chatNames = new Map<number, string>();
   private store: ChatStore;
   private emitter?: RuntimeEmitter;
+  private log: Logger;
 
   constructor(store?: ChatStore, emitter?: RuntimeEmitter) {
     this.store = store ?? new MemoryChatStore();
     this.emitter = emitter;
+    this.log = emitter ? new Logger("chat-tracker", { emitter }) : log;
     const loaded = this.store.load();
     this.chatIds = new Set(Array.isArray(loaded) ? loaded : []);
   }
@@ -59,11 +72,12 @@ export class ChatTracker {
     this.store.save([...this.chatIds]);
   }
 
-  track(chatId: number) {
+  track(chatId: number, title?: string, chatType?: string) {
+    if (title) this.chatNames.set(chatId, title);
     if (!this.chatIds.has(chatId)) {
       this.chatIds.add(chatId);
       this.save();
-      log.debug(`Tracked new chat: ${chatId}`);
+      this.log.debug(`Tracked new chat: ${chatId}${title ? ` (${title})` : ""}`);
       this.emitter?.emit({
         type: "chat-tracked",
         chatId,
@@ -78,12 +92,42 @@ export class ChatTracker {
   }
 
   /**
+   * Emite eventos chat-tracked para todos los chats ya cargados desde el store.
+   * Llamar una sola vez al arrancar para que el bridge / dashboard los muestre
+   * aunque no llegue ningún mensaje nuevo.
+   */
+  emitLoaded(): void {
+    if (!this.emitter) return;
+    const total = this.chatIds.size;
+    for (const chatId of this.chatIds) {
+      this.emitter.emit({
+        type: "chat-tracked",
+        chatId,
+        total,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  /**
    * Registra middleware en el bot para trackear automáticamente todos los chats.
    */
   register(bot: Bot) {
     bot.use((ctx, next) => {
       if (ctx.chat) {
-        this.track(ctx.chat.id);
+        const chat = ctx.chat;
+        let title: string | undefined;
+        if (chat.type === "private") {
+          title = chat.first_name + ("last_name" in chat && chat.last_name ? " " + chat.last_name : "");
+        } else if ("title" in chat && chat.title) {
+          title = chat.title;
+        }
+        const utype = ctx.message ? "message" : ctx.channelPost ? "channel_post" : ctx.callbackQuery ? "callback_query" : "other";
+        this.log.debug(`[middleware] update type=${utype} chat.id=${chat.id} chat.type=${chat.type} title=${title ?? "(none)"}`);
+        this.track(chat.id, title, chat.type);
+      } else {
+        const utype = ctx.message ? "message" : ctx.channelPost ? "channel_post" : ctx.callbackQuery ? "callback_query" : "other";
+        this.log.debug(`[middleware] update type=${utype} — no ctx.chat`);
       }
       return next();
     });
@@ -96,11 +140,11 @@ export class ChatTracker {
   async broadcast(bot: Bot, message: string) {
     const chats = this.getAll();
     if (chats.length === 0) {
-      log.info("No known chats to broadcast to.");
+      this.log.info("No known chats to broadcast to.");
       return;
     }
 
-    log.info(`Broadcasting to ${chats.length} chat(s)...`);
+    this.log.info(`Broadcasting to ${chats.length} chat(s)...`);
     let sent = 0;
     let failed = 0;
 
@@ -109,12 +153,12 @@ export class ChatTracker {
         await bot.api.sendMessage(chatId, message);
         sent++;
       } catch {
-        log.debug(`Failed to send to chat ${chatId} (user may have blocked the bot).`);
+        this.log.debug(`Failed to send to chat ${chatId} (user may have blocked the bot).`);
         failed++;
       }
     }
 
-    log.info(`Broadcast complete: ${sent} sent, ${failed} failed.`);
+    this.log.info(`Broadcast complete: ${sent} sent, ${failed} failed.`);
     this.emitter?.emit({
       type: "broadcast",
       chatCount: chats.length,

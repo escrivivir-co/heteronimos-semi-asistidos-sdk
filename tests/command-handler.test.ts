@@ -1,11 +1,13 @@
 import { describe, test, expect } from "bun:test";
 import {
+  handleCommand,
   toBotFatherFormat,
   toBotCommands,
   commandsMatch,
   syncCommandsWithTelegram,
   type CommandDefinition,
   type BotCommand,
+  type BotCommandScope,
 } from "../src/index";
 import { MockTelegramBot } from "../src/core/mock-telegram";
 
@@ -110,6 +112,22 @@ describe("syncCommandsWithTelegram", () => {
   });
 });
 
+describe("handleCommand", () => {
+  test("swallows reply failures so polling can continue", async () => {
+    const handler = handleCommand(async () => "hi");
+    const ctx = {
+      from: { first_name: "Aleph" },
+      chat: { id: -12345 },
+      message: { entities: [] },
+      reply: async () => {
+        throw { error_code: 403, description: "Forbidden: bot was kicked from the group chat" };
+      },
+    } as any;
+
+    await expect(handler(ctx)).resolves.toBeUndefined();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // syncCommandsWithTelegram con MockTelegramBot
 // ---------------------------------------------------------------------------
@@ -128,14 +146,17 @@ describe("syncCommandsWithTelegram — mock bot", () => {
     expect(stored.map((c: BotCommand) => c.command)).toEqual(["a", "b"]);
   });
 
-  test("no-op when already in sync", async () => {
-    const bot = new MockTelegramBot({
-      initialCommands: [
-        { command: "a", description: "Alpha" },
-        { command: "b", description: "Beta" },
-      ],
+  test("no-op when single scope already in sync", async () => {
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands(
+      [{ command: "a", description: "Alpha" }, { command: "b", description: "Beta" }],
+      { scope: { type: "default" } },
+    );
+    // With a single scope that already matches, no update needed
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, {
+      autoConfirm: true,
+      scopes: [{ type: "default" }],
     });
-    const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
     expect(updated).toBe(false);
   });
 
@@ -147,5 +168,76 @@ describe("syncCommandsWithTelegram — mock bot", () => {
     });
     expect(updated).toBe(false);
     expect(await bot.api.getMyCommands()).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// syncCommandsWithTelegram — multi-scope
+// ---------------------------------------------------------------------------
+
+describe("syncCommandsWithTelegram — multi-scope", () => {
+  const localCmds: CommandDefinition[] = [
+    { command: "start", description: "Start", buildText: () => "" },
+  ];
+
+  test("registers commands in both default and all_group_chats scopes", async () => {
+    const bot = new MockTelegramBot();
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
+    expect(updated).toBe(true);
+
+    const defaultCmds = await bot.api.getMyCommands({ scope: { type: "default" } });
+    const groupCmds   = await bot.api.getMyCommands({ scope: { type: "all_group_chats" } });
+
+    expect(defaultCmds).toEqual([{ command: "start", description: "Start" }]);
+    expect(groupCmds).toEqual([{ command: "start", description: "Start" }]);
+  });
+
+  test("always writes to all scopes even when default already matches", async () => {
+    const synced = [{ command: "start", description: "Start" }];
+    const bot = new MockTelegramBot();
+    // Pre-load both scopes — still returns true because multi-scope always writes
+    await bot.api.setMyCommands(synced, { scope: { type: "default" } });
+    await bot.api.setMyCommands(synced, { scope: { type: "all_group_chats" } });
+
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true });
+    expect(updated).toBe(true);
+
+    const groupCmds = await bot.api.getMyCommands({ scope: { type: "all_group_chats" } });
+    expect(groupCmds).toEqual(synced);
+  });
+
+  test("single-scope no-op when already in sync", async () => {
+    const synced = [{ command: "start", description: "Start" }];
+    const bot = new MockTelegramBot();
+    await bot.api.setMyCommands(synced, { scope: { type: "default" } });
+
+    const updated = await syncCommandsWithTelegram(bot as any, localCmds, {
+      autoConfirm: true,
+      scopes: [{ type: "default" }],
+    });
+    expect(updated).toBe(false);
+  });
+
+  test("custom scopes override default behavior", async () => {
+    const bot = new MockTelegramBot();
+    const scopes: BotCommandScope[] = [{ type: "default" }];
+    await syncCommandsWithTelegram(bot as any, localCmds, { autoConfirm: true, scopes });
+
+    const defaultCmds = await bot.api.getMyCommands({ scope: { type: "default" } });
+    const groupCmds   = await bot.api.getMyCommands({ scope: { type: "all_group_chats" } });
+
+    expect(defaultCmds).toEqual([{ command: "start", description: "Start" }]);
+    // group not touched when only default scope passed
+    expect(groupCmds).toEqual([]);
+  });
+
+  test("confirmation is requested only once regardless of number of scopes", async () => {
+    const bot = new MockTelegramBot();
+    let confirmCalls = 0;
+    await syncCommandsWithTelegram(bot as any, localCmds, {
+      autoConfirm: false,
+      confirmFn: async () => { confirmCalls++; return true; },
+    });
+    expect(confirmCalls).toBe(1);
   });
 });

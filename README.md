@@ -91,6 +91,24 @@ SOLANA_ADDRESS=your-address
 
 If you skip `.env` setup, the SDK will guide you interactively at startup: offer to create `.env` from the template, then offer mock mode if the token is still missing.
 
+## Groups & Privacy Mode
+
+By default Telegram bots have **Privacy Mode enabled** — in groups, the bot only receives:
+
+- Messages that start with `/` (commands)
+- Replies to the bot's own messages
+- Messages that @mention the bot by username
+
+If you want the bot to receive **all messages in a group** (needed for `onMessage` handlers), disable Privacy Mode:
+
+```
+@BotFather → /setprivacy → select your bot → Disable
+```
+
+After changing this setting, **remove and re-add the bot** to each group for the change to take effect.
+
+> **Note:** The SDK registers commands with both `default` and `all_group_chats` scopes so the `/` command menu appears in groups and private chats alike. When the bot joins a new group while already running, it also syncs a chat-specific scope for that group as a workaround for Telegram Desktop clients that sometimes fail to refresh `all_group_chats` correctly. If a group's menu still looks stale, reopen the chat or remove and re-add the bot. On first boot, the SDK also checks for stale webhooks and deletes them automatically to ensure long-polling works correctly.
+
 ## Run
 
 ```bash

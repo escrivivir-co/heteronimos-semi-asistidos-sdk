@@ -1,4 +1,4 @@
-import type { BotPlugin, CommandDefinition, MenuDefinition } from "heteronimos-semi-asistidos-sdk";
+import { buildPluginHelpText, type BotPlugin, type CommandDefinition, type MenuDefinition } from "heteronimos-semi-asistidos-sdk";
 
 export interface GEvent {
 	timestamp: Date,
@@ -57,28 +57,46 @@ export class RabbitBot implements BotPlugin {
 	}
 
 	menus(): MenuDefinition[] {
-		return [
+		const commandDefinitions = this.commands();
+		const menuDefinitions: MenuDefinition[] = [
 			{
 				command: "menu",
 				description: "To open options",
 				entryPage: "start",
-				pages: [
-					{
-						id: "start",
-						text: "<b>Start</b>\n\nStart at https://escrivivir-co.github.io/aleph-scriptorium/.",
-						buttons: [{ label: ">", goTo: "close" }],
-					},
-					{
-						id: "close",
-						text: "<b>Close</b>\n\nDocs at https://core.telegram.org/bots/tutorial.",
-						buttons: [
-							{ label: "<", goTo: "start" },
-							{ label: "<coming soon>", url: "https://core.telegram.org/bots/tutorial" },
-						],
-					},
+				pages: [],
+			},
+		];
+
+		menuDefinitions[0].pages = [
+			{
+				id: "start",
+				text: "<b>Start</b>\n\nStart at https://escrivivir-co.github.io/aleph-scriptorium/.",
+				buttons: [
+					{ label: "Help", goTo: "help" },
+					{ label: ">", goTo: "close" },
+				],
+			},
+			{
+				id: "help",
+				text: buildPluginHelpText(this.pluginCode, commandDefinitions, menuDefinitions, {
+					formatCommand: (command) => `<code>/${this.pluginCode}_${command}</code>`,
+				}),
+				buttons: [
+					{ label: "<", goTo: "start" },
+					{ label: ">", goTo: "close" },
+				],
+			},
+			{
+				id: "close",
+				text: "<b>Close</b>\n\nDocs at https://core.telegram.org/bots/tutorial.",
+				buttons: [
+					{ label: "<", goTo: "start" },
+					{ label: "<coming soon>", url: "https://core.telegram.org/bots/tutorial" },
 				],
 			},
 		];
+
+		return menuDefinitions;
 	}
 
 	onMessage() {

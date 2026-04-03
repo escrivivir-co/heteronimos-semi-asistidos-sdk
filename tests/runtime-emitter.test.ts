@@ -138,7 +138,7 @@ describe("RuntimeEmitter — snapshot$", () => {
 
     emitter.emit({
       type: "plugins-registered",
-      plugins: [{ name: "RabbitBot", pluginCode: "rb", commandCount: 4 }],
+      plugins: [{ name: "RabbitBot", pluginCode: "rb", commandCount: 4, commands: [] }],
       timestamp: "2024-01-01T00:00:00.000Z",
     });
     emitter.emit({ type: "chat-tracked", chatId: 10, total: 1, timestamp: "t" });
@@ -186,7 +186,7 @@ describe("reduceRuntime — pure reducer", () => {
   });
 
   test("plugins-registered sets plugins, status=running, startedAt", () => {
-    const plugins = [{ name: "X", pluginCode: "x", commandCount: 2 }];
+    const plugins = [{ name: "X", pluginCode: "x", commandCount: 2, commands: [] }];
     const next = reduceRuntime(DEFAULT_BOT_RUNTIME, {
       type: "plugins-registered",
       plugins,

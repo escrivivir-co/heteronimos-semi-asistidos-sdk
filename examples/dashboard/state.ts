@@ -31,6 +31,7 @@ export function getDefaultDashboardState(): DashboardState {
     plugins: [],
     commandCount: 0,
     chatIds: [],
+    chatNames: {},
     logs: [],
     messages: [],
     commandResponses: [],

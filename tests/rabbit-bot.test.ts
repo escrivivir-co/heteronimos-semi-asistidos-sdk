@@ -45,6 +45,24 @@ describe("RabbitBot", () => {
     expect(menu.pages.length).toBeGreaterThanOrEqual(2);
   });
 
+  test("menu help page lists prefixed commands dynamically", () => {
+    const menus = bot.menus();
+    const menu = menus[0];
+    const helpPage = menu.pages.find(page => page.id === "help");
+
+    expect(helpPage).toBeDefined();
+
+    const expectedEntries = [
+      ...bot.commands().map(({ command, description }) => ({ command, description })),
+      ...menus.map(({ command, description }) => ({ command, description })),
+    ];
+
+    for (const entry of expectedEntries) {
+      expect(helpPage!.text).toContain(`/${bot.pluginCode}_${entry.command}`);
+      expect(helpPage!.text).toContain(entry.description);
+    }
+  });
+
   test("onMessage returns string", () => {
     const result = bot.onMessage();
     expect(typeof result).toBe("string");

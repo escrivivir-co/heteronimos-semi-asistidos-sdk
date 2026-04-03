@@ -5,7 +5,7 @@ import type { DashboardState } from "./state.js";
 import type { Store } from "heteronimos-semi-asistidos-sdk";
 import { StatusPanel } from "./components/StatusPanel.js";
 import { LogViewer } from "./components/LogViewer.js";
-import { ChatList } from "./components/ChatList.js";
+import { ChatPanel } from "./components/ChatPanel.js";
 import { ConfigPanel } from "./components/ConfigPanel.js";
 import { CommandPanel } from "./components/CommandPanel.js";
 
@@ -67,7 +67,7 @@ export function App({ store }: AppProps) {
       <Box flexGrow={1} paddingX={1}>
         {activePanel === "Overview" && <StatusPanel state={state} />}
         {activePanel === "Logs"     && <LogViewer state={state} />}
-        {activePanel === "Chats"    && <ChatList state={state} />}
+        {activePanel === "Chats"    && <ChatPanel state={state} />}
         {activePanel === "Config"   && <ConfigPanel state={state} store={store} />}
         {activePanel === "Commands" && <CommandPanel state={state} />}
       </Box>

@@ -453,11 +453,81 @@
 
 ---
 
+## Sprint 4i — Chat Detail View (pestaña Chats mejorada)
+
+| # | Story | Status | Spec ref |
+|---|-------|--------|----------|
+| 221 | Tipos `ChatMessage` + `ChatThread` en `src/core/store.ts` | 🔲 | SDS-13 §4.1 |
+| 222 | Selectores `selectChatThreads` + `selectChatMessages` en `src/core/chat-selectors.ts` | 🔲 | SDS-13 §4.2 |
+| 223 | Exportar tipos y selectores desde `src/index.ts` | 🔲 | SDS-13 §4.3 |
+| 224 | Refactorizar `ChatList.tsx` — vista lista con cursor ↑↓ y preview | ✅ | SDS-13 §4.4 |
+| 225 | Crear `ChatDetail.tsx` — timeline de mensajes user/bot con scroll | ✅ | SDS-13 §4.5 |
+| 226 | Crear `ChatPanel.tsx` wrapper — orquesta lista ↔ detalle (Enter/Esc) | ✅ | SDS-13 §4.6 |
+| 227 | Tests de selectores `chat-selectors.test.ts` | 🔲 | SDS-13 §4.7 |
+
+---
+
+## Sprint 4j — Message Persistence (historial entre reinicios)
+
+| # | Story | Status | Spec ref |
+|---|-------|--------|----------|
+| 228 | `MessageStore` interface + `FileMessageStore` + `MemoryMessageStore` en `src/core/message-store.ts` | ✅ | SDS-14 §4.1 |
+| 229 | Integrar `MessageStore` en `connectEmitterToStore` — carga al conectar, save debounced | ✅ | SDS-14 §4.2 |
+| 230 | Ampliar `BootBotOptions` con `messageStorePath` + cableado en `bootBot` | ✅ | SDS-14 §4.3 |
+| 231 | Exportar tipos y clases desde `src/index.ts` | ✅ | SDS-14 §4.4 |
+| 232 | Dashboard: activar persistencia en `main.tsx` + `.gitignore` | ✅ | SDS-14 §4.5 |
+| 233 | Tests `message-store.test.ts` + ampliar `emitter-bridge.test.ts` | ✅ | SDS-14 §4.6 |
+
+---
+
+## Sprint 4k — Multi-Scope Command Sync (from SDS-15)
+
+> Objetivo: que los comandos del bot aparezcan en el menú `/` de grupos y supergrupos,
+> no solo en chats privados. Sin tocar ChatStore, ChatTracker ni dashboard.
+> Spec: `specs/15-group-command-sync.md`
+
+### Fase AI · Multi-scope sync
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 234 | Definir tipo `BotCommandScope` + ampliar `SyncOptions` con campo `scopes?` (default: `[default, all_group_chats]`) | ✅ | SDS-15 §3.3 |
+| 235 | Refactorizar `syncCommandsWithTelegram` — iterar scopes, `getMyCommands`/`setMyCommands` por scope, confirmación única | ✅ | SDS-15 §3.2 |
+| 236 | Ampliar `MockTelegramBot.api` — storage por scope (`Map<string, BotCommand[]>`), `getMyCommands({ scope })`, `setMyCommands(cmds, { scope })` | ✅ | SDS-15 §3.4 |
+| 237 | Exportar `BotCommandScope` desde barrel (`src/index.ts`) | ✅ | SDS-15 §4 |
+| 238 | Tests: `command-handler.test.ts` — sync registra en ambos scopes; skip si ya sync; custom scopes override; confirmación una sola vez | ✅ | SDS-15 §6 |
+| 239 | Tests: `mock-telegram.test.ts` — scope-aware get/set, scopes independientes | ✅ | SDS-15 §6 |
+| 240 | Tests: `barrel.test.ts` — `BotCommandScope` existe como export | ✅ | SDS-15 §6 |
+| 241 | Full test suite verde — **217 tests / 16 suites / 0 fail** | ✅ | SDS-15 §5 |
+
+### Fase AI-bis · Live group scope sync + boot hardening
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 242 | Live group scope sync — `my_chat_member`/`chat_member` → `setMyCommands` con scope `chat` para grupos nuevos | ✅ | SDS-15 §3.2 |
+| 243 | Resolver tracked group scopes al arranque — `resolveTrackedGroupChatScopes` en `syncCommands` | ✅ | SDS-15 §3.2 |
+| 244 | `boot.ts` hardening — `bot.catch()`, webhook cleanup (`deleteWebhook`), `getMe()` identity log | ✅ | — |
+| 245 | `src/core/telegram-error.ts` — `describeTelegramError` utility para formateo seguro de errores de Telegram | ✅ | — |
+| 246 | Error boundaries en `handleCommand` — wrap `buildText` + `reply` en try/catch | ✅ | — |
+| 247 | Error boundaries en `registerMenu` — wrap `reply`/`editMessageText` en try/catch | ✅ | — |
+| 248 | Error boundaries en `registerPlugins` onMessage — wrap `plugin.onMessage` + `reply` | ✅ | — |
+| 249 | `registerPlugins` acepta `options?: { quiet?: boolean }` para suprimir logs de startup | ✅ | — |
+| 250 | MockTelegramBot — event handlers genéricos (`eventHandlers Map`), `simulateMyChatMember`, `chatType`/`chatTitle` en contexto | ✅ | SDS-15 §3.4 |
+| 251 | Tests: `bot-handler.test.ts` — registerPlugins con multi-scope + live sync + error boundaries | ✅ | SDS-15 §6 |
+
+### Fase AI-ter · Plugin Help
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 252 | `src/core/plugin-help.ts` — `collectPluginHelpEntries` + `buildPluginHelpText` helpers compartidos | ✅ | — |
+| 253 | Exportar `PluginHelpEntry`, `BuildPluginHelpTextOptions` + funciones desde barrel | ✅ | — |
+| 254 | `tests/plugin-help.test.ts` — test suite del help builder | ✅ | — |
+| 255 | RabbitBot en `examples/*/rabbit-bot.ts` usa `buildPluginHelpText` en vez de help inline | ✅ | — |
+| 256 | `tests/rabbit-bot.test.ts` — actualizado para help text | ✅ | — |
+
+---
+
 ## Sprint 5 — SDK Hardening
 
 | # | Story | Status |
 |---|-------|--------|
-| 94 | **Error boundary per plugin** — isolate plugin crashes from core | 🔲 |
+| 94 | **Error boundary per plugin** — isolate plugin crashes from core | ✅ |
 | 95 | **Rate limiter middleware** — per-chat and global rate limiting | 🔲 |
 | 96 | **Plugin hot-reload** — add/remove plugins without restart | 💡 |
 | 97 | **i18n support** — multi-language replies per chat locale | 💡 |
@@ -490,4 +560,4 @@
 
 ---
 
-*Last updated: 2026-04-03 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b Fase O (mock) ✅ · Sprint 4c Fase L-bis (ConfigPanel) ✅ · Sprint 4d Fases P-T (paquetes independientes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fases X (prompts-agents página) ✅ · Sprint 4g Fases AA-AC + AD (dark mode) ✅ · Sprint 4h (mock command execution) ✅ · Sprint 4h-fix (command execution hotfixes) ✅ · next: poster-template README 🔲 · Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-03 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b (mock) ✅ · Sprint 4c (ConfigPanel) ✅ · Sprint 4d (paquetes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f Fase X (prompts-agents) ✅ · Sprint 4g (dark mode) ✅ · Sprint 4h + fix (mock cmd exec) ✅ · Sprint 4i (chat detail) ✅ · Sprint 4j (message persistence) ✅ · Sprint 4k (multi-scope sync + help + error resilience) ✅ · next: Sprint 4f Fases Y-Z (agentes expertos) 🔲 · Sprint 2 (CI) 🔲*
