@@ -1,4 +1,8 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { buildPluginHelpText, type BotPlugin, type CommandDefinition, type MenuDefinition } from "heteronimos-semi-asistidos-sdk";
+
+const BROADCAST_FILE = "userdata/broadcast.md";
 
 export interface GEvent {
 	timestamp: Date,
@@ -20,20 +24,52 @@ export class RabbitBot implements BotPlugin {
 
 	urls = 'https://greenwire.greenpeace.es/community-events';
 	solana = '';
+	private appDir: string;
+	private broadcastFn: ((message: string) => Promise<void>) | null = null;
 
-	constructor(solana?: string) {
+	constructor(solana?: string, appDir?: string) {
 		this.solana = solana ?? '';
+		this.appDir = appDir ?? '';
 		this.cronos = 2;
 		this.events = this.getNextFibonacciDates(new Date(), this.cronos);
+	}
+
+	setBroadcast(fn: (message: string) => Promise<void>) {
+		this.broadcastFn = fn;
+	}
+
+	private readBroadcastFile(): string[] | null {
+		if (!this.appDir) return null;
+		const filePath = path.join(this.appDir, BROADCAST_FILE);
+		try {
+			if (!fs.existsSync(filePath)) return null;
+			const raw = fs.readFileSync(filePath, "utf-8").trim();
+			if (!raw) return null;
+			const chunks = raw.split(/^---$/m).map(s => s.trim()).filter(Boolean);
+			return chunks.length > 0 ? chunks : null;
+		} catch {
+			return null;
+		}
 	}
 
 	commands(): CommandDefinition[] {
 		return [
 			{
 				command: "aleph",
-				description: "Describes current sync frequency wave",
-				buildText: () =>
-					`Next hole! Join & sync! \n\t - ${[this.initializeEvents()[0]].map(c => c.data.countdown).join('\n\t - ')}`,
+				description: "Broadcast message from userdata/broadcast.md to all chats",
+				buildText: async () => {
+					const chunks = this.readBroadcastFile();
+					if (!chunks) {
+						return `⚠️ No broadcast file found. Create or edit ${BROADCAST_FILE} with the message to send.`;
+					}
+					if (!this.broadcastFn) {
+						return `📄 ${BROADCAST_FILE} (${chunks.length} part(s)):\n\n${chunks[0]}\n\n⚠️ Broadcast not available (bot not fully initialized).`;
+					}
+					for (const chunk of chunks) {
+						await this.broadcastFn(chunk);
+					}
+					return `✅ Broadcast sent (${chunks.length} message(s)) to all registered chats.`;
+				},
 			},
 			{
 				command: "join",

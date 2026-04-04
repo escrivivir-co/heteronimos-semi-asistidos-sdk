@@ -24,14 +24,20 @@ connectEmitterToStore(emitter, store, { messageStore });
 // Si no hay token, arranca en mock automáticamente.
 // El panel Config muestra el estado y las instrucciones para conectar a Telegram.
 async function main() {
+  const rabbitBot = new RabbitBot(SOLANA_ADDRESS, appDir);
   const result = await bootBot({
-    plugins: [new RabbitBot(SOLANA_ADDRESS)],
+    plugins: [rabbitBot],
     envDir: appDir,
     chatStorePath: path.join(appDir, ".chats.json"),
     emitter,
     logger: log,
     nonInteractive: true,
   });
+
+  // Connect broadcast capability to the plugin
+  if (result.broadcast) {
+    rabbitBot.setBroadcast(result.broadcast);
+  }
 
   // Informar al store del modo de arranque y estado del filesystem
   store.setState((s) => ({
