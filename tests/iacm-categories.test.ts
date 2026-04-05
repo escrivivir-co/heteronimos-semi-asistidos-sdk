@@ -1,8 +1,8 @@
 import { describe, test, expect } from "bun:test";
-import { getAllIacmCategories, getIacmChatCategories, getIacmCommandCategories, IACM_INTENTS } from "../src/core/iacm-categories";
-import { IntentEngine } from "../src/core/intent-engine";
-import { buildRequest, buildUrgent, formatIacmForChat } from "../src/core/iacm-templates";
-import type { IacmBotVars } from "../src/core/iacm-bot-plugin";
+import { getAllIacmCategories, getIacmChatCategories, getIacmCommandCategories, IACM_INTENTS } from "../src/core/iacm/iacm-categories";
+import { IntentEngine } from "../src/core/aiml/intent-engine";
+import { buildRequest, buildUrgent, formatIacmForChat } from "../src/core/iacm/iacm-templates";
+import type { IacmBotVars } from "../src/core/iacm/iacm-bot-plugin";
 
 type TestVars = IacmBotVars;
 
@@ -70,7 +70,7 @@ describe("getIacmChatCategories", () => {
 
     const { buildReport, buildQuestion, buildAnswer, buildProposal,
       buildAcknowledge, buildAccept, buildReject, buildDefer, buildFyi } =
-      await import("../src/core/iacm-templates");
+      await import("../src/core/iacm/iacm-templates");
 
     await verifyType(formatIacmForChat(buildRequest("a", "b", { task: "t" }, "n")), IACM_INTENTS.RECEIVED_REQUEST);
     await verifyType(formatIacmForChat(buildReport("a", "b", { subject: "s", summary: "x" }, "n")), IACM_INTENTS.RECEIVED_REPORT);

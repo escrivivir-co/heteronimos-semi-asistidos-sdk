@@ -5,8 +5,8 @@ import {
   extractIacmAgents,
   parseIacmMessage,
   validateIacmMessage,
-} from "../src/core/iacm-parser";
-import { buildRequest, buildReport, buildUrgent, formatIacmForChat } from "../src/core/iacm-templates";
+} from "../src/core/iacm/iacm-parser";
+import { buildRequest, buildReport, buildUrgent, formatIacmForChat } from "../src/core/iacm/iacm-templates";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // detectsIacmMessage

@@ -11,7 +11,7 @@
  * el intent no es de dominio IACM o el mensaje no va dirigido a este agente.
  */
 
-import type { IntentHandler, IntentResult, SessionVars } from "./aiml-types.js";
+import type { IntentHandler, IntentResult, SessionVars } from "../aiml/aiml-types.js";
 import type { IacmSessionVars } from "./iacm-types.js";
 import { IACM_INTENTS } from "./iacm-categories.js";
 import {

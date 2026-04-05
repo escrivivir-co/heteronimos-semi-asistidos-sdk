@@ -26,8 +26,8 @@
     "build:example": "cd examples/console-app && bun build main.ts --outdir ../../dist-example --target node",
     "bot-father-settings": "bun run ./scripts/build-bot-father-settings.ts",
     "lint": "tsc --noEmit",
-    "examples:install": "cd examples/console-app && bun install && cd ../dashboard && bun install",
-    "test": "bun run build:sdk && bun run examples:install && bun test ./tests",
+    "examples:install": "cd examples/console-app && bun install && cd ../dashboard && bun install && cd ../iacm-demo && bun install",
+    "test": "bun run build:sdk && bun run examples:install && cd ../dashboard && bun install",
     "test:report": "bun run build:sdk && bun run examples:install && bun test ./tests --reporter=junit --reporter-outfile=test-results.xml",
     "test:coverage": "bun run build:sdk && bun run examples:install && bun test ./tests --coverage",
     "release": "bun run ./scripts/release.ts"

@@ -1,7 +1,7 @@
 import type { RuntimeEmitter, RuntimeEvent, PluginInfo } from "./runtime-emitter.js";
-import type { Store, LogEntry, MessageEntry, CommandResponseEntry } from "./store.js";
-import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, CMD_BUFFER_SIZE } from "./store.js";
-import type { MessageStore } from "./message-store.js";
+import type { Store, LogEntry, MessageEntry, CommandResponseEntry } from "./persistence/store.js";
+import { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, CMD_BUFFER_SIZE } from "./persistence/store.js";
+import type { MessageStore } from "./persistence/message-store.js";
 
 /**
  * Estado base que el bridge sabe reducir.
@@ -70,7 +70,7 @@ export function connectEmitterToStore<T extends BaseRuntimeState>(
   // Cargar historial persistido antes de suscribirnos a eventos nuevos.
   if (messageStore) {
     const loaded = messageStore.load();
-    const applyLoaded = (data: import("./message-store.js").PersistedMessages) => {
+    const applyLoaded = (data: import("./persistence/message-store.js").PersistedMessages) => {
       // Derivar chatIds de los mensajes cargados + los persistidos directamente.
       // ChatTracker no re-emite chat-tracked para chats ya conocidos al arrancar.
       const chatIdSet = new Set<number>(data.chatIds ?? []);

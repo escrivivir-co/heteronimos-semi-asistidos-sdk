@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
-import { Logger } from "./logger.js";
-import type { MessageEntry, CommandResponseEntry } from "./store.js";
-import { MSG_BUFFER_SIZE, CMD_BUFFER_SIZE } from "./store.js";
+import { Logger } from "../logger.js";
+import type { MessageEntry, CommandResponseEntry } from "../persistence/store.js";
+import { MSG_BUFFER_SIZE, CMD_BUFFER_SIZE } from "../persistence/store.js";
 
 const log = new Logger("message-store");
 

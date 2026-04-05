@@ -15,10 +15,10 @@
  *   - Menú /xx_iacm con status del protocolo
  */
 
-import type { CommandDefinition } from "./command-handler.js";
-import type { MenuDefinition, MenuPage } from "./menu-handler.js";
-import type { AimlCategory, IntentHandler, SessionVars } from "./aiml-types.js";
-import { AimlBotPlugin } from "./aiml-bot-plugin.js";
+import type { CommandDefinition } from "../command-handler.js";
+import type { MenuDefinition, MenuPage } from "../menu-handler.js";
+import type { AimlCategory, IntentHandler, SessionVars } from "../aiml/aiml-types.js";
+import { AimlBotPlugin } from "../aiml/aiml-bot-plugin.js";
 import type { IacmSessionVars } from "./iacm-types.js";
 import { getAllIacmCategories } from "./iacm-categories.js";
 import { iacmProtocolHandler, PROTOCOL_HELP } from "./iacm-protocol-handlers.js";

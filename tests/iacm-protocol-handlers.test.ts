@@ -1,9 +1,9 @@
 import { describe, test, expect } from "bun:test";
-import { iacmProtocolHandler, PROTOCOL_HELP } from "../src/core/iacm-protocol-handlers";
-import { IACM_INTENTS } from "../src/core/iacm-categories";
-import { buildRequest, buildUrgent, formatIacmForChat } from "../src/core/iacm-templates";
-import type { IacmBotVars } from "../src/core/iacm-bot-plugin";
-import type { IntentResult } from "../src/core/aiml-types";
+import { iacmProtocolHandler, PROTOCOL_HELP } from "../src/core/iacm/iacm-protocol-handlers";
+import { IACM_INTENTS } from "../src/core/iacm/iacm-categories";
+import { buildRequest, buildUrgent, formatIacmForChat } from "../src/core/iacm/iacm-templates";
+import type { IacmBotVars } from "../src/core/iacm/iacm-bot-plugin";
+import type { IntentResult } from "../src/core/aiml/aiml-types";
 
 type TestVars = IacmBotVars;
 

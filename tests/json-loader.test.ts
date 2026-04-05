@@ -11,8 +11,8 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { loadJsonCategories } from "../src/core/aiml-json-loader";
-import type { JsonCategoryDef, JsonResolverDef } from "../src/core/aiml-json-loader";
+import { loadJsonCategories } from "../src/core/aiml/aiml-json-loader";
+import type { JsonCategoryDef, JsonResolverDef } from "../src/core/aiml/aiml-json-loader";
 
 // Helper: invoca el resolver como IntentFn con args mínimos
 function callResolver(

@@ -16,8 +16,8 @@ import {
   buildUrgent,
   formatIacmForChat,
   toIacmYaml,
-} from "../src/core/iacm-templates";
-import { IACM_VERSION } from "../src/core/iacm-types";
+} from "../src/core/iacm/iacm-templates";
+import { IACM_VERSION } from "../src/core/iacm/iacm-types";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Utilities

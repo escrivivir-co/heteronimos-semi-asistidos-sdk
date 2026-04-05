@@ -2,7 +2,7 @@ import { Bot, Context } from "grammy";
 import { BotCommand, BotCommandScope, CommandDefinition, registerCommands, toBotCommands, toBotFatherFormat, syncCommandsWithTelegram, SyncOptions } from "./command-handler.js";
 import { MenuDefinition, registerMenu } from "./menu-handler.js";
 import { Logger } from "./logger.js";
-import { ChatTracker } from "./chat-tracker.js";
+import { ChatTracker } from "./persistence/chat-tracker.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
 import { describeTelegramError } from "./telegram-error.js";
 

@@ -9,7 +9,7 @@
  *   2. Command categories: detectan comandos /xx_request, /xx_question, etc.
  */
 
-import type { AimlCategory, SessionVars } from "./aiml-types.js";
+import type { AimlCategory, SessionVars } from "../aiml/aiml-types.js";
 import type { IacmSessionVars } from "./iacm-types.js";
 import { detectsIacmMessage } from "./iacm-parser.js";
 

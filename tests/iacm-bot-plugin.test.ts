@@ -1,9 +1,9 @@
 import { describe, test, expect } from "bun:test";
-import { IacmBotPlugin } from "../src/core/iacm-bot-plugin";
-import type { IacmBotVars } from "../src/core/iacm-bot-plugin";
-import type { AimlCategory, IntentHandler } from "../src/core/aiml-types";
-import { IACM_INTENTS } from "../src/core/iacm-categories";
-import { buildRequest, formatIacmForChat } from "../src/core/iacm-templates";
+import { IacmBotPlugin } from "../src/core/iacm/iacm-bot-plugin";
+import type { IacmBotVars } from "../src/core/iacm/iacm-bot-plugin";
+import type { AimlCategory, IntentHandler } from "../src/core/aiml/aiml-types";
+import { IACM_INTENTS } from "../src/core/iacm/iacm-categories";
+import { buildRequest, formatIacmForChat } from "../src/core/iacm/iacm-templates";
 import { registerPlugins } from "../src/core/bot-handler";
 import { MockTelegramBot } from "../src/core/mock-telegram";
 

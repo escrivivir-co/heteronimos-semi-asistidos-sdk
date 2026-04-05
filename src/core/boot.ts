@@ -15,7 +15,7 @@ import type { SimulateOpts, SentMessage } from "./mock-telegram.js";
 import { registerPlugins, syncCommands } from "./bot-handler.js";
 import type { BotPlugin } from "./bot-handler.js";
 import type { SyncOptions } from "./command-handler.js";
-import { ChatTracker, FileChatStore } from "./chat-tracker.js";
+import { ChatTracker, FileChatStore } from "./persistence/chat-tracker.js";
 import { Logger, confirm } from "./logger.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
 import { describeTelegramError } from "./telegram-error.js";

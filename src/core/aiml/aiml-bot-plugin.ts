@@ -17,9 +17,9 @@
  *             → return texto
  */
 
-import type { BotPlugin } from "./bot-handler.js";
-import type { CommandDefinition } from "./command-handler.js";
-import type { MenuDefinition } from "./menu-handler.js";
+import type { BotPlugin } from "../bot-handler.js";
+import type { CommandDefinition } from "../command-handler.js";
+import type { MenuDefinition } from "../menu-handler.js";
 import type {
   AimlCategory,
   IntentEngineOptions,
@@ -28,7 +28,7 @@ import type {
   MessageContext,
   SessionVars,
 } from "./aiml-types.js";
-import { IntentEngine } from "./intent-engine.js";
+import { IntentEngine } from "../aiml/intent-engine.js";
 
 export abstract class AimlBotPlugin<TVars extends SessionVars = SessionVars>
   implements BotPlugin

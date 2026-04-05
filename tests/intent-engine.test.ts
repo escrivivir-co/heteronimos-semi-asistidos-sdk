@@ -4,8 +4,8 @@ import {
   type IntentResult,
   type AimlCategory,
   type SessionVars,
-} from "../src/core/aiml-types";
-import { IntentEngine } from "../src/core/intent-engine";
+} from "../src/core/aiml/aiml-types";
+import { IntentEngine } from "../src/core/aiml/intent-engine";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 

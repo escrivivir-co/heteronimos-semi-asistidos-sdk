@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { Bot } from "grammy";
-import { Logger } from "./logger.js";
-import type { RuntimeEmitter } from "./runtime-emitter.js";
+import { Logger } from "../logger.js";
+import type { RuntimeEmitter } from "../runtime-emitter.js";
 
 const log = new Logger("chat-tracker");
 

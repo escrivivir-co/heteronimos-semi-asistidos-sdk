@@ -26,8 +26,8 @@ export { registerMenu } from "./core/menu-handler.js";
 export type { LogLevel, LoggerOptions } from "./core/logger.js";
 export { Logger } from "./core/logger.js";
 
-export type { ChatStore } from "./core/chat-tracker.js";
-export { ChatTracker, FileChatStore, MemoryChatStore } from "./core/chat-tracker.js";
+export type { ChatStore } from "./core/persistence/chat-tracker.js";
+export { ChatTracker, FileChatStore, MemoryChatStore } from "./core/persistence/chat-tracker.js";
 
 export type { BotRuntime, PluginInfo, PluginCommandInfo, RuntimeEvent } from "./core/runtime-emitter.js";
 export { RuntimeEmitter, reduceRuntime, DEFAULT_BOT_RUNTIME } from "./core/runtime-emitter.js";
@@ -42,8 +42,8 @@ export { Bot } from "grammy";
 export type { Context } from "grammy";
 
 // --- Store + UI bridge ---
-export type { LogEntry, MessageEntry, CommandResponseEntry, Store } from "./core/store.js";
-export { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, CMD_BUFFER_SIZE, createStore } from "./core/store.js";
+export type { LogEntry, MessageEntry, CommandResponseEntry, Store } from "./core/persistence/store.js";
+export { LOG_BUFFER_SIZE, MSG_BUFFER_SIZE, CMD_BUFFER_SIZE, createStore } from "./core/persistence/store.js";
 
 export type { BaseRuntimeState, EmitterBridgeOptions } from "./core/emitter-bridge.js";
 export { getDefaultBaseState, connectEmitterToStore } from "./core/emitter-bridge.js";
@@ -53,8 +53,8 @@ export type { SentMessage, SimulateOpts, MockBotOptions } from "./core/mock-tele
 export { MockTelegramBot } from "./core/mock-telegram.js";
 
 // --- Message persistence ---
-export type { MessageStore, PersistedMessages } from "./core/message-store.js";
-export { FileMessageStore, MemoryMessageStore } from "./core/message-store.js";
+export type { MessageStore, PersistedMessages } from "./core/persistence/message-store.js";
+export { FileMessageStore, MemoryMessageStore } from "./core/persistence/message-store.js";
 
 // --- AIML Intent Engine (SDS-16) ---
 export type {
@@ -72,10 +72,10 @@ export type {
   ConversationState,
   ConversationTurn,
   IntentEngineOptions,
-} from "./core/aiml-types.js";
-export { UNMATCHED_INTENT } from "./core/aiml-types.js";
-export { IntentEngine } from "./core/intent-engine.js";
-export { AimlBotPlugin } from "./core/aiml-bot-plugin.js";
+} from "./core/aiml/aiml-types.js";
+export { UNMATCHED_INTENT } from "./core/aiml/aiml-types.js";
+export { IntentEngine } from "./core/aiml/intent-engine.js";
+export { AimlBotPlugin } from "./core/aiml/aiml-bot-plugin.js";
 
 // --- IACM Protocol (SDS-17) ---
 export type {
@@ -97,10 +97,10 @@ export type {
   IacmFyiData,
   IacmUrgentData,
   IacmPriority,
-} from "./core/iacm-types.js";
-export { IACM_VERSION } from "./core/iacm-types.js";
+} from "./core/iacm/iacm-types.js";
+export { IACM_VERSION } from "./core/iacm/iacm-types.js";
 
-export type { BuildOptions } from "./core/iacm-templates.js";
+export type { BuildOptions } from "./core/iacm/iacm-templates.js";
 export {
   generateMessageId,
   iacmTimestamp,
@@ -118,30 +118,30 @@ export {
   buildUrgent,
   formatIacmForChat,
   toIacmYaml,
-} from "./core/iacm-templates.js";
+} from "./core/iacm/iacm-templates.js";
 
-export type { ParseResult as IacmParseResult } from "./core/iacm-parser.js";
+export type { ParseResult as IacmParseResult } from "./core/iacm/iacm-parser.js";
 export {
   detectsIacmMessage,
   extractIacmType,
   extractIacmAgents,
   parseIacmMessage,
   validateIacmMessage,
-} from "./core/iacm-parser.js";
+} from "./core/iacm/iacm-parser.js";
 
-export type { IacmIntent } from "./core/iacm-categories.js";
+export type { IacmIntent } from "./core/iacm/iacm-categories.js";
 export {
   IACM_INTENTS,
   getIacmChatCategories,
   getIacmCommandCategories,
   getAllIacmCategories,
-} from "./core/iacm-categories.js";
+} from "./core/iacm/iacm-categories.js";
 
-export { iacmProtocolHandler, PROTOCOL_HELP } from "./core/iacm-protocol-handlers.js";
+export { iacmProtocolHandler, PROTOCOL_HELP } from "./core/iacm/iacm-protocol-handlers.js";
 
-export type { IacmBotVars } from "./core/iacm-bot-plugin.js";
-export { IacmBotPlugin } from "./core/iacm-bot-plugin.js";
+export type { IacmBotVars } from "./core/iacm/iacm-bot-plugin.js";
+export { IacmBotPlugin } from "./core/iacm/iacm-bot-plugin.js";
 
 // --- AIML JSON Loader (SDS-16 addendum / SDS-18 §9.5) ---
-export type { JsonCategoryDef, JsonResolverDef } from "./core/aiml-json-loader.js";
-export { loadJsonCategories } from "./core/aiml-json-loader.js";
+export type { JsonCategoryDef, JsonResolverDef } from "./core/aiml/aiml-json-loader.js";
+export { loadJsonCategories } from "./core/aiml/aiml-json-loader.js";
