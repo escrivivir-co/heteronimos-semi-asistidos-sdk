@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.3.11",
-    "@types/node": "^24.6.0",
+    "@types/node": "^25.5.2",
     "@types/react": "19",
     "grammy": "^1.11.2",
     "ink": "^6",
