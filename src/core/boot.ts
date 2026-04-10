@@ -15,7 +15,7 @@ import type { SimulateOpts, SentMessage } from "./mock-telegram.js";
 import { registerPlugins, syncCommands } from "./bot-handler.js";
 import type { BotPlugin } from "./bot-handler.js";
 import type { SyncOptions } from "./command-handler.js";
-import { ChatTracker, FileChatStore } from "./chat-tracker.js";
+import { ChatTracker, FileChatStore } from "./persistence/chat-tracker.js";
 import { Logger, confirm } from "./logger.js";
 import type { RuntimeEmitter } from "./runtime-emitter.js";
 import { describeTelegramError } from "./telegram-error.js";
@@ -39,6 +39,8 @@ export interface BootBotOptions {
   nonInteractive?: boolean;
   /** Options for syncCommandsWithTelegram. Default: { autoConfirm: false } */
   syncOptions?: SyncOptions;
+  /** Name of the env var that holds the bot token. Default: "BOT_TOKEN" */
+  tokenVar?: string;
 }
 
 export interface BootResult {
@@ -52,6 +54,11 @@ export interface BootResult {
    * MockTelegramBot — no messages are sent to Telegram).
    */
   executeCommand?: (name: string, opts?: SimulateOpts) => Promise<SentMessage[]>;
+  /**
+   * Sends a message to all tracked chats.
+   * In real mode uses the real Bot API; in mock mode records via MockTelegramBot.
+   */
+  broadcast?: (message: string) => Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,11 +72,16 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   const syncOpts: SyncOptions = opts.syncOptions ?? { autoConfirm: nonInteractive };
 
   // --- Paso 1: ensureEnv (detecta .env, ofrece copiar, lee token) ---
-  const env = await ensureEnv({ envDir: opts.envDir, nonInteractive });
+  const env = await ensureEnv({ envDir: opts.envDir, nonInteractive, tokenVar: opts.tokenVar });
 
   if (env.mock) {
-    const mockBot = await startMock(opts, log, syncOpts);
-    return { mock: true, started: true, executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts) };
+    const { mockBot, tracker } = await startMock(opts, log, syncOpts);
+    return {
+      mock: true,
+      started: true,
+      executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts),
+      broadcast: (msg: string) => tracker.broadcast(mockBot as any, msg),
+    };
   }
 
   if (!env.token) {
@@ -131,6 +143,7 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       mock: false,
       started: true,
       executeCommand: (name: string, simOpts?: SimulateOpts) => localMock.simulateCommand(name, simOpts),
+      broadcast: (msg: string) => tracker.broadcast(bot, msg),
     };
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -142,8 +155,13 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       await confirm("¿Arrancar en modo mock (sin Telegram)?").catch(() => false);
 
     if (useMock) {
-      const mockBot = await startMock(opts, log, syncOpts);
-      return { mock: true, started: true, executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts) };
+      const { mockBot, tracker: mockTracker } = await startMock(opts, log, syncOpts);
+      return {
+        mock: true,
+        started: true,
+        executeCommand: (name, simOpts) => mockBot.simulateCommand(name, simOpts),
+        broadcast: (msg: string) => mockTracker.broadcast(mockBot as any, msg),
+      };
     }
 
     return { mock: false, started: false };
@@ -154,7 +172,7 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 // Helpers internos
 // ---------------------------------------------------------------------------
 
-async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<MockTelegramBot> {
+async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<{ mockBot: MockTelegramBot; tracker: ChatTracker }> {
   const { emitter } = opts;
   log.warn("[MOCK] Sin conexión a Telegram — arrancando en modo mock.");
   const store = new FileChatStore(opts.chatStorePath);
@@ -166,7 +184,7 @@ async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOption
   emitStatus(emitter, "running");
   log.info("[MOCK] Bot mock activo. Comandos registrados: " + mockBot.getRegisteredCommands().join(", "));
   await mockBot.start();
-  return mockBot;
+  return { mockBot, tracker };
 }
 
 function emitStatus(emitter: RuntimeEmitter | undefined, status: string): void {

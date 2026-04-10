@@ -138,6 +138,14 @@ export interface SyncOptions {
   scopes?: BotCommandScope[];
 }
 
+function describeScope(scope: BotCommandScope): string {
+  if (scope.type === "chat") {
+    return `${scope.type}:${scope.chat_id}`;
+  }
+
+  return scope.type;
+}
+
 function formatTelegramStartupError(error: unknown, operation: string): Error {
   if (typeof error === "object" && error !== null) {
     const maybeApiError = error as { error_code?: number; description?: string };
@@ -173,51 +181,52 @@ export async function syncCommandsWithTelegram(
     { type: "all_group_chats" },
   ];
 
-  // Comprobar el scope default como referencia para diff/confirmación.
-  // NOTA: getMyCommands con scope "all_group_chats" devuelve los comandos
-  // heredados del default si no hay registro explícito — por eso no se puede
-  // usar para decidir si hay que escribir. Siempre escribimos en todos los scopes.
-  let remoteCmds: BotCommand[];
-  try {
-    remoteCmds = await (bot.api as any).getMyCommands({ scope: scopes[0] });
-  } catch (error) {
-    throw formatTelegramStartupError(error, "sync commands with Telegram");
+  const scopesToUpdate: BotCommandScope[] = [];
+
+  for (const scope of scopes) {
+    let remoteCmds: BotCommand[];
+    try {
+      remoteCmds = await (bot.api as any).getMyCommands({ scope });
+    } catch (error) {
+      throw formatTelegramStartupError(error, "sync commands with Telegram");
+    }
+
+    if (commandsMatch(localCmds, remoteCmds)) {
+      continue;
+    }
+
+    log.info(`Commands out of sync for scope: ${describeScope(scope)}`);
+    logCommandsDiff(localCmds, remoteCmds);
+    scopesToUpdate.push(scope);
   }
 
-  if (commandsMatch(localCmds, remoteCmds) && scopes.length === 1) {
+  if (scopesToUpdate.length === 0) {
     log.info("Commands already in sync with Telegram. No update needed.");
     return false;
   }
 
-  if (!commandsMatch(localCmds, remoteCmds)) {
-    logCommandsDiff(localCmds, remoteCmds);
-
-    const doConfirm = options?.confirmFn ?? confirm;
-    const ok = options?.autoConfirm || await doConfirm("Proceed to update BotFather commands?");
-    if (!ok) {
-      log.warn("Sync cancelled by user.");
-      return false;
-    }
+  const doConfirm = options?.confirmFn ?? confirm;
+  const ok = options?.autoConfirm || await doConfirm("Proceed to update BotFather commands?");
+  if (!ok) {
+    log.warn("Sync cancelled by user.");
+    return false;
   }
 
-  // Escribir en TODOS los scopes — idempotente y necesario porque
-  // Telegram no garantiza que la herencia active el menú / en grupos.
-  for (const scope of scopes) {
+  for (const scope of scopesToUpdate) {
     try {
       await (bot.api as any).setMyCommands(localCmds, { scope });
     } catch (error) {
       throw formatTelegramStartupError(error, "update BotFather commands");
     }
-    log.info(`Commands synced for scope: ${scope.type}`);
+    log.info(`Commands synced for scope: ${describeScope(scope)}`);
   }
 
-  // Verificación: leer de vuelta los comandos registrados en cada scope
-  for (const scope of scopes) {
+  for (const scope of scopesToUpdate) {
     try {
       const verified: BotCommand[] = await (bot.api as any).getMyCommands({ scope });
-      log.debug(`Verify scope=${scope.type}: ${verified.length} cmd(s) → [${verified.map(c => c.command).join(", ")}]`);
+      log.debug(`Verify scope=${describeScope(scope)}: ${verified.length} cmd(s) → [${verified.map(c => c.command).join(", ")}]`);
     } catch {
-      log.warn(`Could not verify commands for scope: ${scope.type}`);
+      log.warn(`Could not verify commands for scope: ${describeScope(scope)}`);
     }
   }
 

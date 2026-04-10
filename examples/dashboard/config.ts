@@ -11,3 +11,5 @@ function optionalEnv(name: string): string | undefined {
 }
 
 export const SOLANA_ADDRESS = optionalEnv("SOLANA_ADDRESS");
+export const OPERATOR_NAME = optionalEnv("OPERATOR_NAME") ?? "scriptorium_zero";
+export const IACM_AGENT_NAME = optionalEnv("IACM_AGENT_NAME") ?? "scriptorium";

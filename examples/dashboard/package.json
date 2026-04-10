@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "bun run main.tsx",
-    "dev": "bun run main.tsx"
+    "dev": "bun run main.tsx",
+    "dev:verbose": "LOG_LEVEL=debug bun run main.tsx"
   },
   "dependencies": {
     "heteronimos-semi-asistidos-sdk": "file:../../",

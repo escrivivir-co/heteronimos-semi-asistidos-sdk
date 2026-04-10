@@ -41,5 +41,24 @@ describe("SDK barrel", () => {
     expect(SDK.connectEmitterToStore).toBeDefined();
     // Mock utilities
     expect(SDK.MockTelegramBot).toBeDefined();
+    // AIML Intent Engine (SDS-16)
+    expect(SDK.UNMATCHED_INTENT).toBeDefined();
+    expect(SDK.IntentEngine).toBeDefined();
+    expect(SDK.AimlBotPlugin).toBeDefined();
+    // IACM Protocol (SDS-17)
+    expect(SDK.IACM_VERSION).toBeDefined();
+    expect(SDK.buildRequest).toBeDefined();
+    expect(SDK.buildUrgent).toBeDefined();
+    expect(SDK.formatIacmForChat).toBeDefined();
+    expect(SDK.toIacmYaml).toBeDefined();
+    expect(SDK.generateMessageId).toBeDefined();
+    expect(SDK.detectsIacmMessage).toBeDefined();
+    expect(SDK.parseIacmMessage).toBeDefined();
+    expect(SDK.validateIacmMessage).toBeDefined();
+    expect(SDK.IACM_INTENTS).toBeDefined();
+    expect(SDK.getAllIacmCategories).toBeDefined();
+    expect(SDK.iacmProtocolHandler).toBeDefined();
+    expect(SDK.PROTOCOL_HELP).toBeDefined();
+    expect(SDK.IacmBotPlugin).toBeDefined();
   });
 });

@@ -125,7 +125,7 @@
 
 <!-- ═══ STATS BAR ═══ -->
 <div class="stats-bar">
-  <div class="stat"><span class="val">1</span><span class="lbl">Prompts</span></div>
+  <div class="stat"><span class="val">5</span><span class="lbl">Prompts</span></div>
   <div class="stat"><span class="val">5</span><span class="lbl">Fases</span></div>
   <div class="stat"><span class="val">∞</span><span class="lbl">Roles</span></div>
   <div class="stat"><span class="val">+lore</span><span class="lbl">Personalizable</span></div>
@@ -218,34 +218,143 @@ Tu rol: QA especialista en UX de bots</div>
 <div class="cutout">
   <h3 style="text-align:center;">☞ Agentes Expertos en la Codebase</h3>
   <div style="font-size:0.72rem;text-align:center;margin-bottom:12px;">
-    Configuraciones pre-armadas del prompt hacker-devops con lore específico para cada área.
+    Prompts especializados con lore preembebido para cada área del SDK.
+    Cada uno sigue el patrón de 5 fases y acepta lore extra al final.
   </div>
+</div>
 
-  <div class="cols">
-    <div class="col">
-      <div class="placeholder-card">
-        <b>🏗 Arquitecto SDK</b><br>
-        Especializado en specs/ SDS-00 a SDS-03<br>
-        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
-      </div>
-      <div class="placeholder-card">
-        <b>🧪 QA Tester</b><br>
-        Foco en tests/, criterios de aceptación<br>
-        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
-      </div>
-    </div>
-    <div class="col">
-      <div class="placeholder-card">
-        <b>📦 Plugin Developer</b><br>
-        Guía para crear BotPlugins<br>
-        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
-      </div>
-      <div class="placeholder-card">
-        <b>📊 Dashboard Builder</b><br>
-        Foco en examples/dashboard/ y TUI<br>
-        <span style="font-size:0.6rem;">PRÓXIMAMENTE</span>
-      </div>
-    </div>
+<!-- ═══ AGENTE: ARQUITECTO SDK ═══ -->
+<div class="prompt-card">
+  <div class="badge">LAYERS</div>
+  <h2>🏗 arquitecto-sdk</h2>
+  <div class="meta">.github/prompts/arquitecto-sdk.prompt.md</div>
+  <div style="font-size:0.78rem;margin-bottom:10px;">
+    Analiza la <b>separación de capas</b> del SDK, la coherencia del barrel
+    con el diagrama de capas, el acoplamiento entre módulos y la extensibilidad
+    de las abstracciones (<code>BotPlugin</code>, <code>AimlBotPlugin</code>, <code>IacmBotPlugin</code>).
+  </div>
+  <h3 style="font-size:0.8rem;margin-bottom:4px;">Fases de la sesión</h3>
+  <ol class="phase-list">
+    <li><b>La Revisión Inquisitiva</b> — Cruza diagrama de capas (SDS-00) con exports reales del barrel</li>
+    <li><b>Análisis de Acoplamiento</b> — Verifica propuestas de desacoplo (SDS-03) contra implementación</li>
+    <li><b>Plan de Mejora Arquitectónica</b> — Propone mejoras referenciando items del BACKLOG</li>
+    <li><b>Validación de Extensibilidad</b> — ¿Un third-party developer puede crear plugins solo con exports públicos?</li>
+    <li><b>Cierre y Actualización</b> — Aplica mejoras, actualiza BACKLOG</li>
+  </ol>
+  <h3 style="font-size:0.8rem;margin:10px 0 4px;">Fuentes de verdad</h3>
+  <div style="font-size:0.7rem;">
+    <span class="kw">specs/00-overview.md</span>
+    <span class="kw">specs/02-type-surface.md</span>
+    <span class="kw">specs/03-coupling-analysis.md</span>
+    <span class="kw">src/index.ts</span>
+    <span class="kw">examples/</span>
+  </div>
+  <div style="margin-top:10px;">
+    <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/.github/prompts/arquitecto-sdk.prompt.md"
+       style="display:inline-block;font-weight:bold;font-size:0.72rem;background:var(--inv-bg);color:var(--inv-fg);padding:3px 8px;text-decoration:none;">
+      ☞ VER PROMPT EN GITHUB
+    </a>
+  </div>
+</div>
+
+<!-- ═══ AGENTE: QA TESTER ═══ -->
+<div class="prompt-card">
+  <div class="badge">TESTS</div>
+  <h2>🧪 qa-tester</h2>
+  <div class="meta">.github/prompts/qa-tester.prompt.md</div>
+  <div style="font-size:0.78rem;margin-bottom:10px;">
+    Analiza la <b>cobertura de tests</b>, valida <b>criterios de aceptación</b> de cada spec (§6),
+    detecta regresiones, evalúa la calidad de mocks y propone test cases para gaps.
+  </div>
+  <h3 style="font-size:0.8rem;margin-bottom:4px;">Fases de la sesión</h3>
+  <ol class="phase-list">
+    <li><b>Inventario de Tests</b> — Ejecuta bun test, lista suites, cruza con BACKLOG</li>
+    <li><b>Criterios de Aceptación</b> — Verifica §6 de un spec contra tests existentes</li>
+    <li><b>Plan de Testing</b> — Propone test cases concretos para gaps encontrados</li>
+    <li><b>Validación de Mocks</b> — Revisa MockTelegramBot, fetch mocks, fixtures</li>
+    <li><b>Cierre</b> — Implementa tests, verifica suite verde, actualiza BACKLOG</li>
+  </ol>
+  <h3 style="font-size:0.8rem;margin:10px 0 4px;">Fuentes de verdad</h3>
+  <div style="font-size:0.7rem;">
+    <span class="kw">tests/</span>
+    <span class="kw">specs/ §6</span>
+    <span class="kw">BACKLOG.md</span>
+    <span class="kw">src/index.ts</span>
+    <span class="kw">package.json</span>
+  </div>
+  <div style="margin-top:10px;">
+    <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/.github/prompts/qa-tester.prompt.md"
+       style="display:inline-block;font-weight:bold;font-size:0.72rem;background:var(--inv-bg);color:var(--inv-fg);padding:3px 8px;text-decoration:none;">
+      ☞ VER PROMPT EN GITHUB
+    </a>
+  </div>
+</div>
+
+<!-- ═══ AGENTE: PLUGIN DEVELOPER ═══ -->
+<div class="prompt-card">
+  <div class="badge">PLUGINS</div>
+  <h2>📦 plugin-developer</h2>
+  <div class="meta">.github/prompts/plugin-developer.prompt.md</div>
+  <div style="font-size:0.78rem;margin-bottom:10px;">
+    Guía para <b>crear BotPlugins</b> desde cero. Cubre el ciclo de vida de plugins
+    (<code>BotPlugin</code> → <code>AimlBotPlugin</code> → <code>IacmBotPlugin</code>),
+    registro, commands, menus, categories JSON y testing con MockTelegramBot.
+  </div>
+  <h3 style="font-size:0.8rem;margin-bottom:4px;">Fases de la sesión</h3>
+  <ol class="phase-list">
+    <li><b>Onboarding del Developer</b> — Analiza rabbit-bot.ts como plugin más simple</li>
+    <li><b>Escalado a AIML/IACM</b> — Compara BotPlugin simple vs IacmBotPlugin completo</li>
+    <li><b>Plan de Plugin</b> — Guía paso a paso para crear un nuevo plugin</li>
+    <li><b>Implementación Guiada</b> — Implementa siguiendo patrones del SDK</li>
+    <li><b>Cierre</b> — Verifica con MockTelegramBot y tests, actualiza BACKLOG</li>
+  </ol>
+  <h3 style="font-size:0.8rem;margin:10px 0 4px;">Fuentes de verdad</h3>
+  <div style="font-size:0.7rem;">
+    <span class="kw">specs/01-consumer-segments.md</span>
+    <span class="kw">specs/02-type-surface.md</span>
+    <span class="kw">src/index.ts</span>
+    <span class="kw">examples/console-app/rabbit-bot.ts</span>
+    <span class="kw">examples/iacm-demo/</span>
+  </div>
+  <div style="margin-top:10px;">
+    <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/.github/prompts/plugin-developer.prompt.md"
+       style="display:inline-block;font-weight:bold;font-size:0.72rem;background:var(--inv-bg);color:var(--inv-fg);padding:3px 8px;text-decoration:none;">
+      ☞ VER PROMPT EN GITHUB
+    </a>
+  </div>
+</div>
+
+<!-- ═══ AGENTE: DASHBOARD BUILDER ═══ -->
+<div class="prompt-card">
+  <div class="badge">TUI</div>
+  <h2>📊 dashboard-builder</h2>
+  <div class="meta">.github/prompts/dashboard-builder.prompt.md</div>
+  <div style="font-size:0.78rem;margin-bottom:10px;">
+    Especializado en la <b>TUI Ink/React</b>, el store reactivo, el emitter bridge y
+    los 5 paneles del dashboard. Analiza el flujo reactivo emitter→store→componentes
+    y la experiencia de usuario en terminal.
+  </div>
+  <h3 style="font-size:0.8rem;margin-bottom:4px;">Fases de la sesión</h3>
+  <ol class="phase-list">
+    <li><b>Exploración del Dashboard</b> — Analiza App.tsx, componentes, sistema de tabs</li>
+    <li><b>Flujo Reactivo</b> — Traza emit→bridge→store→render, busca bottlenecks</li>
+    <li><b>Plan de Mejora UI</b> — Propone mejoras de UX referenciando BACKLOG</li>
+    <li><b>Implementación</b> — Nuevo componente, refactor de store o keybindings</li>
+    <li><b>Cierre</b> — Verifica compilación y tests, actualiza docs</li>
+  </ol>
+  <h3 style="font-size:0.8rem;margin:10px 0 4px;">Fuentes de verdad</h3>
+  <div style="font-size:0.7rem;">
+    <span class="kw">specs/05-console-ui.md</span>
+    <span class="kw">specs/06-rxjs-migration.md</span>
+    <span class="kw">specs/09-ui-bridge-layer.md</span>
+    <span class="kw">examples/dashboard/</span>
+    <span class="kw">src/core/store.ts</span>
+  </div>
+  <div style="margin-top:10px;">
+    <a href="https://github.com/escrivivir-co/heteronimos-semi-asistidos-sdk/blob/main/.github/prompts/dashboard-builder.prompt.md"
+       style="display:inline-block;font-weight:bold;font-size:0.72rem;background:var(--inv-bg);color:var(--inv-fg);padding:3px 8px;text-decoration:none;">
+      ☞ VER PROMPT EN GITHUB
+    </a>
   </div>
 </div>
 
@@ -298,7 +407,7 @@ y las fases de la sesión.</div>
 
 <!-- ═══ FOOTER ═══ -->
 <footer class="footer">
-  heteronimos-semi-asistidos-sdk · Prompts & Agentes · v0.0.0 · Escrivivir.co · AIPL
+  heteronimos-semi-asistidos-sdk · Prompts & Agentes · 5 prompts · Escrivivir.co · AIPL
 </footer>
 
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>

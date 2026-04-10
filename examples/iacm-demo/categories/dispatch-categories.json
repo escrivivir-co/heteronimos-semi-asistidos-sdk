@@ -1,0 +1,56 @@
+[
+  {
+    "id": "json-greet-dispatch",
+    "pattern": "^(hola|hello|hi|hey)\\s+(dispatch|coordinator)",
+    "patternType": "regex",
+    "resolver": "dispatch.greet",
+    "priority": 3
+  },
+  {
+    "id": "json-request-weather",
+    "pattern": "^(?:pedir|request|solicitar)(?:\\s+(?:tiempo|weather|meteo))?(?:\\s+(?:para|for|en|in|de))?\\s+(.+)",
+    "patternType": "regex",
+    "resolver": {
+      "intent": "dispatch.send.weather_request",
+      "confidence": 0.8
+    },
+    "entityMapping": { "city": "$1" },
+    "priority": 6
+  },
+  {
+    "id": "json-ask-time",
+    "pattern": "^(?:preguntar|ask|consultar)(?:\\s+(?:hora|time))?(?:\\s+(?:en|in|de))?\\s+([\\w/]+\\b.*)",
+    "patternType": "regex",
+    "resolver": {
+      "intent": "dispatch.send.time_question",
+      "confidence": 0.8
+    },
+    "entityMapping": { "timezone": "$1" },
+    "priority": 6
+  },
+  {
+    "id": "json-accept-exact",
+    "pattern": "acceptar|accept|aprobar|ok propuesta",
+    "patternType": "exact",
+    "resolver": "dispatch.send.accept",
+    "priority": 7
+  },
+  {
+    "id": "json-reject-with-reason",
+    "pattern": "^(?:rechazar|reject|denegar)\\s+(.+)",
+    "patternType": "regex",
+    "resolver": {
+      "intent": "dispatch.send.reject",
+      "confidence": 0.9
+    },
+    "entityMapping": { "rationale": "$1" },
+    "priority": 7
+  },
+  {
+    "id": "json-dispatch-catchall",
+    "pattern": "*",
+    "patternType": "wildcard",
+    "resolver": "unmatched",
+    "priority": 0
+  }
+]

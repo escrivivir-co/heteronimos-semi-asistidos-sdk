@@ -1,0 +1,45 @@
+[
+  {
+    "id": "json-greet-meteo",
+    "pattern": "^(hola|hello|hi|hey)\\s+(meteo|meteorolog)",
+    "patternType": "regex",
+    "resolver": "meteo.greet",
+    "priority": 3
+  },
+  {
+    "id": "json-weather-city",
+    "pattern": "^(?:tiempo|weather|clima)(?:\\s+(?:en|in|para|for|de))?\\s+(.+)",
+    "patternType": "regex",
+    "resolver": {
+      "intent": "meteo.weather.direct",
+      "confidence": 0.8
+    },
+    "entityMapping": { "city": "$1" },
+    "priority": 6
+  },
+  {
+    "id": "json-hora-tz",
+    "pattern": "^(?:hora|time|qué hora)(?:\\s+(?:en|in|de))?\\s+([\\w/]+\\b.*)",
+    "patternType": "regex",
+    "resolver": {
+      "intent": "meteo.time.query",
+      "confidence": 0.8
+    },
+    "entityMapping": { "timezone": "$1" },
+    "priority": 6
+  },
+  {
+    "id": "json-apistatus",
+    "pattern": "^(?:api\\s*status|estado\\s*api)",
+    "patternType": "regex",
+    "resolver": "meteo.fyi.apistatus",
+    "priority": 5
+  },
+  {
+    "id": "json-meteo-catchall",
+    "pattern": "*",
+    "patternType": "wildcard",
+    "resolver": "unmatched",
+    "priority": 0
+  }
+]
