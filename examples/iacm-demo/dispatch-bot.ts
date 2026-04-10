@@ -320,12 +320,12 @@ export class DispatchBot extends IacmBotPlugin<DispatchVars> {
   override commands(): CommandDefinition[] {
     return [
       ...super.commands(),
-      { command: "dp_weather",  description: "REQUEST parte meteo (→ MeteoBot)",  buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "dp_time",     description: "QUESTION hora actual (→ MeteoBot)", buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "dp_accept",   description: "ACCEPT propuesta pendiente",        buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "dp_reject",   description: "REJECT propuesta pendiente",        buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "dp_defer",    description: "DEFER decisión pendiente",          buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "dp_demo",     description: "🎬 Demo completa IACM",            buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "weather",  description: "REQUEST parte meteo (→ MeteoBot)",  buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "time",     description: "QUESTION hora actual (→ MeteoBot)", buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "accept",   description: "ACCEPT propuesta pendiente",        buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "reject",   description: "REJECT propuesta pendiente",        buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "defer",    description: "DEFER decisión pendiente",          buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "demo",     description: "🎬 Demo completa IACM",            buildText: (ctx: any) => this.onMessage(ctx) },
     ];
   }
 
@@ -333,7 +333,7 @@ export class DispatchBot extends IacmBotPlugin<DispatchVars> {
     return [
       ...super.menus(),
       {
-        command: "dp_menu",
+        command: "menu",
         description: "DispatchBot menú",
         entryPage: "home",
         pages: [

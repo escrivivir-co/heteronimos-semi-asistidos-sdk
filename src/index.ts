@@ -145,3 +145,75 @@ export { IacmBotPlugin } from "./core/iacm/iacm-bot-plugin.js";
 // --- AIML JSON Loader (SDS-16 addendum / SDS-18 §9.5) ---
 export type { JsonCategoryDef, JsonResolverDef } from "./core/aiml/aiml-json-loader.js";
 export { loadJsonCategories } from "./core/aiml/aiml-json-loader.js";
+
+// --- RNFP Federation Protocol (SDS-19) ---
+export type {
+  RnfpMessage,
+  RnfpMessageType,
+  RnfpMeta,
+  RnfpDataMap,
+  AnyRnfpMessage,
+  RnfpSessionVars,
+  RnfpInviteData,
+  RnfpAcceptData,
+  RnfpRejectData,
+  RnfpRevokeData,
+  RnfpAnnounceData,
+  RnfpGraphRequestData,
+  RnfpGraphPkgData,
+  RnfpUnknownMsgData,
+  CyborgIdentity,
+  FederationPeer,
+  FederationPolicy,
+  SharedEvent,
+  TrustRelation,
+  IntraAction,
+  FederationStatus,
+  TrustLevel,
+  CryptoProvider,
+} from "./core/rnfp/rnfp-types.js";
+export { RNFP_VERSION, MockCryptoProvider } from "./core/rnfp/rnfp-types.js";
+
+export type { RnfpBuildOptions } from "./core/rnfp/rnfp-builders.js";
+export {
+  generateRnfpMessageId,
+  rnfpTimestamp,
+  mockChecksum,
+  buildRnfpMessage,
+  buildFedInvite,
+  buildFedAccept,
+  buildFedReject,
+  buildFedRevoke,
+  buildGraphAnnounce,
+  buildGraphRequest,
+  buildGraphPkg,
+  buildUnknownMsg,
+  formatRnfpForChat,
+  toRnfpYaml,
+} from "./core/rnfp/rnfp-builders.js";
+
+export type { RnfpParseResult } from "./core/rnfp/rnfp-parser.js";
+export {
+  detectsRnfpMessage,
+  extractRnfpType,
+  extractRnfpOperators,
+  extractBodyField,
+  parseRnfpMessage,
+  validateRnfpMessage,
+} from "./core/rnfp/rnfp-parser.js";
+
+export type { RnfpIntent } from "./core/rnfp/rnfp-categories.js";
+export {
+  RNFP_INTENTS,
+  getRnfpChatCategories,
+  getRnfpCommandCategories,
+  getAllRnfpCategories,
+} from "./core/rnfp/rnfp-categories.js";
+
+export { rnfpProtocolHandler, FEDERATION_HELP } from "./core/rnfp/rnfp-protocol-handlers.js";
+
+export type { FederationStore } from "./core/rnfp/rnfp-store.js";
+export { MemoryFederationStore, FileFederationStore } from "./core/rnfp/rnfp-store.js";
+
+export type { RnfpBotVars } from "./core/rnfp/rnfp-bot-plugin.js";
+export { FederationBotPlugin } from "./core/rnfp/rnfp-bot-plugin.js";

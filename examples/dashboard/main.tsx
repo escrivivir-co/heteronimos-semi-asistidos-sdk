@@ -5,6 +5,8 @@ import { existsSync } from "node:fs";
 import { RuntimeEmitter, Logger, bootBot, createStore, connectEmitterToStore, FileMessageStore } from "heteronimos-semi-asistidos-sdk";
 import { SOLANA_ADDRESS } from "./config.js";
 import { RabbitBot } from "./rabbit-bot.js";
+import { SpiderBot } from "./spider-bot.js";
+import { HorseBot } from "./horse-bot.js";
 import { getDefaultDashboardState } from "./state.js";
 import { App } from "./App.js";
 
@@ -25,8 +27,10 @@ connectEmitterToStore(emitter, store, { messageStore });
 // El panel Config muestra el estado y las instrucciones para conectar a Telegram.
 async function main() {
   const rabbitBot = new RabbitBot(SOLANA_ADDRESS, appDir);
+  const spiderBot = new SpiderBot();
+  const horseBot = new HorseBot();
   const result = await bootBot({
-    plugins: [rabbitBot],
+    plugins: [rabbitBot, spiderBot, horseBot],
     envDir: appDir,
     chatStorePath: path.join(appDir, ".chats.json"),
     emitter,

@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { RabbitBot } from "../examples/console-app/rabbit-bot";
+import { SpiderBot } from "../examples/dashboard/spider-bot";
+import { HorseBot } from "../examples/dashboard/horse-bot";
 import type { BotPlugin } from "../src/index";
 import { collectPluginFatherSettings, toBotFatherFormat, Logger } from "../src/index";
 import type { MenuDefinition, MenuPage } from "../src/index";
@@ -10,7 +12,8 @@ const log = new Logger("build-docs");
 // --- Plugins (misma lista que main.ts, sin TOKEN) ---
 const plugins: BotPlugin[] = [
   new RabbitBot(""),
-  // ...añadir otros plugins aquí
+  new SpiderBot(),
+  new HorseBot(),
 ];
 
 const { commands, menus } = collectPluginFatherSettings(plugins);

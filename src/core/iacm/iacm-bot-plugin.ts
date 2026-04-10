@@ -87,30 +87,28 @@ export abstract class IacmBotPlugin<TVars extends IacmBotVars = IacmBotVars>
    * IACM commands. Subclasses append: [...super.commands(), ...ownCommands]
    */
   override commands(): CommandDefinition[] {
-    const prefix = this.pluginCode;
     return [
       ...super.commands(),
       // Outbound send commands (return placeholder — domain bot fills impl)
-      { command: `${prefix}_request`,  description: "Send a REQUEST to interlocutor",  buildText: () => this._outboundPlaceholder("REQUEST") },
-      { command: `${prefix}_question`, description: "Send a QUESTION to interlocutor", buildText: () => this._outboundPlaceholder("QUESTION") },
-      { command: `${prefix}_report`,   description: "Send a REPORT to interlocutor",   buildText: () => this._outboundPlaceholder("REPORT") },
-      { command: `${prefix}_proposal`, description: "Send a PROPOSAL to interlocutor", buildText: () => this._outboundPlaceholder("PROPOSAL") },
-      { command: `${prefix}_fyi`,      description: "Send an FYI to interlocutor",     buildText: () => this._outboundPlaceholder("FYI") },
-      { command: `${prefix}_urgent`,   description: "Send an URGENT to interlocutor",  buildText: () => this._outboundPlaceholder("URGENT") },
-      { command: `${prefix}_ack`,      description: "Send an ACKNOWLEDGE",             buildText: () => this._outboundPlaceholder("ACKNOWLEDGE") },
-      { command: `${prefix}_accept`,   description: "Send an ACCEPT",                  buildText: () => this._outboundPlaceholder("ACCEPT") },
-      { command: `${prefix}_reject`,   description: "Send a REJECT",                   buildText: () => this._outboundPlaceholder("REJECT") },
-      { command: `${prefix}_defer`,    description: "Send a DEFER",                    buildText: () => this._outboundPlaceholder("DEFER") },
-      { command: `${prefix}_answer`,   description: "Send an ANSWER",                  buildText: () => this._outboundPlaceholder("ANSWER") },
+      { command: "request",  description: "Send a REQUEST to interlocutor",  buildText: () => this._outboundPlaceholder("REQUEST") },
+      { command: "question", description: "Send a QUESTION to interlocutor", buildText: () => this._outboundPlaceholder("QUESTION") },
+      { command: "report",   description: "Send a REPORT to interlocutor",   buildText: () => this._outboundPlaceholder("REPORT") },
+      { command: "proposal", description: "Send a PROPOSAL to interlocutor", buildText: () => this._outboundPlaceholder("PROPOSAL") },
+      { command: "fyi",      description: "Send an FYI to interlocutor",     buildText: () => this._outboundPlaceholder("FYI") },
+      { command: "urgent",   description: "Send an URGENT to interlocutor",  buildText: () => this._outboundPlaceholder("URGENT") },
+      { command: "ack",      description: "Send an ACKNOWLEDGE",             buildText: () => this._outboundPlaceholder("ACKNOWLEDGE") },
+      { command: "accept",   description: "Send an ACCEPT",                  buildText: () => this._outboundPlaceholder("ACCEPT") },
+      { command: "reject",   description: "Send a REJECT",                   buildText: () => this._outboundPlaceholder("REJECT") },
+      { command: "defer",    description: "Send a DEFER",                    buildText: () => this._outboundPlaceholder("DEFER") },
+      { command: "answer",   description: "Send an ANSWER",                  buildText: () => this._outboundPlaceholder("ANSWER") },
       // Meta commands
-      { command: `${prefix}_status`,   description: "Show IACM protocol status",       buildText: (ctx: any) => this._statusPage(ctx) },
-      { command: `${prefix}_protocol`, description: "Show IACM protocol help",         buildText: () => PROTOCOL_HELP },
-      { command: `${prefix}_iacm`,     description: "IACM status page",               buildText: (ctx: any) => this._statusPage(ctx) },
+      { command: "status",   description: "Show IACM protocol status",       buildText: (ctx: any) => this._statusPage(ctx) },
+      { command: "protocol", description: "Show IACM protocol help",         buildText: () => PROTOCOL_HELP },
+      { command: "iacm",     description: "IACM status page",               buildText: (ctx: any) => this._statusPage(ctx) },
     ];
   }
 
   override menus(): MenuDefinition[] {
-    const prefix = this.pluginCode;
     const helpPage: MenuPage = {
       id: "iacm_help",
       text: PROTOCOL_HELP,
@@ -118,7 +116,7 @@ export abstract class IacmBotPlugin<TVars extends IacmBotVars = IacmBotVars>
     };
     return [
       {
-        command: `${prefix}_iacm`,
+        command: "iacm",
         description: `IACM protocol status for ${this.agentName}`,
         entryPage: "iacm_help",
         pages: [helpPage],

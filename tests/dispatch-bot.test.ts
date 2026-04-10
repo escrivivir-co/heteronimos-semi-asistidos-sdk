@@ -148,14 +148,14 @@ describe("DispatchBot — commands()", () => {
     }
   });
 
-  test("includes dp_weather, dp_time, dp_accept, dp_reject, dp_defer, dp_demo", () => {
+  test("includes weather, time, accept, reject, defer, demo", () => {
     const names = cmds.map(c => c.command);
-    expect(names).toContain("dp_weather");
-    expect(names).toContain("dp_time");
-    expect(names).toContain("dp_accept");
-    expect(names).toContain("dp_reject");
-    expect(names).toContain("dp_defer");
-    expect(names).toContain("dp_demo");
+    expect(names).toContain("weather");
+    expect(names).toContain("time");
+    expect(names).toContain("accept");
+    expect(names).toContain("reject");
+    expect(names).toContain("defer");
+    expect(names).toContain("demo");
   });
 });
 
@@ -169,14 +169,14 @@ describe("DispatchBot — menus()", () => {
     expect(menus.length).toBeGreaterThan(0);
   });
 
-  test("includes dp_menu", () => {
-    const menu = menus.find(m => m.command === "dp_menu");
+  test("includes menu", () => {
+    const menu = menus.find(m => m.command === "menu");
     expect(menu).toBeDefined();
     expect(menu?.entryPage).toBe("home");
   });
 
-  test("dp_menu has home, request, manage, demo pages", () => {
-    const menu = menus.find(m => m.command === "dp_menu")!;
+  test("menu has home, request, manage, demo pages", () => {
+    const menu = menus.find(m => m.command === "menu")!;
     const pageIds = menu.pages.map(p => p.id);
     expect(pageIds).toContain("home");
     expect(pageIds).toContain("request");

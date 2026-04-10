@@ -81,6 +81,7 @@ El SDK debe funcionar como un paquete npm estándar: `import { BotPlugin, regist
 | [SDS-16](16-aiml-bot-plugin.md) | AIML Bot Plugin Pack — motor conversacional + clase base |
 | [SDS-17](17-iacm-protocol.md) | IACM Protocol Integration — tipos, builders, parser, plugin |
 | [SDS-18](18-iacm-demo-app.md) | IACM Demo App — boilerplate de referencia con 2 bots, 11 message types, 3 approaches |
+| [SDS-19](19-cyborg-federation-protocol.md) | Cyborg Federation Protocol Layer — UCC + RNFP sobre IACM, con integración docs-first |
 
 ## 5. Sistema de prompts
 
