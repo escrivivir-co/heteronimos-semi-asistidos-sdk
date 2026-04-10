@@ -44,21 +44,13 @@ async function main(): Promise<void> {
 
   if (result.mock) {
     log.info("Running in MOCK mode (no Telegram connection).");
-    log.info("Identity:");
-    log.info(`  operator_name: ${OPERATOR_NAME}`);
-    log.info(`  fingerprint:   ${bot.fingerprint}`);
+    log.info(`Identity: operator=${OPERATOR_NAME}  fingerprint=${bot.fingerprint}`);
     log.info("Commands available:");
-    log.info("  /cy_invite <peer>    — send federation invite");
-    log.info("  /cy_accept           — accept pending invite");
-    log.info("  /cy_reject           — reject pending invite");
-    log.info("  /cy_revoke           — revoke active federation");
-    log.info("  /cy_announce <pkg>   — announce graph package");
-    log.info("  /cy_identity         — show identity card");
-    log.info("  /cy_peers            — list peers");
-    log.info("  /cy_fed_status       — show fed status");
-    log.info("  /cy_fed              — protocol help");
+    for (const cmd of bot.commands()) {
+      log.info(`  /${cmd.command}  —  ${cmd.description}`);
+    }
   } else {
-    log.info(`CyborgBot running as @${result.username ?? "unknown"} — polling.`);
+    log.info(`CyborgBot running @${result.started ?? "unknown"} — polling.`);
   }
 }
 
