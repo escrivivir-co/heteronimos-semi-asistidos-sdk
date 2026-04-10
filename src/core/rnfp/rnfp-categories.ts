@@ -57,7 +57,7 @@ function chatCategory<TVars extends RnfpVars>(
   priority = 50,
 ): AimlCategory<TVars> {
   const re = new RegExp(
-    `^\\[CLC-${typeTag.replace(/-/g, "[-_]")}-v1\\]`,
+    `^\\[CLC-${typeTag}-v1\\]`,
     "i",
   );
   return {

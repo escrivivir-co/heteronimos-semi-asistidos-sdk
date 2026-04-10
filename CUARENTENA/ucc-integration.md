@@ -1,4 +1,0 @@
-- feat/sds_ucc adopts a docs-first UCC/RNFP integration: canonical docs in docs/UNIVERSAL_CYBORG_CONSTITUTION.md, specs/19-cyborg-federation-protocol.md, and docs/architecture/adrs/ADR-490-ucc-rnfp-iacm-alignment.md.
-- IACM remains the application-layer protocol; RNFP is documented as a federation/bootstrap layer above it.
-- CUARENTENA/cyborg_v1.py is treated as reference ontology only, not executable runtime or dependency.
-- Scope explicitly excludes clc CLI, HyperGraph runtime, Telegram DM federation runtime, and Python execution in this iteration.

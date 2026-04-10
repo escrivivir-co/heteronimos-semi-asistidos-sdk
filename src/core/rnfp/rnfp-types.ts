@@ -94,6 +94,49 @@ export interface SharedEvent {
   status: "pending" | "delivered" | "verified" | "rejected";
 }
 
+// ─── Ontology types (from cyborg_v1.py, Phases 1–2) ─────────────────────────
+
+/**
+ * Reified directional trust relation between two operators.
+ * L1 Ground: Entity (UFO Endurant).
+ * Phase: ADR-488 Phase 2.
+ */
+export interface TrustRelation {
+  from_operator_id: string;
+  to_operator_id: string;
+  to_public_key: string;
+  to_key_fingerprint: string;
+  trust_level: TrustLevel;
+  /** ISO8601 */
+  established_at: string;
+  verified_via: string;
+  from_cyborg_node_id?: string;
+  to_telegram_username?: string;
+  notes?: string;
+  revoked?: boolean;
+  /** ISO8601, present when revoked === true */
+  revoked_at?: string;
+}
+
+/**
+ * Constitutive act performed by a Cyborg operator.
+ * L1 Ground: Interaction (UFO Perdurant).
+ * Phase: ADR-488 Phase 1.
+ */
+export interface IntraAction {
+  action_type: "init" | "send" | "receive" | "auth" | "query";
+  /** ISO8601 */
+  timestamp: string;
+  source: string;
+  target: string;
+  status: "pending" | "completed" | "failed";
+  metadata?: Record<string, unknown>;
+  participants?: string[];
+  constitutive_dimension?: string;
+  constitutive?: boolean;
+  linked_cyborg_id?: string;
+}
+
 // ─── Crypto abstraction ──────────────────────────────────────────────────────
 
 /**

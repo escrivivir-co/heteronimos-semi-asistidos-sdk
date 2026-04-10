@@ -166,6 +166,8 @@ export type {
   FederationPeer,
   FederationPolicy,
   SharedEvent,
+  TrustRelation,
+  IntraAction,
   FederationStatus,
   TrustLevel,
   CryptoProvider,

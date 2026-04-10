@@ -1,3 +1,0 @@
-- syncCommandsWithTelegram only writes scopes whose remote commands differ from local commands.
-- syncCommands() broadcasts command updates only when syncCommandsWithTelegram returns true, so fully in-sync startup must be a no-op.
-- Scope logs use default names plus chat:<chat_id> for chat-specific sync/verify output.
