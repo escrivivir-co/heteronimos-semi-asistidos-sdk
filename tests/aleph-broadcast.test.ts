@@ -205,6 +205,9 @@ describe("aleph broadcast — archive on send", () => {
 
     const after = fs.readFileSync(path.join(tmpDir, "userdata", "broadcast.md"), "utf-8");
     expect(after).toContain("<!-- BROADCAST TEMPLATE -->");
+    expect(after).toContain("## Arquitectura activa");
+    expect(after).toContain("## Capa nueva: Scriptorium");
+    expect(after).toContain("bot-hub-sdk como plugin del Scriptorium");
   });
 
   test("second rb_aleph after send returns warning (template detected)", async () => {

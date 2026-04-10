@@ -66,3 +66,11 @@ archiveBroadcast() → mueve a userdata/history/ con timestamp, deja template
 - El broadcast NO se auto-consume al arrancar. Solo se dispara con `/rb_aleph`.
 - Tras enviar, el archivo original se mueve a `userdata/history/` con sufijo timestamp ISO (sin caracteres ilegales para filesystem).
 - Si `userdata/broadcast.md` solo contiene la template mínima (empieza con `<!-- BROADCAST TEMPLATE -->`), el comando avisa de que no hay contenido real.
+
+## Criterio editorial para `userdata/broadcast.md`
+
+- Usa una línea `---` solo cuando quieras abrir un mensaje nuevo.
+- Cada bloque debe entenderse por sí solo al llegar a Telegram.
+- Prioriza 4-6 bloques, títulos cortos y cierre operativo.
+- Evita tablas, diagramas ASCII largos y fences si el mensaje va a chat.
+- Si el broadcast trata la federación del dashboard, incluye la capa Scriptorium: submódulo `BotHubSDK` + plugin `bot-hub-sdk` + conexión de Rabbit, Spider y Horse al ecosistema.
