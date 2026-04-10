@@ -3,6 +3,14 @@ import * as path from "node:path";
 import { buildPluginHelpText, type BotPlugin, type CommandDefinition, type MenuDefinition } from "heteronimos-semi-asistidos-sdk";
 
 const BROADCAST_FILE = "userdata/broadcast.md";
+const HISTORY_DIR = "userdata/history";
+const BROADCAST_TEMPLATE = `<!-- BROADCAST TEMPLATE -->
+📡 @an_aleph_zero_rabit_23_bot — broadcast
+
+Escribe aquí el mensaje. Separa secciones con --- en línea propia.
+---
+Segunda sección (opcional).
+`;
 
 export interface GEvent {
 	timestamp: Date,
@@ -45,11 +53,25 @@ export class RabbitBot implements BotPlugin {
 			if (!fs.existsSync(filePath)) return null;
 			const raw = fs.readFileSync(filePath, "utf-8").trim();
 			if (!raw) return null;
+			if (raw.startsWith("<!-- BROADCAST TEMPLATE -->")) return null;
 			const chunks = raw.split(/^---$/m).map(s => s.trim()).filter(Boolean);
 			return chunks.length > 0 ? chunks : null;
 		} catch {
 			return null;
 		}
+	}
+
+	private archiveBroadcast(): string | null {
+		if (!this.appDir) return null;
+		const filePath = path.join(this.appDir, BROADCAST_FILE);
+		if (!fs.existsSync(filePath)) return null;
+		const historyDir = path.join(this.appDir, HISTORY_DIR);
+		fs.mkdirSync(historyDir, { recursive: true });
+		const ts = new Date().toISOString().replace(/[:.]/g, "-");
+		const archived = path.join(historyDir, `broadcast-${ts}.md`);
+		fs.renameSync(filePath, archived);
+		fs.writeFileSync(filePath, BROADCAST_TEMPLATE, "utf-8");
+		return path.basename(archived);
 	}
 
 	commands(): CommandDefinition[] {
@@ -68,7 +90,9 @@ export class RabbitBot implements BotPlugin {
 					for (const chunk of chunks) {
 						await this.broadcastFn(chunk);
 					}
-					return `✅ Broadcast sent (${chunks.length} message(s)) to all registered chats.`;
+					const archived = this.archiveBroadcast();
+					const suffix = archived ? ` — archived as ${archived}` : "";
+					return `✅ Broadcast sent (${chunks.length} message(s)) to all registered chats${suffix}.`;
 				},
 			},
 			{

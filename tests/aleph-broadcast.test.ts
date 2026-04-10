@@ -73,6 +73,7 @@ describe("aleph broadcast — file reading", () => {
     const reply = msgs.find((m) => m.text.includes("Broadcast sent"));
     expect(reply).toBeDefined();
     expect(reply!.text).toContain("1 message(s)");
+    expect(reply!.text).toContain("archived as");
   });
 
   test("splits by --- into multiple messages", async () => {
@@ -83,6 +84,7 @@ describe("aleph broadcast — file reading", () => {
     const reply = msgs.find((m) => m.text.includes("Broadcast sent"));
     expect(reply).toBeDefined();
     expect(reply!.text).toContain("3 message(s)");
+    expect(reply!.text).toContain("archived as");
     // Each chunk sent to the auto-tracked chat (100001)
     const all = mockBot.getSentMessages();
     expect(all.some((m) => m.text === "Part one")).toBe(true);
@@ -161,6 +163,71 @@ describe("aleph broadcast — without broadcastFn", () => {
     expect(msgs).toHaveLength(1);
     expect(msgs[0].text).toContain("1 part(s)");
     expect(msgs[0].text).toContain("Broadcast not available");
+  });
+});
+
+describe("aleph broadcast — archive on send", () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aleph-broadcast-"));
+    fs.mkdirSync(path.join(tmpDir, "userdata"), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test("archives broadcast.md to history/ after successful send", async () => {
+    const content = "Message to archive";
+    fs.writeFileSync(path.join(tmpDir, "userdata", "broadcast.md"), content);
+
+    const { mockBot } = setupBot(tmpDir);
+    await mockBot.simulateCommand("rb_aleph");
+
+    // History dir should exist with one archived file
+    const historyDir = path.join(tmpDir, "userdata", "history");
+    expect(fs.existsSync(historyDir)).toBe(true);
+    const files = fs.readdirSync(historyDir);
+    expect(files).toHaveLength(1);
+    expect(files[0]).toMatch(/^broadcast-\d{4}-\d{2}-\d{2}T.*\.md$/);
+
+    // Archived file has the original content
+    const archived = fs.readFileSync(path.join(historyDir, files[0]), "utf-8");
+    expect(archived.trim()).toBe("Message to archive");
+  });
+
+  test("broadcast.md is replaced with template after send", async () => {
+    fs.writeFileSync(path.join(tmpDir, "userdata", "broadcast.md"), "Real message");
+
+    const { mockBot } = setupBot(tmpDir);
+    await mockBot.simulateCommand("rb_aleph");
+
+    const after = fs.readFileSync(path.join(tmpDir, "userdata", "broadcast.md"), "utf-8");
+    expect(after).toContain("<!-- BROADCAST TEMPLATE -->");
+  });
+
+  test("second rb_aleph after send returns warning (template detected)", async () => {
+    fs.writeFileSync(path.join(tmpDir, "userdata", "broadcast.md"), "One-shot message");
+
+    const { mockBot } = setupBot(tmpDir);
+    // First send
+    const first = await mockBot.simulateCommand("rb_aleph");
+    expect(first.some((m) => m.text.includes("Broadcast sent"))).toBe(true);
+
+    // Second send should detect template
+    const second = await mockBot.simulateCommand("rb_aleph");
+    expect(second.some((m) => m.text.includes("No broadcast file found"))).toBe(true);
+  });
+
+  test("confirmation message includes archived filename", async () => {
+    fs.writeFileSync(path.join(tmpDir, "userdata", "broadcast.md"), "Track this");
+
+    const { mockBot } = setupBot(tmpDir);
+    const msgs = await mockBot.simulateCommand("rb_aleph");
+    const reply = msgs.find((m) => m.text.includes("Broadcast sent"));
+    expect(reply).toBeDefined();
+    expect(reply!.text).toContain("archived as broadcast-");
   });
 });
 
