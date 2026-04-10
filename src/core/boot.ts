@@ -8,6 +8,7 @@
  * Toda la lógica de fallback, prompts y mock vive aquí, no en cada app.
  */
 
+import * as path from "node:path";
 import { Bot } from "grammy";
 import { ensureEnv } from "./startup.js";
 import { MockTelegramBot } from "./mock-telegram.js";
@@ -29,8 +30,10 @@ export interface BootBotOptions {
   plugins: BotPlugin[];
   /** Directory where .env and .env.example live. */
   envDir: string;
-  /** Path to the .chats.json persistence file. */
-  chatStorePath: string;
+  /** Optional: directory for data files. Defaults to envDir. Scriptorium uses ARCHIVO/PLUGINS/BOT_HUB_SDK/data/. */
+  dataDir?: string;
+  /** Path to the .chats.json persistence file. Defaults to path.join(dataDir || envDir, ".chats.json"). */
+  chatStorePath?: string;
   /** Optional RuntimeEmitter for observability (dashboard, etc.). */
   emitter?: RuntimeEmitter;
   /** Optional logger. If not provided, creates one with scope "boot". */
@@ -71,11 +74,16 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
   // nonInteractive → autoConfirm (dashboard no tiene readline para prompts)
   const syncOpts: SyncOptions = opts.syncOptions ?? { autoConfirm: nonInteractive };
 
+  // Resolve data paths — dataDir defaults to envDir for backward compatibility.
+  // Scriptorium MCP server passes dataDir = ARCHIVO/PLUGINS/BOT_HUB_SDK/data/.
+  const dataDir = opts.dataDir ?? opts.envDir;
+  const resolvedChatStorePath = opts.chatStorePath ?? path.join(dataDir, ".chats.json");
+
   // --- Paso 1: ensureEnv (detecta .env, ofrece copiar, lee token) ---
   const env = await ensureEnv({ envDir: opts.envDir, nonInteractive, tokenVar: opts.tokenVar });
 
   if (env.mock) {
-    const { mockBot, tracker } = await startMock(opts, log, syncOpts);
+    const { mockBot, tracker } = await startMock(opts, log, syncOpts, resolvedChatStorePath);
     return {
       mock: true,
       started: true,
@@ -110,7 +118,7 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       log.debug("No webhook set — polling should work");
     }
 
-    const store = new FileChatStore(opts.chatStorePath);
+    const store = new FileChatStore(resolvedChatStorePath);
     const tracker = new ChatTracker(store, emitter);
 
     registerPlugins(bot, opts.plugins, tracker, emitter);
@@ -155,7 +163,7 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
       await confirm("¿Arrancar en modo mock (sin Telegram)?").catch(() => false);
 
     if (useMock) {
-      const { mockBot, tracker: mockTracker } = await startMock(opts, log, syncOpts);
+      const { mockBot, tracker: mockTracker } = await startMock(opts, log, syncOpts, resolvedChatStorePath);
       return {
         mock: true,
         started: true,
@@ -172,10 +180,10 @@ export async function bootBot(opts: BootBotOptions): Promise<BootResult> {
 // Helpers internos
 // ---------------------------------------------------------------------------
 
-async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions): Promise<{ mockBot: MockTelegramBot; tracker: ChatTracker }> {
+async function startMock(opts: BootBotOptions, log: Logger, syncOpts: SyncOptions, chatStorePath: string): Promise<{ mockBot: MockTelegramBot; tracker: ChatTracker }> {
   const { emitter } = opts;
   log.warn("[MOCK] Sin conexión a Telegram — arrancando en modo mock.");
-  const store = new FileChatStore(opts.chatStorePath);
+  const store = new FileChatStore(chatStorePath);
   const tracker = new ChatTracker(store, emitter);
   const mockBot = new MockTelegramBot({ emitter });
   registerPlugins(mockBot as any, opts.plugins, tracker, emitter);
