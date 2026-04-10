@@ -659,6 +659,69 @@
 
 ---
 
+## Sprint 5e — UCC & RNFP Federation Protocol (from SDS-19)
+
+> Objetivo: integrar la Universal Cyborg Constitution y el Retro-Native Federation Protocol
+> como capa constitucional y de federación del SDK. Patrón simétrico a IACM (SDS-17).
+> Incluye: ontología completa (6 tipos L2), 8 tipos de mensaje, parser, builders, categories,
+> protocol handlers, store y clase base `FederationBotPlugin`.
+> Dependencia: Sprint 5b (SDS-17), Sprint 5d (SDS-18).
+> Spec: `specs/19-cyborg-federation-protocol.md`
+
+### Fase AU · Docs-first: UCC + ADR + SDS-19
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 320 | Promover UCC a `docs/UNIVERSAL_CYBORG_CONSTITUTION.md` (canónico) | ✅ | SDS-19 §3 |
+| 321 | Crear `docs/architecture/adrs/ADR-490-ucc-rnfp-iacm-alignment.md` | ✅ | SDS-19 §3 |
+| 322 | Crear `specs/19-cyborg-federation-protocol.md` — spec SDS completa | ✅ | SDS-19 §6 |
+
+### Fase AV · SDK: tipos RNFP + parser + builders
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 323 | Crear `src/core/rnfp/rnfp-types.ts` — 6 tipos L2 (CyborgIdentity, FederationPeer, FederationPolicy, SharedEvent, TrustRelation, IntraAction), 8 message types, RnfpMeta, etc. | ✅ | SDS-19 §4.5 |
+| 324 | Crear `src/core/rnfp/rnfp-parser.ts` — parseRnfpMessage (strict/lenient), validateRnfpMessage, detectsRnfpMessage | ✅ | SDS-19 §4.4 |
+| 325 | Crear `src/core/rnfp/rnfp-builders.ts` — buildFedInvite, buildFedAccept, buildFedReject, buildFedRevoke, buildGraphAnnounce, buildGraphRequest, buildGraphPkg, generateRnfpMessageId, formatRnfpForChat | ✅ | SDS-19 §4.4 |
+
+### Fase AW · SDK: categories + protocol handlers + store + bot-plugin
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 326 | Crear `src/core/rnfp/rnfp-categories.ts` — categorías AIML para mensajes RNFP (recepción + comandos) | ✅ | SDS-19 §4.4 |
+| 327 | Crear `src/core/rnfp/rnfp-protocol-handlers.ts` — handler de protocolo con state machine por chatId | ✅ | SDS-19 §4.4 |
+| 328 | Crear `src/core/rnfp/rnfp-store.ts` — FederationStore con MockCryptoProvider | ✅ | SDS-19 §4.4 |
+| 329 | Crear `src/core/rnfp/rnfp-bot-plugin.ts` — `FederationBotPlugin` abstract class: 11 commands, menu, identity, federation state machine | ✅ | SDS-19 §4.4 |
+| 330 | Ampliar `src/index.ts` — exportar todos los tipos, builders, parser y plugin RNFP | ✅ | SDS-19 §6 |
+
+### Fase AX · Tests RNFP
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 331 | Tests: `rnfp-parser.test.ts` — parse strict/lenient, validate, detect, round-trip | ✅ | SDS-19 §9 |
+| 332 | Tests: `rnfp-builders.test.ts` — builders, messageId, formatForChat | ✅ | SDS-19 §9 |
+| 333 | Tests: `rnfp-categories.test.ts` — patterns → IntentResult, entity extraction | ✅ | SDS-19 §9 |
+| 334 | Tests: `rnfp-protocol-handlers.test.ts` — INVITE→state, ACCEPT→state, REJECT, REVOKE, ANNOUNCE/REQUEST/PKG | ✅ | SDS-19 §9 |
+| 335 | Tests: `rnfp-store.test.ts` — FederationStore, MockCryptoProvider | ✅ | SDS-19 §9 |
+| 336 | Full test suite verde — 515 tests / 33 suites / 0 fail | ✅ | SDS-19 §9 |
+
+### Fase AY · Examples + dashboard integration
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 337 | Crear `examples/federation-demo/` — standalone demo (CyborgBot) | ✅ | SDS-19 §6 |
+| 338 | Crear `examples/dashboard/spider-bot.ts` — SpiderBot (sp_) plugin | ✅ | SDS-19 §6 |
+| 339 | Crear `examples/dashboard/horse-bot.ts` — HorseBot (hr_) plugin | ✅ | SDS-19 §6 |
+| 340 | Wiring en `examples/dashboard/main.tsx` — 3 plugins: RabbitBot, SpiderBot, HorseBot | ✅ | SDS-19 §6 |
+
+### Fase AZ · Docs + holistic update
+| # | Task | Status | Ref |
+|---|------|--------|-----|
+| 341 | Fix double-prefix bug en IacmBotPlugin + FederationBotPlugin commands() | ✅ | — |
+| 342 | Centralizar env vars en `config.ts`, actualizar `.env.example` | ✅ | SDS-19 §6 |
+| 343 | Actualizar `scripts/build-bot-father-settings.ts` — incluir SpiderBot + HorseBot | ✅ | SDS-19 §6 |
+| 344 | Regenerar `bot-father-settings.md` — 3 plugins, 32 commands | ✅ | SDS-19 §6 |
+| 345 | Actualizar SDS-19 — DRAFT → IMPLEMENTED, criterios de aceptación tick | ✅ | SDS-19 §9 |
+| 346 | Actualizar dashboard README + docs HTML — mock TUI 3 plugins, stats 515 tests | ✅ | SDS-19 §6 |
+| 347 | Eliminar `CUARENTENA/` — todo material integrado | ✅ | SDS-19 §6 |
+
+---
+
 ## Sprint 5c — SDK Hardening
 
 | # | Story | Status |
@@ -696,4 +759,4 @@
 
 ---
 
-*Last updated: 2026-04-04 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b (mock) ✅ · Sprint 4c (ConfigPanel) ✅ · Sprint 4d (paquetes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f (prompts-agents) ✅ · Sprint 4g (dark mode) ✅ · Sprint 4h + fix (mock cmd exec) ✅ · Sprint 4i (chat detail) ✅ · Sprint 4j (message persistence) ✅ · Sprint 4k (multi-scope sync + help + error resilience) ✅ · Sprint 5a (AIML intent engine) ✅ · Sprint 5b (IACM protocol) ✅ · Sprint 5d (IACM demo app) ✅ — 456 tests · next: Sprint 2 (CI) 🔲*
+*Last updated: 2026-04-10 · Sprint 0 ✅ · Sprint 1 (specs) ✅ · Sprint 3 (SDK impl) ✅ · Sprint 4 (dashboard) ✅ · Sprint 4b (mock) ✅ · Sprint 4c (ConfigPanel) ✅ · Sprint 4d (paquetes) ✅ · Sprint 4e (UI bridge) ✅ · Sprint 4f (prompts-agents) ✅ · Sprint 4g (dark mode) ✅ · Sprint 4h + fix (mock cmd exec) ✅ · Sprint 4i (chat detail) ✅ · Sprint 4j (message persistence) ✅ · Sprint 4k (multi-scope sync + help + error resilience) ✅ · Sprint 5a (AIML intent engine) ✅ · Sprint 5b (IACM protocol) ✅ · Sprint 5d (IACM demo app) ✅ · Sprint 5e (UCC + RNFP federation) ✅ — 515 tests · next: Sprint 2 (CI) 🔲*

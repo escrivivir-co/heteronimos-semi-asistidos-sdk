@@ -75,8 +75,8 @@
 <!-- ═══ STATUS BAR ═══ -->
 <div class="stats-bar">
   <div class="stat"><span class="val">0.0.0</span><span class="lbl">Version</span></div>
-  <div class="stat"><span class="val">165</span><span class="lbl">Tests</span></div>
-  <div class="stat"><span class="val">14</span><span class="lbl">Suites</span></div>
+  <div class="stat"><span class="val">515</span><span class="lbl">Tests</span></div>
+  <div class="stat"><span class="val">33</span><span class="lbl">Suites</span></div>
   <div class="stat"><span class="val">0</span><span class="lbl">Failures</span></div>
   <div class="stat"><span class="val">⚠</span><span class="lbl">Pre-kick-off</span></div>
 </div>
@@ -248,7 +248,7 @@ registerPlugins(bot, plugins, tracker);</div>
         <tr><td>bun run build</td><td>bundle → dist/</td></tr>
         <tr><td>bun run lint</td><td>tsc --noEmit</td></tr>
         <tr><td>bun run bot-father-settings</td><td>generate docs</td></tr>
-        <tr><td>bun run test</td><td>165 tests across 14 suites</td></tr>
+        <tr><td>bun run test</td><td>515 tests across 33 suites</td></tr>
         <tr><td>bun run test:report</td><td>JUnit XML</td></tr>
         <tr><td>bun run test:coverage</td><td>coverage report</td></tr>
         <tr><td>bun run release &lt;bump&gt;</td><td>version tag</td></tr>
@@ -286,10 +286,11 @@ registerPlugins(bot, plugins, tracker);</div>
   <a class="main-link" href="architecture/adrs/ADR-490-ucc-rnfp-iacm-alignment.md" style="background:var(--inv-bg-dim);margin-left:6px;">☞ ADR-490</a>
 
   <div style="font-size:0.68rem;margin-top:8px;">
-    Esta capa fija tres cosas antes de cualquier runtime nuevo: el marco constitucional de soberanía y delegación, el bootstrap de federación RNFP y el encaje con IACM como protocolo conversacional ya implementado.
+    Esta capa integra el marco constitucional UCC, el protocolo de federación RNFP/1.0 (7 módulos en <span class="hl-box">src/core/rnfp/</span>), y su encaje con IACM.
+    El dashboard incluye <b>SpiderBot</b> (sp_) para federación y <b>HorseBot</b> (hr_) para IACM.
   </div>
   <div style="font-size:0.68rem;margin-top:6px;border:1px solid var(--border-soft);padding:6px 8px;background:var(--bg-warm);">
-    <b>Scope note:</b> la integración actual es <b>docs-first</b>. No implica todavía CLI <code>clc</code>, HyperGraph ni ejecución de Python desde <code>CUARENTENA/</code>.
+    <b>Status:</b> RNFP runtime <b>implementado</b>. <code>FederationBotPlugin</code> es la clase base del SDK para bots federativos. La federación inter-bot real requiere transporte Telegram DM (próxima iteración).
   </div>
 </div>
 
@@ -396,7 +397,7 @@ registerPlugins(bot, plugins, tracker);</div>
 </div>
 
 <div class="footer">
-  heteronimos-semi-asistidos-sdk · v0.0.0 · 165 tests passing · Escrivivir.co · AIPL
+  heteronimos-semi-asistidos-sdk · v0.0.0 · 515 tests passing · Escrivivir.co · AIPL
 </div>
 
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☾</button>

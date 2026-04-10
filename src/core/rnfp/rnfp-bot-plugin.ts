@@ -103,27 +103,25 @@ export abstract class FederationBotPlugin<TVars extends RnfpBotVars = RnfpBotVar
    * Subclasses: [...super.commands(), ...ownCommands]
    */
   override commands(): CommandDefinition[] {
-    const prefix = this.pluginCode;
     return [
       ...super.commands(),
       // Outbound federation commands
-      { command: `${prefix}_invite`,   description: "Send a federation INVITE to a peer",    buildText: (ctx: any) => this._buildInvite(ctx) },
-      { command: `${prefix}_accept`,   description: "Accept a pending federation INVITE",     buildText: (ctx: any) => this._handleAccept(ctx) },
-      { command: `${prefix}_reject`,   description: "Reject a pending federation INVITE",     buildText: (ctx: any) => this._handleReject(ctx) },
-      { command: `${prefix}_revoke`,   description: "Revoke an active federation",            buildText: (ctx: any) => this._handleRevoke(ctx) },
-      { command: `${prefix}_announce`, description: "Announce a graph package",               buildText: (ctx: any) => this._buildAnnounce(ctx) },
-      { command: `${prefix}_request`,  description: "Request a graph package from peer",      buildText: () => this._outboundPlaceholder("REQUEST") },
-      { command: `${prefix}_pkg`,      description: "Deliver a graph package to peer",        buildText: () => this._outboundPlaceholder("PKG") },
+      { command: "invite",     description: "Send a federation INVITE to a peer",    buildText: (ctx: any) => this._buildInvite(ctx) },
+      { command: "accept",     description: "Accept a pending federation INVITE",     buildText: (ctx: any) => this._handleAccept(ctx) },
+      { command: "reject",     description: "Reject a pending federation INVITE",     buildText: (ctx: any) => this._handleReject(ctx) },
+      { command: "revoke",     description: "Revoke an active federation",            buildText: (ctx: any) => this._handleRevoke(ctx) },
+      { command: "announce",   description: "Announce a graph package",               buildText: (ctx: any) => this._buildAnnounce(ctx) },
+      { command: "request",    description: "Request a graph package from peer",      buildText: () => this._outboundPlaceholder("REQUEST") },
+      { command: "pkg",        description: "Deliver a graph package to peer",        buildText: () => this._outboundPlaceholder("PKG") },
       // Meta commands
-      { command: `${prefix}_identity`,   description: "Show local identity card",            buildText: () => this._identityCard() },
-      { command: `${prefix}_peers`,      description: "List active federation peers",         buildText: (ctx: any) => this._peersList(ctx) },
-      { command: `${prefix}_fed_status`, description: "Show federation protocol status",      buildText: (ctx: any) => this._fedStatusPage(ctx) },
-      { command: `${prefix}_fed`,        description: "RNFP protocol help",                  buildText: () => FEDERATION_HELP },
+      { command: "identity",   description: "Show local identity card",              buildText: () => this._identityCard() },
+      { command: "peers",      description: "List active federation peers",           buildText: (ctx: any) => this._peersList(ctx) },
+      { command: "fed_status", description: "Show federation protocol status",        buildText: (ctx: any) => this._fedStatusPage(ctx) },
+      { command: "fed",        description: "RNFP protocol help",                    buildText: () => FEDERATION_HELP },
     ];
   }
 
   override menus(): MenuDefinition[] {
-    const prefix = this.pluginCode;
     const helpPage: MenuPage = {
       id: "rnfp_help",
       text: FEDERATION_HELP,
@@ -131,7 +129,7 @@ export abstract class FederationBotPlugin<TVars extends RnfpBotVars = RnfpBotVar
     };
     return [
       {
-        command: `${prefix}_fed`,
+        command: "fed",
         description: `Federation protocol status for ${this.operatorName}`,
         entryPage: "rnfp_help",
         pages: [helpPage],

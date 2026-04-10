@@ -138,17 +138,17 @@ describe("IacmBotPlugin — commands", () => {
     const bot = new TestIacmBot();
     const cmds = bot.commands();
     const cmdNames = cmds.map(c => c.command);
-    expect(cmdNames).toContain("tib_request");
-    expect(cmdNames).toContain("tib_question");
-    expect(cmdNames).toContain("tib_urgent");
-    expect(cmdNames).toContain("tib_status");
-    expect(cmdNames).toContain("tib_iacm");
+    expect(cmdNames).toContain("request");
+    expect(cmdNames).toContain("question");
+    expect(cmdNames).toContain("urgent");
+    expect(cmdNames).toContain("status");
+    expect(cmdNames).toContain("iacm");
   });
 
   test("status command returns status page", () => {
     const bot = new TestIacmBot();
     const cmds = bot.commands();
-    const statusCmd = cmds.find(c => c.command === "tib_status");
+    const statusCmd = cmds.find(c => c.command === "status");
     expect(statusCmd).toBeDefined();
     const text = statusCmd!.buildText({ chat: { id: 1 } });
     expect(text).toContain("tib");
@@ -165,7 +165,7 @@ describe("IacmBotPlugin — menus", () => {
     const bot = new TestIacmBot();
     const menus = bot.menus();
     expect(menus.length).toBeGreaterThan(0);
-    expect(menus[0].command).toBe("tib_iacm");
+    expect(menus[0].command).toBe("iacm");
   });
 });
 

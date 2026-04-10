@@ -127,24 +127,24 @@ describe("MeteoBot — commands()", () => {
     }
   });
 
-  test("includes mt_weather command", () => {
-    expect(cmds.map(c => c.command)).toContain("mt_weather");
+  test("includes weather command", () => {
+    expect(cmds.map(c => c.command)).toContain("weather");
   });
 
-  test("includes mt_apistatus command", () => {
-    expect(cmds.map(c => c.command)).toContain("mt_apistatus");
+  test("includes apistatus command", () => {
+    expect(cmds.map(c => c.command)).toContain("apistatus");
   });
 
-  test("includes mt_alert command", () => {
-    expect(cmds.map(c => c.command)).toContain("mt_alert");
+  test("includes alert command", () => {
+    expect(cmds.map(c => c.command)).toContain("alert");
   });
 
-  test("includes mt_propose command", () => {
-    expect(cmds.map(c => c.command)).toContain("mt_propose");
+  test("includes propose command", () => {
+    expect(cmds.map(c => c.command)).toContain("propose");
   });
 
-  test("includes mt_question command", () => {
-    expect(cmds.map(c => c.command)).toContain("mt_question");
+  test("includes question command", () => {
+    expect(cmds.map(c => c.command)).toContain("question");
   });
 });
 
@@ -158,19 +158,19 @@ describe("MeteoBot — menus()", () => {
     expect(menus.length).toBeGreaterThan(0);
   });
 
-  test("includes mt_menu", () => {
-    const menu = menus.find(m => m.command === "mt_menu");
+  test("includes menu", () => {
+    const menu = menus.find(m => m.command === "menu");
     expect(menu).toBeDefined();
     expect(menu?.entryPage).toBe("home");
   });
 
-  test("mt_menu has at least 2 pages", () => {
-    const menu = menus.find(m => m.command === "mt_menu")!;
+  test("menu has at least 2 pages", () => {
+    const menu = menus.find(m => m.command === "menu")!;
     expect(menu.pages.length).toBeGreaterThanOrEqual(2);
   });
 
-  test("mt_menu home page has buttons", () => {
-    const menu = menus.find(m => m.command === "mt_menu")!;
+  test("menu home page has buttons", () => {
+    const menu = menus.find(m => m.command === "menu")!;
     const home = menu.pages.find(p => p.id === "home")!;
     expect(home).toBeDefined();
     expect(home.buttons.length).toBeGreaterThan(0);

@@ -144,7 +144,7 @@ export interface IntraAction {
  *
  * Implementations:
  *   MockCryptoProvider — always signs valid, always verifies true (for demos/tests).
- *   Ed25519CryptoProvider — real Ed25519 (requires @noble/ed25519, not bundled).
+ *   Ed25519CryptoProvider — real Ed25519 (requires @noble/ed25519, not included).
  */
 export interface CryptoProvider {
   sign(payload: string): string;

@@ -303,11 +303,11 @@ export class MeteoBot extends IacmBotPlugin<MeteoVars> {
   override commands(): CommandDefinition[] {
     return [
       ...super.commands(),
-      { command: "mt_weather",   description: "🌤️ Tiempo directo (sin IACM)", buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "mt_apistatus", description: "📡 Estado de APIs (envía FYI)", buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "mt_alert",     description: "🚨 Enviar alerta (URGENT)",     buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "mt_propose",   description: "📝 Proponer cambio (PROPOSAL)", buildText: (ctx: any) => this.onMessage(ctx) },
-      { command: "mt_question",  description: "❓ Hacer pregunta (QUESTION)",  buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "weather",   description: "🌤️ Tiempo directo (sin IACM)", buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "apistatus", description: "📡 Estado de APIs (envía FYI)", buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "alert",     description: "🚨 Enviar alerta (URGENT)",     buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "propose",   description: "📝 Proponer cambio (PROPOSAL)", buildText: (ctx: any) => this.onMessage(ctx) },
+      { command: "question",  description: "❓ Hacer pregunta (QUESTION)",  buildText: (ctx: any) => this.onMessage(ctx) },
     ];
   }
 
@@ -315,7 +315,7 @@ export class MeteoBot extends IacmBotPlugin<MeteoVars> {
     return [
       ...super.menus(),
       {
-        command: "mt_menu",
+        command: "menu",
         description: "MeteoBot menú",
         entryPage: "home",
         pages: [

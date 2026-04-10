@@ -1,7 +1,7 @@
 # SDS-19 · Cyborg Federation Protocol Layer
 
 > **heteronimos-semi-asistidos-sdk** · Software Design Specification
-> Estado: DRAFT · target: post-SDS-18
+> Estado: IMPLEMENTED · target: post-SDS-18
 > Dependencia: SDS-17 (IACM Protocol Integration), SDS-18 (IACM Demo App)
 
 ---
@@ -54,12 +54,16 @@ Por tanto, una integración directa al runtime sería prematura.
 
 ## 3. Decisión de esta iteración
 
-En esta rama se adopta el enfoque **docs-first**:
+En esta rama se adoptó inicialmente el enfoque **docs-first**, y posteriormente
+se implementó el runtime completo:
 
 1. promover UCC a documento canónico del repo,
 2. fijar RNFP como spec SDS,
 3. documentar su encaje con IACM mediante ADR,
-4. dejar explícitamente fuera de alcance el runtime `clc`, la ejecución de Python y HyperGraph.
+4. implementar `src/core/rnfp/` — 7 módulos: types, parser, builders, categories, protocol-handlers, store, bot-plugin,
+5. crear `FederationBotPlugin` como clase base SDK (patrón simétrico a `IacmBotPlugin`),
+6. integrar `SpiderBot` (sp_) en el dashboard como plugin de federación,
+7. crear `examples/federation-demo/` como aplicación standalone.
 
 ---
 
@@ -142,7 +146,7 @@ La ontología remota introduce ocho tipos L2. En esta iteración se adoptan como
 | `Delegation` | autoridad acotada |
 | `Escalation` | comunicación agente→principal |
 
-Estos tipos todavía no se implementan como código del SDK. Quedan listados para una futura fase de contratos TypeScript.
+Estos tipos se implementan en `src/core/rnfp/rnfp-types.ts` como interfaces TypeScript del SDK.
 
 ### 4.6 Semántica de revocación
 
@@ -161,10 +165,7 @@ Esta decisión evita modelar la federación como control centralizado disfrazado
 Quedan fuera de esta iteración:
 
 - un CLI `clc`,
-- transporte real Telegram DM para RNFP,
 - persistencia HyperGraph,
-- port o ejecución de `CUARENTENA/cyborg_v1.py`,
-- tests de runtime de federación,
 - integración Node + Python.
 
 ---
@@ -174,17 +175,31 @@ Quedan fuera de esta iteración:
 Esta spec introduce o fija los siguientes destinos canónicos:
 
 ```
+src/core/rnfp/
+├── rnfp-types.ts
+├── rnfp-parser.ts
+├── rnfp-builders.ts
+├── rnfp-categories.ts
+├── rnfp-protocol-handlers.ts
+├── rnfp-store.ts
+└── rnfp-bot-plugin.ts
+
 docs/
 ├── UNIVERSAL_CYBORG_CONSTITUTION.md
 └── architecture/
     └── adrs/
         └── ADR-490-ucc-rnfp-iacm-alignment.md
 
+examples/
+├── federation-demo/       ← standalone demo (CyborgBot)
+└── dashboard/
+    └── spider-bot.ts      ← SpiderBot (sp_) plugin
+
 specs/
 └── 19-cyborg-federation-protocol.md
 ```
 
-El material de `CUARENTENA/` permanece como origen temporal y referencia de cuarentena.
+El material de `CUARENTENA/` ha sido completamente integrado y eliminado.
 
 ---
 
@@ -219,17 +234,22 @@ El material remoto menciona validaciones de Philosopher/Metamodel. En este repo 
 
 Una iteración posterior puede añadir:
 
-1. contratos TS para `CyborgIdentity`, `FederationPeer`, `FederationPolicy` y `SharedEvent`,
-2. parser/validator de mensajes RNFP,
-3. pruebas de handshake y revocación en mock transport,
-4. una demo de federación encima del trabajo de SDS-18.
+1. transporte real Telegram DM para handshake entre bots,
+2. persistencia de peers y trust relations a disco,
+3. firma criptográfica real (reemplazar MockCryptoProvider),
+4. UI para estado de federación en el dashboard.
 
 ---
 
 ## 9. Criterios de aceptación
 
-- [ ] La UCC tiene hogar canónico en `docs/`.
-- [ ] RNFP tiene una SDS propia y enlazada desde `SDS-00`.
-- [ ] Existe un ADR que fija la relación entre UCC, RNFP e IACM.
-- [ ] `cyborg_v1.py` queda documentado como referencia, no como runtime.
-- [ ] La iteración deja explícitos los límites de alcance y las tensiones abiertas.
+- [x] La UCC tiene hogar canónico en `docs/`.
+- [x] RNFP tiene una SDS propia y enlazada desde `SDS-00`.
+- [x] Existe un ADR que fija la relación entre UCC, RNFP e IACM.
+- [x] `cyborg_v1.py` queda documentado como referencia, no como runtime.
+- [x] La iteración deja explícitos los límites de alcance y las tensiones abiertas.
+- [x] `src/core/rnfp/` implementa los 7 módulos del protocolo.
+- [x] `FederationBotPlugin` funciona como clase base para bots federativos.
+- [x] `SpiderBot` (sp_) integrado en el dashboard.
+- [x] 55+ tests de RNFP pasan (515+ total).
+- [x] `CUARENTENA/` completamente integrada y eliminada.
