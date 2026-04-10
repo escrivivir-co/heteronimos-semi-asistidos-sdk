@@ -26,7 +26,7 @@ Mapear material CUARENTENA
 
 Read memory
 
-Read memory [](file:///Users/morente/Library/Application%20Support/Code/User/workspaceStorage/9a705873913773b81d5cc0f4fc8f1436/GitHub.copilot-chat/memory-tool/memories/repo/command-sync.md)
+Read memory [](./command-sync.md)
 
 Searched codebase for "IACM protocol federation governance constitutional agents message exchange", 22 results
 
@@ -98,7 +98,7 @@ Asked 3 questions (alcance, git, python)
 
 Voy a consolidar el descubrimiento y tus decisiones en un plan ejecutable, con fases, opciones de integración y estrategia de rama apilada, y lo dejo persistido en la memoria de sesión para usarlo como handoff.
 
-Created memory file [](file:///Users/morente/Library/Application%20Support/Code/User/workspaceStorage/9a705873913773b81d5cc0f4fc8f1436/GitHub.copilot-chat/memory-tool/memories/NDRkMjJmMGMtMjVhYS00YjU0LTg4YTctMzgxNGFkYmUwOTNl/plan.md)
+Created memory file [](./plan2.md)
 
 ## Plan: Integración UCC sobre IACM
 
@@ -174,7 +174,7 @@ User: Start implementation
 
 GitHub Copilot: Optimizing tool selection...Voy a concretar la implementación documental: primero ubico los destinos correctos para constitución/spec/ADR y verifico el estado actual de la rama para no introducir una estructura incoherente.
 
-Read changed files in [](file:///Users/morente/Desktop/THEIA_PATH/telegram-bot-tutorial-main-Nodejs/Nodejs)
+Read changed files in [](.)
 
 Searched for files matching `Nodejs` - `**/ADR-*.md`, 1 match
 
@@ -228,7 +228,7 @@ Ya está creada la primera capa canónica: UNIVERSAL_CYBORG_CONSTITUTION.md, 19-
 
 Checked [](docs/index.html), [](specs/00-overview.md), [](specs/19-cyborg-federation-protocol.md), [](docs/UNIVERSAL_CYBORG_CONSTITUTION.md), [](docs/architecture/adrs/ADR-490-ucc-rnfp-iacm-alignment.md), no problems found
 
-Read changed files in [](file:///Users/morente/Desktop/THEIA_PATH/telegram-bot-tutorial-main-Nodejs/Nodejs)
+Read changed files in [](.)
 
 Hay un pequeño ajuste de consistencia más: el prompt de QA sigue diciendo que las specs van de `SDS-00` a `SDS-18`. Voy a corregir esa referencia para que la documentación interna no quede desfasada nada más nacer `SDS-19`.
 
@@ -252,7 +252,7 @@ La parte documental ya está consistente también con las herramientas internas 
 
 Checked [](.github/prompts/qa-tester.prompt.md), no problems found
 
-Read changed files in [](file:///Users/morente/Desktop/THEIA_PATH/telegram-bot-tutorial-main-Nodejs/Nodejs)
+Read changed files in [](.)
 
 Voy a dejar una nota de memoria de repositorio con la decisión de encaje UCC/RNFP, para no redescubrir en sesiones futuras que esta rama adopta solo constitución/spec/ADR y mantiene cyborg_v1.py como referencia.
 
@@ -260,7 +260,7 @@ Read memory
 
 Completed: *Crear constitución canónica* (2/6)
 
-Created memory file [](file:///Users/morente/Library/Application%20Support/Code/User/workspaceStorage/9a705873913773b81d5cc0f4fc8f1436/GitHub.copilot-chat/memory-tool/memories/repo/ucc-integration.md)
+Created memory file [](./ucc-integration.md)
 
 He arrancado la implementación docs-first en la rama con los tres artefactos canónicos de UCC/RNFP sobre IACM, he actualizado los índices visibles del repo y he dejado la referencia interna del proyecto alineada con SDS-19, sin ejecutar código en CUARENTENA ni introducir runtime nuevo.
 
