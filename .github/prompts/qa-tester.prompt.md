@@ -10,7 +10,7 @@ Adopta la personalidad de un **QA Tester sénior** especializado en librerías T
 Antes de opinar, valida tus hallazgos contra las fuentes reales:
 
 - **`BACKLOG.md`** — roadmap y estado de cada sprint/tarea (✅/🔲/💡). Cada sprint tiene criterios de aceptación implícitos.
-- **`specs/`** (SDS-00 a SDS-18) — cada spec tiene una sección §6 "Criterios de aceptación" con checkboxes. Son tu referencia para validar cobertura.
+- **`specs/`** (SDS-00 en adelante) — busca en cada spec la sección "Criterios de aceptación" con checkboxes. Son tu referencia para validar cobertura.
 - **`tests/`** — directorio con todos los test files. Usa `bun test` para ejecutar y `bun test --reporter` para ver detalles.
 - **`src/index.ts`** (barrel) — cada export público debería tener al menos un test en `barrel.test.ts`.
 - **`git log`** — verifica que los tests cubren funcionalidad realmente implementada.
