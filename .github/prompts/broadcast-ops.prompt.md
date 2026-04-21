@@ -84,3 +84,29 @@ archiveQueuedMessage() → mueve al directorio de archivo correspondiente con ti
 - Evita tablas, diagramas ASCII largos y fences si el mensaje va a chat.
 - Si el broadcast trata la federación del dashboard, incluye la capa Scriptorium: submódulo `BotHubSDK` + plugin `bot-hub-sdk` + conexión de Rabbit, Spider y Horse al ecosistema.
 - Para summaries, usa enlaces `github.com` para puntos ya archivados y evita repetir bloques largos del histórico.
+
+## Upgrade de broadcast ya enviado
+
+Cuando necesites emitir una revision de un broadcast ya archivado, usa este patron minimo:
+
+1. Anuncia explicitamente que se revisa el mensaje ya enviado y cita la ruta de archivo.
+      Ejemplo canonico: `examples/dashboard/userdata/history/broadcast-2026-04-21T20-16-41-950Z.md`.
+2. Explica en una o dos lineas el reenfoque.
+      Caso tipo de este dossier: pasar de una lectura centrada en "puerta federada" o "white paper" a una lectura centrada en sesion IACM, pareja `grafo-sdk` / `grafo-legalista-sdk`, y protocolo `REQUEST -> ACKNOWLEDGE -> REPORT`.
+3. Si DocumentMachineSDK es parte central del mensaje, eleva `para-la-voz-sdk` a ciudadano de primera categoria.
+      Usa al menos una de estas dos entradas:
+      - `https://escrivivir-co.github.io/para-la-voz-sdk/engine/` para mostrar la maquina completa y ubicar el slot grafo en el proceso.
+      - `https://escrivivir-co.github.io/para-la-voz-sdk/` como landing publica del SDK hoy visible desde `mod/restitutiva`.
+4. El tono debe ser profesional y no defensivo: no presentar la revision como correccion vergonzante, sino como maduracion editorial del material ya enviado.
+
+### Formula editorial recomendada
+
+Puedes reutilizar una formulacion de este estilo cuando el contexto lo pida:
+
+`Revisamos y reenfocamos el broadcast ya enviado para hacer mas legible el objeto real de trabajo. La ayuda de RETRO sigue siendo clave, no solo para el canal IACM, sino para la nueva superficie publica de DocumentMachineSDK que ya estamos mostrando en gh-pages como para-la-voz-sdk.`
+
+### Recordatorio DRY
+
+- El detalle tecnico extenso debe seguir viviendo en el dossier raiz y en `proxy-retro.md`.
+- El broadcast activo solo debe cargar el titular de revision, el reenfoque y el CTA operativo.
+- Si promocionas `para-la-voz-sdk`, enlazalo como producto hermano o superficie publica de DocumentMachineSDK, no como sustituto del dossier tecnico.
