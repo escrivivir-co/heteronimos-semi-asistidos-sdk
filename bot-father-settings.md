@@ -5,10 +5,10 @@
 Paste into `/setcommands`:
 
 ```
-rb_aleph - Describes current sync frequency wave
+rb_aleph - Broadcast message from userdata/broadcast.md to all chats
 rb_join - To enter a sync event
 rb_quit - To quit a sync event
-rb_alephs - Allow to navigate through past events
+rb_alephs - Broadcast summary from userdata/summary.md to all chats
 rb_menu - To open options
 sp_reset - Reset conversation state
 sp_invite - Send a federation INVITE to a peer

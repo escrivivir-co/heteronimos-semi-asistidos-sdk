@@ -3,7 +3,7 @@ import { render } from "ink";
 import * as path from "node:path";
 import { existsSync } from "node:fs";
 import { RuntimeEmitter, Logger, bootBot, createStore, connectEmitterToStore, FileMessageStore } from "heteronimos-semi-asistidos-sdk";
-import { SOLANA_ADDRESS } from "./config.js";
+import { RABBIT_AUTO_ACK, RABBIT_AUTO_ACK_TEMPLATE, SOLANA_ADDRESS } from "./config.js";
 import { RabbitBot } from "./rabbit-bot.js";
 import { SpiderBot } from "./spider-bot.js";
 import { HorseBot } from "./horse-bot.js";
@@ -26,7 +26,10 @@ connectEmitterToStore(emitter, store, { messageStore });
 // Si no hay token, arranca en mock automáticamente.
 // El panel Config muestra el estado y las instrucciones para conectar a Telegram.
 async function main() {
-  const rabbitBot = new RabbitBot(SOLANA_ADDRESS, appDir);
+  const rabbitBot = new RabbitBot(SOLANA_ADDRESS, appDir, {
+    enabled: RABBIT_AUTO_ACK,
+    template: RABBIT_AUTO_ACK_TEMPLATE,
+  });
   const spiderBot = new SpiderBot();
   const horseBot = new HorseBot();
   const result = await bootBot({

@@ -63,10 +63,19 @@ describe("RabbitBot", () => {
     }
   });
 
-  test("onMessage returns string", () => {
-    const result = bot.onMessage();
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(0);
+  test("onMessage is disabled by default", () => {
+    const result = bot.onMessage({ from: { first_name: "Alice" }, message: { text: "hola" } });
+    expect(result).toBe("");
+  });
+
+  test("onMessage returns templated ack when enabled", () => {
+    const ackBot = new RabbitBot("SOL_TEST_ADDRESS", {
+      enabled: true,
+      template: "Mensaje recibido de {sender}. Contenido: {size} caracteres. -- RabbitBot · BotHubSDK Scriptorium",
+    });
+    const result = ackBot.onMessage({ from: { first_name: "Alice" }, message: { text: "hola" } });
+    expect(result).toContain("Alice");
+    expect(result).toContain("4 caracteres");
   });
 
   test("formatDuration handles days", () => {

@@ -4,6 +4,11 @@ import { buildPluginHelpText, type BotPlugin, type CommandDefinition, type MenuD
 
 const BROADCAST_FILE = "userdata/broadcast.md";
 const HISTORY_DIR = "userdata/history";
+const SUMMARY_FILE = "userdata/summary.md";
+const SUMMARY_HISTORY_DIR = "userdata/summary-history";
+const DEFAULT_AUTO_ACK_TEMPLATE = "Mensaje recibido de {sender}. Contenido: {size} caracteres. -- RabbitBot · BotHubSDK Scriptorium";
+const BROADCAST_TEMPLATE_MARKER = "<!-- BROADCAST TEMPLATE -->";
+const SUMMARY_TEMPLATE_MARKER = "<!-- SUMMARY TEMPLATE -->";
 const BROADCAST_TEMPLATE = `<!-- BROADCAST TEMPLATE -->
 📡 @an_aleph_zero_rabit_23_bot
 
@@ -38,10 +43,72 @@ Explica aqui la encapsulacion:
 
 Pide la accion concreta: grupo compartido, formato INVITE, mock crypto o firma real.
 `;
+const SUMMARY_TEMPLATE = `<!-- SUMMARY TEMPLATE -->
+🧾 @an_aleph_zero_rabit_23_bot
+
+Resume userdata/history/ en un mensaje transmisible por rb_alephs.
+Cada linea --- abre un mensaje nuevo en el summary broadcast.
+Piensa en 3-5 chunks, evita repetir datos y enlaza a GitHub cuando un punto ya exista en el repo.
+---
+## Estado sintetico
+
+- que ha cambiado
+- que sigue operativo
+- que debe mirar el receptor primero
+---
+## Evidencia DRY
+
+- carpeta history
+- enlaces github.com a piezas clave
+- no repetir bloques largos ya archivados
+---
+## Siguiente paso
+
+- accion concreta esperada
+- canal o dossier al que mover la conversacion
+`;
+
+interface QueuedMessageSpec {
+	file: string;
+	historyDir: string;
+	historyPrefix: string;
+	templateMarker: string;
+	template: string;
+	missingMessage: string;
+	successMessage: string;
+	unavailableMessage: string;
+}
+
+const BROADCAST_SPEC: QueuedMessageSpec = {
+	file: BROADCAST_FILE,
+	historyDir: HISTORY_DIR,
+	historyPrefix: "broadcast",
+	templateMarker: BROADCAST_TEMPLATE_MARKER,
+	template: BROADCAST_TEMPLATE,
+	missingMessage: `⚠️ No broadcast file found. Create or edit ${BROADCAST_FILE} with the message to send.`,
+	successMessage: "✅ Broadcast sent",
+	unavailableMessage: "⚠️ Broadcast not available (bot not fully initialized).",
+};
+
+const SUMMARY_SPEC: QueuedMessageSpec = {
+	file: SUMMARY_FILE,
+	historyDir: SUMMARY_HISTORY_DIR,
+	historyPrefix: "summary",
+	templateMarker: SUMMARY_TEMPLATE_MARKER,
+	template: SUMMARY_TEMPLATE,
+	missingMessage: `⚠️ No summary file found. Create or edit ${SUMMARY_FILE} with the summary to send.`,
+	successMessage: "✅ Summary broadcast sent",
+	unavailableMessage: "⚠️ Summary broadcast not available (bot not fully initialized).",
+};
 
 export interface GEvent {
 	timestamp: Date,
 	data: any
+}
+
+export interface RabbitAutoAckOptions {
+	enabled?: boolean;
+	template?: string;
 }
 
 export class RabbitBot implements BotPlugin {
@@ -61,26 +128,30 @@ export class RabbitBot implements BotPlugin {
 	solana = '';
 	private appDir: string;
 	private broadcastFn: ((message: string) => Promise<void>) | null = null;
+	private autoAckEnabled: boolean;
+	private autoAckTemplate: string;
 
-	constructor(solana?: string, appDir?: string) {
+	constructor(solana?: string, appDir?: string, autoAckOptions?: RabbitAutoAckOptions) {
 		this.solana = solana ?? '';
 		this.appDir = appDir ?? '';
 		this.cronos = 2;
 		this.events = this.getNextFibonacciDates(new Date(), this.cronos);
+		this.autoAckEnabled = autoAckOptions?.enabled ?? false;
+		this.autoAckTemplate = autoAckOptions?.template?.trim() || DEFAULT_AUTO_ACK_TEMPLATE;
 	}
 
 	setBroadcast(fn: (message: string) => Promise<void>) {
 		this.broadcastFn = fn;
 	}
 
-	private readBroadcastFile(): string[] | null {
+	private readQueuedMessageFile(spec: QueuedMessageSpec): string[] | null {
 		if (!this.appDir) return null;
-		const filePath = path.join(this.appDir, BROADCAST_FILE);
+		const filePath = path.join(this.appDir, spec.file);
 		try {
 			if (!fs.existsSync(filePath)) return null;
 			const raw = fs.readFileSync(filePath, "utf-8").trim();
 			if (!raw) return null;
-			if (raw.startsWith("<!-- BROADCAST TEMPLATE -->")) return null;
+			if (raw.startsWith(spec.templateMarker)) return null;
 			const chunks = raw.split(/^---$/m).map(s => s.trim()).filter(Boolean);
 			return chunks.length > 0 ? chunks : null;
 		} catch {
@@ -88,17 +159,31 @@ export class RabbitBot implements BotPlugin {
 		}
 	}
 
-	private archiveBroadcast(): string | null {
+	private archiveQueuedMessage(spec: QueuedMessageSpec): string | null {
 		if (!this.appDir) return null;
-		const filePath = path.join(this.appDir, BROADCAST_FILE);
+		const filePath = path.join(this.appDir, spec.file);
 		if (!fs.existsSync(filePath)) return null;
-		const historyDir = path.join(this.appDir, HISTORY_DIR);
+		const historyDir = path.join(this.appDir, spec.historyDir);
 		fs.mkdirSync(historyDir, { recursive: true });
 		const ts = new Date().toISOString().replace(/[:.]/g, "-");
-		const archived = path.join(historyDir, `broadcast-${ts}.md`);
+		const archived = path.join(historyDir, `${spec.historyPrefix}-${ts}.md`);
 		fs.renameSync(filePath, archived);
-		fs.writeFileSync(filePath, BROADCAST_TEMPLATE, "utf-8");
+		fs.writeFileSync(filePath, spec.template, "utf-8");
 		return path.basename(archived);
+	}
+
+	private async dispatchQueuedMessage(spec: QueuedMessageSpec): Promise<string> {
+		const chunks = this.readQueuedMessageFile(spec);
+		if (!chunks) return spec.missingMessage;
+		if (!this.broadcastFn) {
+			return `📄 ${spec.file} (${chunks.length} part(s)):\n\n${chunks[0]}\n\n${spec.unavailableMessage}`;
+		}
+		for (const chunk of chunks) {
+			await this.broadcastFn(chunk);
+		}
+		const archived = this.archiveQueuedMessage(spec);
+		const suffix = archived ? ` — archived as ${archived}` : "";
+		return `${spec.successMessage} (${chunks.length} message(s)) to all registered chats${suffix}.`;
 	}
 
 	commands(): CommandDefinition[] {
@@ -106,21 +191,7 @@ export class RabbitBot implements BotPlugin {
 			{
 				command: "aleph",
 				description: "Broadcast message from userdata/broadcast.md to all chats",
-				buildText: async () => {
-					const chunks = this.readBroadcastFile();
-					if (!chunks) {
-						return `⚠️ No broadcast file found. Create or edit ${BROADCAST_FILE} with the message to send.`;
-					}
-					if (!this.broadcastFn) {
-						return `📄 ${BROADCAST_FILE} (${chunks.length} part(s)):\n\n${chunks[0]}\n\n⚠️ Broadcast not available (bot not fully initialized).`;
-					}
-					for (const chunk of chunks) {
-						await this.broadcastFn(chunk);
-					}
-					const archived = this.archiveBroadcast();
-					const suffix = archived ? ` — archived as ${archived}` : "";
-					return `✅ Broadcast sent (${chunks.length} message(s)) to all registered chats${suffix}.`;
-				},
+				buildText: async () => this.dispatchQueuedMessage(BROADCAST_SPEC),
 			},
 			{
 				command: "join",
@@ -136,9 +207,8 @@ export class RabbitBot implements BotPlugin {
 			},
 			{
 				command: "alephs",
-				description: "Allow to navigate through past events",
-				buildText: () =>
-					`Next 23 holes! Join & sync! \n\t - ${this.initializeEvents().map(c => c.data.countdown).join('\n\t - ')}`,
+				description: "Broadcast summary from userdata/summary.md to all chats",
+				buildText: async () => this.dispatchQueuedMessage(SUMMARY_SPEC),
 			},
 		];
 	}
@@ -186,8 +256,25 @@ export class RabbitBot implements BotPlugin {
 		return menuDefinitions;
 	}
 
-	onMessage() {
-		return `Next 23 holes! Join & sync! \n\t - ${this.initializeEvents().map(c => c.data.countdown).join('\n\t - ')}`;
+	private renderAutoAck(ctx?: any): string {
+		if (!this.autoAckEnabled) return "";
+
+		const sender = ctx?.from?.first_name?.trim()
+			|| ctx?.from?.username?.trim()
+			|| ctx?.chat?.title?.trim()
+			|| "desconocido";
+		const incomingText = (typeof ctx?.message?.text === "string" ? ctx.message.text : undefined)
+			?? (typeof ctx?.channelPost?.text === "string" ? ctx.channelPost.text : undefined)
+			?? (typeof ctx?.text === "string" ? ctx.text : "");
+		const size = incomingText.length;
+
+		return this.autoAckTemplate
+			.replaceAll("{sender}", sender)
+			.replaceAll("{size}", String(size));
+	}
+
+	onMessage(ctx?: any) {
+		return this.renderAutoAck(ctx);
 	}
 
 	initializeEvents() {

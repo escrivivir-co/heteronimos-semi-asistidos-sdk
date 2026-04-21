@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { RabbitBot } from "../examples/console-app/rabbit-bot";
+import { RabbitBot } from "../examples/dashboard/rabbit-bot";
 import { SpiderBot } from "../examples/dashboard/spider-bot";
 import { HorseBot } from "../examples/dashboard/horse-bot";
 import type { BotPlugin } from "../src/index";

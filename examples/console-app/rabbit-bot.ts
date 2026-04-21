@@ -1,8 +1,15 @@
 import { buildPluginHelpText, type BotPlugin, type CommandDefinition, type MenuDefinition } from "heteronimos-semi-asistidos-sdk";
 
+const DEFAULT_AUTO_ACK_TEMPLATE = "Mensaje recibido de {sender}. Contenido: {size} caracteres. -- RabbitBot · BotHubSDK Scriptorium";
+
 export interface GEvent {
 	timestamp: Date,
 	data: any
+}
+
+export interface RabbitAutoAckOptions {
+	enabled?: boolean;
+	template?: string;
 }
 
 export class RabbitBot implements BotPlugin {
@@ -20,11 +27,15 @@ export class RabbitBot implements BotPlugin {
 
 	urls = 'https://greenwire.greenpeace.es/community-events';
 	solana = '';
+	private autoAckEnabled: boolean;
+	private autoAckTemplate: string;
 
-	constructor(solana?: string) {
+	constructor(solana?: string, autoAckOptions?: RabbitAutoAckOptions) {
 		this.solana = solana ?? '';
 		this.cronos = 2;
 		this.events = this.getNextFibonacciDates(new Date(), this.cronos);
+		this.autoAckEnabled = autoAckOptions?.enabled ?? false;
+		this.autoAckTemplate = autoAckOptions?.template?.trim() || DEFAULT_AUTO_ACK_TEMPLATE;
 	}
 
 	commands(): CommandDefinition[] {
@@ -99,8 +110,25 @@ export class RabbitBot implements BotPlugin {
 		return menuDefinitions;
 	}
 
-	onMessage() {
-		return `Next 23 holes! Join & sync! \n\t - ${this.initializeEvents().map(c => c.data.countdown).join('\n\t - ')}`;
+	private renderAutoAck(ctx?: any): string {
+		if (!this.autoAckEnabled) return "";
+
+		const sender = ctx?.from?.first_name?.trim()
+			|| ctx?.from?.username?.trim()
+			|| ctx?.chat?.title?.trim()
+			|| "desconocido";
+		const incomingText = (typeof ctx?.message?.text === "string" ? ctx.message.text : undefined)
+			?? (typeof ctx?.channelPost?.text === "string" ? ctx.channelPost.text : undefined)
+			?? (typeof ctx?.text === "string" ? ctx.text : "");
+		const size = incomingText.length;
+
+		return this.autoAckTemplate
+			.replaceAll("{sender}", sender)
+			.replaceAll("{size}", String(size));
+	}
+
+	onMessage(ctx?: any) {
+		return this.renderAutoAck(ctx);
 	}
 
 	initializeEvents() {

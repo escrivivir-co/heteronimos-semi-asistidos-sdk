@@ -131,10 +131,11 @@ bun run start            # single run (console-app)
 | `bun run build:sdk` | Emit publishable JS + `.d.ts` for the SDK |
 | `bun run build:example` | Bundle the example app to `dist-example/` |
 | `bun run dist` | Build and run the bundled example output |
-| `bun run examples:install` | `bun install` in both example packages |
+| `bun run examples:install` | `bun install` in the example packages |
 | `bun run lint` | Type-check (tsc --noEmit) |
 | `bun run bot-father-settings` | Generate `bot-father-settings.md` |
-| `bun run test` | Build SDK, install examples, run unit tests |
+| `bun run test` | Build SDK and run the Bun test suite |
+| `bun run test:dashboard` | Build SDK and run the dashboard smoke suite |
 | `bun run test:report` | Tests + JUnit XML report |
 | `bun run test:coverage` | Tests + coverage report |
 | `bun run release <patch\|minor\|major>` | Bump version, tag, commit |
@@ -288,10 +289,10 @@ On boot, compares local commands with `bot.api.getMyCommands()`. If there's a di
 
 The included `RabbitBot` plugin (`pluginCode = "rb"`) provides:
 
-- `/rb_aleph` — next Fibonacci-date sync event
+- `/rb_aleph` — broadcast queued update from `userdata/broadcast.md`
 - `/rb_join` — join link + Solana address
 - `/rb_quit` — quit info
-- `/rb_alephs` — list of upcoming events
+- `/rb_alephs` — broadcast DRY summary from `userdata/summary.md`
 - `/rb_menu` — inline keyboard with 2 pages
 
 Try it: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot) · Channel: *A cyborg-driven chat room*
@@ -301,7 +302,8 @@ Try it: [@an_aleph_zero_rabit_23_bot](https://t.me/an_aleph_zero_rabit_23_bot) �
 ## Testing
 
 ```bash
-bun run test             # 165 tests across 14 suites
+bun run test             # 515 tests across 33 files
+bun run test:dashboard   # dashboard smoke target
 bun run test:coverage    # with coverage report
 bun run test:report      # JUnit XML → test-results.xml
 ```
