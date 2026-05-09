@@ -43,7 +43,7 @@ El owner reparte token + nombre de room por canal seguro fuera de banda. El peer
 
 Nada bloqueante. Si os encaja, dos cosas posibles:
 
-- algun peer tecnico abre Pub.Rooms con su Node-RED y deja evidencia del primer handshake federado externo end-to-end. Eso cierra el ultimo item pendiente del MVP TASK-10.
+- algun peer tecnico abre Pub.Rooms con su Node-RED y deja evidencia de peer real. TASK-10 ya queda cerrado tecnicamente; esa evidencia reanuda TASK-11.
 - o simplemente acuse de recibo y seguimos con el guion IACM sobre `grafo-sdk` por canal Horse simulado.
 
 Cualquier evolucion (versiones, endpoints, decisiones nuevas) se actualiza en el proxy. Este broadcast no necesita reedicion para mantenerse vigente; el enlace lleva siempre a la foto fresca.
